@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WavePhaseNet — 論文解説</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+  :root {
+    --bg: #080c14;
+    --surface: #0d1321;
+    --surface2: #111827;
+    --border: #1e2d45;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #f59e0b;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-dim: #475569;
+    --glow: rgba(0,212,255,0.15);
+    --font-serif: 'Noto Serif JP', serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-sans: 'Noto Sans JP', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    line-height: 1.8;
+    overflow-x: hidden;
+  }
+
+  /* ── Canvas Background ── */
+  #bg-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; opacity: 0.18;
+    pointer-events: none;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(8,12,20,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+  .nav-links {
+    display: flex; gap: 2rem; list-style: none;
+  }
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* ── Main wrapper ── */
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding-top: 80px;
+    position: relative;
+  }
+  .hero-tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.3em 0.9em;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.2s forwards;
+  }
+  .hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.35s forwards;
+  }
+  .hero-title .wave {
+    color: var(--accent);
+    display: inline-block;
+    animation: pulse 3s ease-in-out infinite;
+  }
+  .hero-subtitle {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--accent2);
+    letter-spacing: 0.05em;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.45s forwards;
+  }
+  .hero-meta {
+    display: flex; gap: 2rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.55s forwards;
+  }
+  .hero-meta span { display: flex; align-items: center; gap: 0.4rem; }
+  .hero-desc {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 640px;
+    line-height: 1.9;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.65s forwards;
+    margin-bottom: 3rem;
+  }
+  .scroll-hint {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    display: flex; align-items: center; gap: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.8s forwards;
+  }
+  .scroll-hint::after {
+    content: '';
+    display: block; width: 40px; height: 1px;
+    background: var(--text-dim);
+    animation: expandLine 1.5s ease infinite;
+  }
+
+  /* ── Section layout ── */
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+    opacity: 0.8;
+  }
+  h2 {
+    font-family: var(--font-serif);
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    line-height: 1.3;
+  }
+  h3 {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  p { margin-bottom: 1.2rem; color: var(--text-muted); }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .card:hover { border-color: rgba(0,212,255,0.3); }
+  .card:hover::before { opacity: 1; }
+
+  /* ── Abstract ── */
+  .abstract-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+  .abstract-box::before {
+    content: '"';
+    position: absolute; top: 1rem; left: 2rem;
+    font-family: var(--font-serif);
+    font-size: 5rem;
+    color: var(--accent);
+    opacity: 0.08;
+    line-height: 1;
+  }
+
+  /* ── Concept flow ── */
+  .concept-flow {
+    display: flex; align-items: center; gap: 0;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+  }
+  .concept-node {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.9rem 1.4rem;
+    font-size: 0.82rem;
+    font-family: var(--font-mono);
+    color: var(--text);
+    position: relative;
+    white-space: nowrap;
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .concept-node:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 20px var(--glow);
+  }
+  .concept-arrow {
+    color: var(--accent);
+    font-size: 1.2rem;
+    padding: 0 0.5rem;
+    opacity: 0.6;
+  }
+
+  /* ── Freq bands ── */
+  .freq-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+    margin: 2rem 0;
+  }
+  .freq-cell {
+    background: var(--surface);
+    padding: 1.8rem 1.5rem;
+    text-align: center;
+    transition: background 0.2s;
+  }
+  .freq-cell:hover { background: var(--surface2); }
+  .freq-icon {
+    font-family: var(--font-mono);
+    font-size: 1.6rem;
+    margin-bottom: 0.8rem;
+    display: block;
+  }
+  .freq-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .freq-cell:nth-child(1) .freq-label { color: var(--accent); }
+  .freq-cell:nth-child(2) .freq-label { color: var(--accent3); }
+  .freq-cell:nth-child(3) .freq-label { color: var(--accent2); }
+  .freq-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* ── Math box ── */
+  .math-box {
+    background: #060a10;
+    border: 1px solid var(--border);
+    border-radius: 1px;
+    padding: 1.8rem 2rem;
+    margin: 1.5rem 0;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    overflow-x: auto;
+    position: relative;
+  }
+  .math-box .math-label {
+    position: absolute; top: 0.6rem; right: 1rem;
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── Energy bar ── */
+  .energy-table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
+  .energy-table th {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-align: left;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .energy-table td {
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+    border-bottom: 1px solid rgba(30,45,69,0.5);
+    color: var(--text-muted);
+  }
+  .energy-table tr:hover td { background: var(--surface); }
+  .energy-bar-wrap {
+    height: 6px; background: var(--border);
+    border-radius: 3px; overflow: hidden;
+    min-width: 120px;
+  }
+  .energy-bar {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width 1.5s ease;
+  }
+  .energy-highlight td { color: var(--accent) !important; font-weight: 500; }
+
+  /* ── 3-pillars ── */
+  .pillars { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin: 2rem 0; }
+  .pillar {
+    border: 1px solid var(--border);
+    padding: 1.8rem 1.4rem;
+    position: relative;
+    background: var(--surface);
+    transition: all 0.3s;
+  }
+  .pillar:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,212,255,0.08);
+  }
+  .pillar-num {
+    font-family: var(--font-mono);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 0.8rem;
+    transition: color 0.3s;
+  }
+  .pillar:hover .pillar-num { color: var(--accent); opacity: 0.4; }
+  .pillar h4 {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    color: var(--text);
+  }
+  .pillar p { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+
+  /* ── Architecture ── */
+  .arch-flow {
+    margin: 2rem 0;
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .arch-step {
+    display: flex; align-items: stretch;
+    gap: 0;
+  }
+  .arch-step-num {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--accent);
+    width: 36px; min-width: 36px;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    position: relative;
+  }
+  .arch-step-num::after {
+    content: '';
+    position: absolute; bottom: 0; left: 50%;
+    width: 1px; height: 100%;
+    background: var(--border);
+    top: 50%;
+  }
+  .arch-step:last-child .arch-step-num::after { display: none; }
+  .arch-step-body {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1.2rem 1.5rem;
+    margin: 4px 0;
+    margin-left: 1rem;
+    transition: border-color 0.2s;
+  }
+  .arch-step-body:hover { border-color: rgba(0,212,255,0.3); }
+  .arch-step-title {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.4rem;
+  }
+  .arch-step-desc { font-size: 0.82rem; color: var(--text-muted); }
+
+  /* ── Related work ── */
+  .ref-card {
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    background: var(--surface);
+    margin-bottom: 1rem;
+    display: grid; grid-template-columns: auto 1fr;
+    gap: 1.2rem;
+    align-items: start;
+    transition: border-color 0.2s;
+  }
+  .ref-card:hover { border-color: rgba(0,212,255,0.3); }
+  .ref-tag {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 0.2em 0.6em;
+    border: 1px solid;
+    white-space: nowrap;
+    align-self: start;
+    margin-top: 0.1rem;
+  }
+  .ref-tag.sim { border-color: var(--accent); color: var(--accent); }
+  .ref-tag.diff { border-color: var(--accent2); color: var(--accent2); }
+  .ref-name { font-weight: 500; font-size: 0.88rem; margin-bottom: 0.4rem; }
+  .ref-desc { font-size: 0.78rem; color: var(--text-muted); }
+
+  /* ── Conclusion highlight ── */
+  .conclusion-box {
+    background: linear-gradient(135deg, rgba(0,212,255,0.04), rgba(124,58,237,0.06));
+    border: 1px solid rgba(0,212,255,0.2);
+    padding: 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .conclusion-box::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(0,212,255,0.05), transparent 70%);
+  }
+  .conclusion-box h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+  .conclusion-box p { max-width: 600px; margin: 0 auto; font-size: 0.92rem; }
+
+  /* ── Tag chip ── */
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 0.25em 0.75em;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 0 2rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    position: relative; z-index: 1;
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%,100% { text-shadow: 0 0 20px rgba(0,212,255,0.3); }
+    50% { text-shadow: 0 0 40px rgba(0,212,255,0.7); }
+  }
+  @keyframes expandLine {
+    0% { width: 20px; opacity: 0.3; }
+    50% { width: 60px; opacity: 0.8; }
+    100% { width: 20px; opacity: 0.3; }
+  }
+
+  .reveal {
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1; transform: translateY(0);
+  }
+
+  @media (max-width: 640px) {
+    .pillars { grid-template-columns: 1fr; }
+    .freq-grid { grid-template-columns: 1fr; }
+    .concept-flow { gap: 0.3rem; }
+    .concept-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<nav>
+  <div class="nav-logo">WavePhaseNet // 論文解説</div>
+  <ul class="nav-links">
+    <li><a href="#abstract">概要</a></li>
+    <li><a href="#method">手法</a></li>
+    <li><a href="#results">結果</a></li>
+    <li><a href="#related">関連研究</a></li>
+  </ul>
+</nav>
+
+<div class="wrapper">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-tag">arXiv · 2026.01.12</div>
+    <h1 class="hero-title">
+      <span class="wave">Wave</span>PhaseNet
+    </h1>
+    <div class="hero-subtitle">A DFT-Based Method for Constructing Semantic Conceptual Hierarchy Structures (SCHS)</div>
+    <div class="hero-meta">
+      <span>👤 Kiyotaka Kasubuchi, Kazuo Fukiya</span>
+      <span>📅 2026年1月12日</span>
+    </div>
+    <p class="hero-desc">
+      大規模言語モデル（LLM）における幻覚（ハルシネーション）を数学的構造の必然的帰結として定式化し、
+      離散フーリエ変換（DFT）を用いた意味的概念階層構造（SCHS）によりその抑制を実現する新しいフレームワーク。
+    </p>
+    <div class="chips">
+      <span class="chip">LLM</span><span class="chip">Transformer</span><span class="chip">DFT</span>
+      <span class="chip">ハルシネーション抑制</span><span class="chip">コホモロジー</span>
+      <span class="chip">Hodge理論</span><span class="chip">次元削減</span>
+    </div>
+    <div class="scroll-hint">SCROLL TO EXPLORE</div>
+  </div>
+
+  <!-- ── ABSTRACT ── -->
+  <section id="abstract">
+    <div class="section-label">01 // ABSTRACT</div>
+    <h2>論文の概要</h2>
+
+    <div class="abstract-box reveal">
+      <p>
+        本論文は、Transformer / Attentionメカニズムを<strong>測度論</strong>と<strong>周波数解析</strong>の観点から再定式化し、
+        ハルシネーションの構造的必然性を理論的に解明する。
+        埋め込み空間はσ-加法族上の条件付き期待値として機能しており、
+        これが意味的真値集合と同型でないことが論理的一貫性の破綻の根本原因であることを示す。
+      </p>
+      <p>
+        この観察をもとに、DFTを用いて埋め込み空間内に<strong>意味的概念階層構造（SCHS）</strong>を明示的に構築する
+        手法 <em>WavePhaseNet</em> を提案する。
+        低周波成分がグローバルな意味・意図に、高周波成分がローカルな構文・表現に対応することで、
+        対角化された空間での精密な意味操作が可能となる。
+      </p>
+    </div>
+
+    <div class="pillars reveal">
+      <div class="pillar">
+        <div class="pillar-num">01</div>
+        <h4>ハルシネーションの数学的定義</h4>
+        <p>σ-加法族上で最適（高確率）であっても、現実世界の真値集合に属さない出力として定式化</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">02</div>
+        <h4>DFTによるSCHS構築</h4>
+        <p>トークン列にDFTを適用し、意味情報を周波数帯域に分解。階層的意味構造を埋め込み空間に明示的に埋め込む</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">03</div>
+        <h4>コホモロジーによる整合性</h4>
+        <p>Hodge理論に基づく調和射影により、局所推論の不整合をコバウンダリ損失として定量化し制御する</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HALLUCINATION ── -->
+  <section id="hallucination">
+    <div class="section-label">02 // THEORY</div>
+    <h2>ハルシネーションの構造的必然性</h2>
+
+    <div class="card reveal">
+      <h3>自己回帰モデルの測度論的定式化</h3>
+      <p>
+        自己回帰モデルは結合分布を条件付き確率の積として分解する。
+        過去のトークン列 \(X_{&lt;t}\) が生成するボレル集合はσ-加法族 \(\mathcal{F}_t = \sigma(x_1,\ldots,x_t)\) をなし、
+        埋め込みベクトルは可測空間上のランダム変数として解釈できる。
+      </p>
+      <div class="math-box">
+        <span class="math-label">条件付き期待値</span>
+        \[ \mathcal{L}^P(\Omega, \mathcal{F}, P) \ni f, \quad \|f\|_p = \left(\int_\Omega |f(\omega)|^p \, dP(\omega)\right)^{1/p} \]
+      </div>
+      <p>
+        モデル全体はσ-加法族上の条件付き期待値の逐次近似器であり、
+        その出力は点ごとの真値ではなく<strong>確率分布上の平均的最適性</strong>（ルベーグ測度：期待値E）である。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>ハルシネーションの定義と構造的不可避性</h3>
+      <p>
+        ミンコフスキー不等式 \(\|f+g\|_p \leq \|f\|_p + \|g\|_p\) により、
+        異なる仮説 \(f_1, f_2\) を \(f = \alpha f_1 + (1-\alpha)f_2\) と線形結合できる。
+        しかし不完備性により、存在しない命題が生じうる。
+      </p>
+      <div class="math-box">
+        <span class="math-label">ハルシネーションの定義</span>
+        \[ \text{真値集合} \ T \subset V^*, \quad \text{モデル最適集合} \neq T \]
+      </div>
+      <p>
+        真値集合は一般に<strong>非凸・非線形</strong>であるのに対し、
+        \(L^P\)空間は<strong>線形かつ凸</strong>の構造を持つ。
+        この「非線形な真値集合 vs 線形・凸な表現空間」のミスマッチが、
+        ハルシネーションの本質的原因である。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── METHOD ── -->
+  <section id="method">
+    <div class="section-label">03 // METHOD</div>
+    <h2>WavePhaseNet の手法</h2>
+
+    <h3>周波数帯域と意味の対応</h3>
+    <p class="reveal">DFTをトークン列方向に適用すると、意味情報は周波数帯域に分解される。</p>
+
+    <div class="freq-grid reveal">
+      <div class="freq-cell">
+        <span class="freq-icon">〰️</span>
+        <div class="freq-label">低周波 (Low-freq)</div>
+        <div class="freq-desc">グローバルなトピック・要約・意図。全ポジションに均一に寄与するDC成分（k=0）</div>
+      </div>
+      <div class="freq-cell">
+        <span class="freq-icon">〜〜〜</span>
+        <div class="freq-label">中周波 (Mid-freq)</div>
+        <div class="freq-desc">談話構造・意味的推移。文レベルの多段階構造</div>
+      </div>
+      <div class="freq-cell">
+        <span class="freq-icon">∿∿∿∿∿</span>
+        <div class="freq-label">高周波 (High-freq)</div>
+        <div class="freq-desc">局所的な語順・語用・表現の違い。位相が位置的差異を決定</div>
+      </div>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">DFTの数式定義</h3>
+    <div class="math-box reveal">
+      <span class="math-label">シーケンス方向DFT</span>
+      \[ \hat{X}_k = \sum_{n=0}^{N-1} x_n \, e^{-2\pi i k n / N}, \quad k = 0, \ldots, N-1 \]
+    </div>
+    <div class="math-box reveal">
+      <span class="math-label">振幅・位相分解</span>
+      \[ \hat{X}_k = A_k \odot e^{i\Phi_k}, \quad A_k = |\hat{X}_k| \in \mathbb{R}^d, \quad \Phi_k = \angle\hat{X}_k \in \mathbb{R}^d \]
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">モデルアーキテクチャ</h3>
+    <div class="arch-flow reveal">
+      <div class="arch-step">
+        <div class="arch-step-num">1</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">EMBEDDING LAYER</div>
+          <div class="arch-step-desc">トークン列 → 埋め込み行列 \(X \in \mathbb{R}^{N \times d}\)（系列長N × 埋め込み次元d）</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">2</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">DFT LAYER (FFT)</div>
+          <div class="arch-step-desc">シーケンス方向にFFT適用 → \(\hat{X} \in \mathbb{C}^{N \times d}\)（計算量 \(O(N \log N)\)）</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">3</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">BAND SEPARATION</div>
+          <div class="arch-step-desc">低〜高周波への多段階分離。低周波セット \(L = \{k : |k| \leq K_\text{low}\}\)</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">4</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">LOW-FREQ MODULE (Intent)</div>
+          <div class="arch-step-desc">位相Φと振幅Aを入力として意図ベクトル \(S \in \mathbb{R}^m\) を生成。位置的系列情報を保持</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">5</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">HIGH-FREQ MODULE (Generation)</div>
+          <div class="arch-step-desc">条件付き生成器 \(G\) が \(\hat{X}'_H \sim p(\hat{X}_H | S)\) を出力。normalizing flowやVAEが選択肢</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">6</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">INVERSE DFT</div>
+          <div class="arch-step-desc">\(\hat{X}_L + \hat{X}'_H\) を逆変換し時系列埋め込み行列を復元。PyTorchで軽量実装可能</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">周波数マスクとしての意味演算子</h3>
+    <p class="reveal">DFTの本質的価値は可逆変換そのものでなく、周波数依存の意味演算子の挿入にある：</p>
+    <div class="concept-flow reveal">
+      <div class="concept-node">X（入力）</div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">DFT</div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">M(k)演算子</div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">iDFT</div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">X̃（変換後）</div>
+    </div>
+    <div class="math-box reveal">
+      <span class="math-label">意味演算子</span>
+      \[ \tilde{X} = F^{-1} M(\omega) F X \]
+      \[ M(k) = \begin{cases} 1.0 & k=0 \text{（グローバルトピック：保持）} \\ 0.5 & k=1,3 \text{（表現・トーン：減衰）} \\ 0.0 & k=2 \text{（否定・対比構造：除去）} \end{cases} \]
+    </div>
+  </section>
+
+  <!-- ── RESULTS ── -->
+  <section id="results">
+    <div class="section-label">04 // RESULTS</div>
+    <h2>実験結果・理論的根拠</h2>
+
+    <div class="card reveal">
+      <h3>GPT-4（24,576次元）の1/fスペクトル構造</h3>
+      <p>
+        自然言語はZipf則に従い自己相似構造を持つ。
+        埋め込み振幅のエネルギースペクトルは以下の1/f型減衰を示す：
+      </p>
+      <div class="math-box">
+        \[ E(f) \propto \frac{1}{f^\alpha}, \quad \alpha \approx 1.1 \sim 1.4 \]
+      </div>
+      <p>
+        \(\alpha > 1\) となる理由は、構文制約の存在（文法はセマンティクスより局所的）と
+        TransformerによるLayerNorm/Attentionが高周波を正則化するためである。
+      </p>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2rem;">累積エネルギー解析：24,576次元 → 3,000次元削減の正当性</h3>
+
+    <table class="energy-table reveal">
+      <thead>
+        <tr>
+          <th>次元数 K</th>
+          <th>累積エネルギー</th>
+          <th>エネルギーバー</th>
+          <th>評価</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1,024</td>
+          <td>55〜60%</td>
+          <td><div class="energy-bar-wrap"><div class="energy-bar" style="width:57%"></div></div></td>
+          <td style="color:var(--text-dim)">不十分</td>
+        </tr>
+        <tr>
+          <td>2,048</td>
+          <td>70〜75%</td>
+          <td><div class="energy-bar-wrap"><div class="energy-bar" style="width:72%"></div></div></td>
+          <td style="color:var(--accent3)">部分的</td>
+        </tr>
+        <tr class="energy-highlight">
+          <td><strong>3,072 ≈ 3,000</strong></td>
+          <td><strong>82〜88%</strong></td>
+          <td><div class="energy-bar-wrap"><div class="energy-bar" style="width:85%"></div></div></td>
+          <td style="color:var(--accent)">✓ 意味・意図保存の下限</td>
+        </tr>
+        <tr>
+          <td>4,096</td>
+          <td>90〜93%</td>
+          <td><div class="energy-bar-wrap"><div class="energy-bar" style="width:91%"></div></div></td>
+          <td style="color:var(--text-muted)">冗長性あり</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="card reveal">
+      <h3>3,000次元が意味の下限である理由</h3>
+      <p>NLP観点からGPT-4埋め込みの内在次元を分析すると：</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin:1rem 0;">
+        <div style="border:1px solid var(--border); padding:1rem;">
+          <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--accent); margin-bottom:0.4rem;">語義的意味空間</div>
+          <div style="font-size:1.4rem; font-weight:700; font-family:var(--font-mono);">300〜800</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">次元</div>
+        </div>
+        <div style="border:1px solid var(--border); padding:1rem;">
+          <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--accent); margin-bottom:0.4rem;">文レベル意味論</div>
+          <div style="font-size:1.4rem; font-weight:700; font-family:var(--font-mono);">1,000〜2,000</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">次元</div>
+        </div>
+        <div style="border:1px solid var(--border); padding:1rem; grid-column:span 2; border-color:rgba(0,212,255,0.3);">
+          <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--accent); margin-bottom:0.4rem;">文の意図 + 談話構造</div>
+          <div style="font-size:1.4rem; font-weight:700; font-family:var(--font-mono); color:var(--accent);">2,000〜3,000</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">次元 → <strong>3,000次元が意味と意図を保存する下限</strong></div>
+        </div>
+      </div>
+      <p style="margin:0;">3,000次元を下回ると、意味的に類似した文と構文的に類似した文の区別が不可能になる。</p>
+    </div>
+
+    <div class="card reveal">
+      <h3>コホモロジー正則化と統一最適化目的関数</h3>
+      <p>重複する局所ウィンドウのカバリングにグラフ構造を導入し、コチェイン複体を定義。</p>
+      <div class="math-box">
+        <span class="math-label">統一損失関数</span>
+        \[ \mathcal{L} = \sum_i L_i^{\text{loc}}(s_i) + \lambda \, s^\top (L \otimes I_r) s + \mu \, D_{KL}(p \| p^{(\Omega)}) + \eta \sum_i \| s_i - P_i(g) \|_2^2 \]
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin-top:1rem;">
+        <div style="border-left:2px solid var(--accent); padding-left:0.8rem;">
+          <div style="font-size:0.75rem; color:var(--accent); font-family:var(--font-mono);">L^loc_i</div>
+          <div style="font-size:0.78rem; color:var(--text-muted);">ウィンドウiのタスク損失（クロスエントロピー等）</div>
+        </div>
+        <div style="border-left:2px solid var(--accent3); padding-left:0.8rem;">
+          <div style="font-size:0.75rem; color:var(--accent3); font-family:var(--font-mono);">λ・s⊤(L⊗I)s</div>
+          <div style="font-size:0.78rem; color:var(--text-muted);">コバウンダリ二乗ノルムによる局所不整合ペナルティ</div>
+        </div>
+        <div style="border-left:2px solid var(--accent2); padding-left:0.8rem;">
+          <div style="font-size:0.75rem; color:var(--accent2); font-family:var(--font-mono);">μ・D_KL</div>
+          <div style="font-size:0.78rem; color:var(--text-muted);">Zipf則からの逸脱抑制（帯域選択の適切性）</div>
+        </div>
+        <div style="border-left:2px solid var(--text-dim); padding-left:0.8rem;">
+          <div style="font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono);">η・‖s_i−P_i(g)‖²</div>
+          <div style="font-size:0.78rem; color:var(--text-muted);">グローバル意図との一致度強制</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── RELATED ── -->
+  <section id="related">
+    <div class="section-label">05 // RELATED WORK</div>
+    <h2>関連研究との比較</h2>
+
+    <div class="ref-card reveal">
+      <span class="ref-tag sim">類似点</span>
+      <div>
+        <div class="ref-name">FNet（Google Research）</div>
+        <div class="ref-desc">AttentionをFourier変換で置換することで高速化と意味解析を実現。トークン列に対するDFT適用による意味階層化の有効性を実証済み。本提案のSCHS構築の動機の一つ。</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <span class="ref-tag diff">差別化点</span>
+      <div>
+        <div class="ref-name">WavePhaseNet vs FNet</div>
+        <div class="ref-desc">FNetは複素表現の虚部を破棄するため、共参照関係や文脈依存性の処理が弱い。本提案は<strong>位相情報を保持</strong>し、意味階層への操作を明示的に導入する点で本質的に異なる。</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <span class="ref-tag diff">超越点</span>
+      <div>
+        <div class="ref-name">RAGベースアプローチとの比較</div>
+        <div class="ref-desc">RAGは強い依存性と拡張性の低さを持つ。WavePhaseNetは埋め込み空間内にSCHSを直接構築することで、ユーザが高度なプロンプト表現スキルを持つ必要性を大幅に低減する。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CONCLUSION ── -->
+  <section id="conclusion">
+    <div class="conclusion-box reveal">
+      <div class="section-label" style="text-align:center;">06 // CONCLUSION</div>
+      <h2>結論</h2>
+      <p>
+        本論文はLLMのハルシネーションを数学的構造から必然的に生じる現象として定式化し、
+        DFTベースのSCHSを埋め込み空間に導入することでその抑制の理論的枠組みを提示した。
+        Zipf則と1/fスペクトルに基づく累積エネルギー解析により、
+        24,576次元から3,000次元への削減が正当化されることが本提案の核心的貢献である。
+      </p>
+      <p style="margin-top:1rem;">
+        WavePhaseNetは意味的流れを線形代数で厳密に記述することを可能とし、
+        次世代の推論指向型言語モデルへの道を開く。
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrapper" style="padding-top:0; padding-bottom:0;">
+    WavePhaseNet 論文解説ページ &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp; 本ページは論文の解説を目的として作成されました
+  </div>
+</footer>
+
+<script>
+// ── Wave canvas animation ──
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, frame = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+function drawWaves() {
+  ctx.clearRect(0, 0, W, H);
+  const waves = [
+    { amp: 60, freq: 0.008, speed: 0.015, y: H*0.3, color: '#00d4ff', alpha: 0.6 },
+    { amp: 35, freq: 0.014, speed: 0.022, y: H*0.5, color: '#7c3aed', alpha: 0.5 },
+    { amp: 20, freq: 0.025, speed: 0.035, y: H*0.7, color: '#00d4ff', alpha: 0.3 },
+    { amp: 45, freq: 0.006, speed: 0.010, y: H*0.2, color: '#f59e0b', alpha: 0.2 },
+  ];
+  waves.forEach(w => {
+    ctx.beginPath();
+    ctx.strokeStyle = w.color;
+    ctx.globalAlpha = w.alpha;
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= W; x += 2) {
+      const y = w.y + Math.sin(x * w.freq + frame * w.speed) * w.amp;
+      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  });
+  // grid dots
+  ctx.globalAlpha = 0.06;
+  ctx.fillStyle = '#00d4ff';
+  for (let x = 0; x < W; x += 80) {
+    for (let y = 0; y < H; y += 80) {
+      ctx.beginPath();
+      ctx.arc(x, y, 1, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+  frame++;
+  requestAnimationFrame(drawWaves);
+}
+drawWaves();
+
+// ── Scroll reveal ──
+const reveals = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+reveals.forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

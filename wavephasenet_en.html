@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WavePhaseNet — Paper Explainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+  :root {
+    --bg: #f5f0e8;
+    --surface: #fdfaf4;
+    --surface2: #f0ebe0;
+    --border: #d4c9b0;
+    --border-dark: #b8a990;
+    --ink: #1a1208;
+    --ink-mid: #3d2f1a;
+    --ink-light: #7a6a52;
+    --ink-dim: #b09e87;
+    --red: #c0392b;
+    --blue: #1a3a5c;
+    --gold: #8a6914;
+    --teal: #1a5c4a;
+    --font-display: 'Playfair Display', serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-body: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-weight: 300;
+    line-height: 1.8;
+    overflow-x: hidden;
+  }
+
+  /* Grain texture overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 9999;
+    opacity: 0.5;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(245,240,232,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 2px solid var(--ink);
+    padding: 0 3rem;
+    height: 52px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.05em;
+  }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a {
+    color: var(--ink-light);
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s;
+  }
+  .nav-links a:hover { color: var(--ink); border-color: var(--ink); }
+
+  /* ── Wrapper ── */
+  .wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 2.5rem 8rem;
+    position: relative;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding-top: 80px;
+    border-right: 1px solid var(--border);
+    padding-right: 3rem;
+    position: relative;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; right: -1px; top: 20%; bottom: 20%;
+    width: 3px; background: var(--ink);
+  }
+  .hero-tag {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeIn 0.5s ease 0.2s forwards;
+  }
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+    opacity: 0;
+    animation: fadeIn 0.5s ease 0.3s forwards;
+  }
+  .hero-title .accent { color: var(--red); }
+  .hero-subtitle {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--blue);
+    letter-spacing: 0.05em;
+    max-width: 500px;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--blue);
+    opacity: 0;
+    animation: fadeIn 0.5s ease 0.4s forwards;
+  }
+  .hero-byline {
+    font-size: 0.82rem;
+    color: var(--ink-light);
+    font-style: italic;
+    margin-bottom: 0.4rem;
+    opacity: 0;
+    animation: fadeIn 0.5s ease 0.5s forwards;
+  }
+  .hero-date {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--ink-dim);
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeIn 0.5s ease 0.55s forwards;
+  }
+  .hero-abstract {
+    font-size: 0.95rem;
+    color: var(--ink-mid);
+    max-width: 600px;
+    line-height: 2;
+    margin-bottom: 3rem;
+    opacity: 0;
+    animation: fadeIn 0.5s ease 0.65s forwards;
+  }
+  .hero-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 3rem; opacity:0; animation: fadeIn 0.5s ease 0.75s forwards; }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    padding: 0.2em 0.7em;
+    border: 1px solid var(--border-dark);
+    color: var(--ink-light);
+    letter-spacing: 0.06em;
+    background: var(--surface);
+  }
+
+  /* Decorative rule */
+  .rule {
+    display: flex; align-items: center; gap: 1rem;
+    margin: 2rem 0;
+  }
+  .rule::before, .rule::after {
+    content: ''; flex: 1;
+    height: 1px; background: var(--border-dark);
+  }
+  .rule span {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--ink-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  /* ── Section ── */
+  section { padding: 5rem 0; }
+  .section-header {
+    display: flex; align-items: baseline; gap: 1rem;
+    margin-bottom: 2.5rem;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 0.8rem;
+  }
+  .section-num {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--border-dark);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  h2 {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  h3 {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--ink);
+  }
+  p { margin-bottom: 1.2rem; color: var(--ink-mid); font-size: 0.92rem; }
+
+  /* ── Pull quote / card ── */
+  .pullquote {
+    border-left: 4px solid var(--red);
+    padding: 1.5rem 2rem;
+    background: var(--surface);
+    margin: 2rem 0;
+    position: relative;
+  }
+  .pullquote p { font-style: italic; font-size: 1rem; color: var(--ink); margin: 0; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    transition: box-shadow 0.2s;
+  }
+  .card:hover {
+    box-shadow: 4px 4px 0 var(--border-dark);
+  }
+
+  /* ── Math box ── */
+  .math-box {
+    background: var(--ink);
+    color: #f5f0e8;
+    padding: 1.8rem 2rem;
+    margin: 1.5rem 0;
+    font-family: var(--font-mono);
+    overflow-x: auto;
+    position: relative;
+  }
+  .math-box .math-label {
+    position: absolute; top: 0.5rem; right: 1rem;
+    font-size: 0.6rem;
+    color: rgba(245,240,232,0.4);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .math-box .MathJax { color: #f5f0e8 !important; }
+
+  /* ── Freq bands ── */
+  .freq-bands {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    margin: 2rem 0;
+    border: 1px solid var(--border-dark);
+  }
+  .freq-band {
+    padding: 2rem 1.5rem;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    transition: background 0.2s;
+  }
+  .freq-band:last-child { border-right: none; }
+  .freq-band:hover { background: var(--surface2); }
+  .freq-wave {
+    font-size: 1.8rem; margin-bottom: 0.8rem;
+    font-family: var(--font-mono);
+  }
+  .freq-name {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+  .freq-band:nth-child(1) .freq-name { color: var(--teal); }
+  .freq-band:nth-child(2) .freq-name { color: var(--gold); }
+  .freq-band:nth-child(3) .freq-name { color: var(--red); }
+  .freq-body { font-size: 0.78rem; color: var(--ink-light); }
+
+  /* ── Architecture steps ── */
+  .arch-steps { margin: 2rem 0; }
+  .arch-step {
+    display: grid; grid-template-columns: 60px 1fr;
+    gap: 0; margin-bottom: 0;
+    position: relative;
+  }
+  .arch-step::before {
+    content: '';
+    position: absolute; left: 29px; top: 0; bottom: 0;
+    width: 2px; background: var(--border);
+    z-index: 0;
+  }
+  .arch-step:last-child::before { height: 50%; }
+  .step-num {
+    width: 60px; height: 60px;
+    border: 2px solid var(--ink);
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 900;
+    position: relative; z-index: 1;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .arch-step:hover .step-num {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .step-body {
+    padding: 1rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: none;
+    margin: 5px 0;
+    transition: border-color 0.2s;
+  }
+  .arch-step:hover .step-body { border-color: var(--border-dark); }
+  .step-title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 0.3rem;
+  }
+  .step-desc { font-size: 0.8rem; color: var(--ink-light); margin: 0; }
+
+  /* ── Energy table ── */
+  .energy-table { width: 100%; border-collapse: collapse; margin: 2rem 0; font-size: 0.85rem; }
+  .energy-table th {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 0.6rem 1rem;
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .energy-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink-mid);
+  }
+  .energy-table tr:hover td { background: var(--surface2); }
+  .energy-bar-wrap {
+    height: 4px; background: var(--border);
+    min-width: 100px; overflow: hidden;
+  }
+  .energy-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue), var(--teal));
+    transition: width 1.2s ease;
+  }
+  .energy-table tr.highlight td {
+    color: var(--teal) !important;
+    font-weight: 500;
+    background: rgba(26,92,74,0.05);
+  }
+
+  /* ── Three concepts ── */
+  .concepts { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); margin: 2rem 0; }
+  .concept {
+    background: var(--surface);
+    padding: 2rem 1.5rem;
+    transition: background 0.2s;
+  }
+  .concept:hover { background: var(--bg); }
+  .concept-num {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 0.8rem;
+  }
+  .concept h4 {
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 500;
+    margin-bottom: 0.6rem;
+  }
+  .concept p { font-size: 0.76rem; color: var(--ink-light); margin: 0; }
+
+  /* ── Comparison ── */
+  .compare-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0; border: 1px solid var(--border-dark);
+    margin: 1.5rem 0;
+  }
+  .compare-col { padding: 1.8rem; }
+  .compare-col:first-child { border-right: 1px solid var(--border-dark); }
+  .compare-col-title {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-col:first-child .compare-col-title { color: var(--red); }
+  .compare-col:last-child .compare-col-title { color: var(--teal); }
+  .compare-item {
+    display: flex; align-items: flex-start; gap: 0.5rem;
+    font-size: 0.78rem; color: var(--ink-mid);
+    margin-bottom: 0.6rem;
+  }
+  .compare-item::before {
+    content: '·'; flex-shrink: 0; color: var(--ink-dim);
+    font-size: 1.2rem; line-height: 1;
+  }
+
+  /* ── Loss terms ── */
+  .loss-terms { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0; }
+  .loss-term {
+    border-left: 3px solid;
+    padding-left: 1rem;
+  }
+  .loss-term:nth-child(1) { border-color: var(--teal); }
+  .loss-term:nth-child(2) { border-color: var(--gold); }
+  .loss-term:nth-child(3) { border-color: var(--blue); }
+  .loss-term:nth-child(4) { border-color: var(--red); }
+  .loss-term-eq {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--ink);
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+  }
+  .loss-term p { font-size: 0.75rem; color: var(--ink-light); margin: 0; }
+
+  /* ── Conclusion ── */
+  .conclusion {
+    border: 2px solid var(--ink);
+    padding: 3rem;
+    position: relative;
+    margin-top: 1rem;
+  }
+  .conclusion::before {
+    content: '§';
+    position: absolute; top: -1.2rem; left: 2rem;
+    font-family: var(--font-display);
+    font-size: 2rem;
+    background: var(--bg);
+    padding: 0 0.5rem;
+    color: var(--red);
+  }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 2px solid var(--ink);
+    padding: 2rem 0;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    text-align: center;
+    position: relative; z-index: 1;
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .reveal {
+    opacity: 0; transform: translateY(16px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* Decorative wave SVG */
+  .deco-waves {
+    position: absolute; right: -2.5rem; top: 20%;
+    opacity: 0.06; pointer-events: none;
+    transform: rotate(90deg);
+  }
+
+  @media (max-width: 640px) {
+    .concepts, .freq-bands { grid-template-columns: 1fr; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .loss-terms { grid-template-columns: 1fr; }
+    .hero { padding-right: 0; border-right: none; }
+    .hero::after { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">WavePhaseNet // Paper Explainer</div>
+  <ul class="nav-links">
+    <li><a href="#abstract">Abstract</a></li>
+    <li><a href="#method">Method</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#related">Related</a></li>
+  </ul>
+</nav>
+
+<div class="wrapper">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <svg class="deco-waves" width="200" height="400" viewBox="0 0 200 400">
+      <path d="M100 0 Q150 50 100 100 Q50 150 100 200 Q150 250 100 300 Q50 350 100 400" fill="none" stroke="#1a1208" stroke-width="2"/>
+      <path d="M130 0 Q180 50 130 100 Q80 150 130 200 Q180 250 130 300 Q80 350 130 400" fill="none" stroke="#1a1208" stroke-width="1"/>
+      <path d="M70 0 Q120 50 70 100 Q20 150 70 200 Q120 250 70 300 Q20 350 70 400" fill="none" stroke="#1a1208" stroke-width="1"/>
+    </svg>
+
+    <div class="hero-tag">■ Research Paper · arXiv · January 12, 2026</div>
+    <h1 class="hero-title">
+      <span class="accent">Wave</span>Phase<br>Net
+    </h1>
+    <div class="hero-subtitle">
+      A DFT-Based Method for Constructing<br>
+      Semantic Conceptual Hierarchy Structures (SCHS)
+    </div>
+    <p class="hero-byline">Kiyotaka Kasubuchi &amp; Kazuo Fukiya</p>
+    <p class="hero-date">2026.01.12</p>
+    <p class="hero-abstract">
+      This paper reformulates the Transformer/Attention mechanism in LLMs through measure theory and 
+      frequency analysis to theoretically demonstrate why hallucination is a <em>structural inevitability</em> — 
+      not a training artifact. The proposed method, WavePhaseNet, constructs explicit semantic hierarchies 
+      within the embedding space using the Discrete Fourier Transform.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">LLM</span><span class="chip">Transformer</span><span class="chip">DFT / FFT</span>
+      <span class="chip">Hallucination Suppression</span><span class="chip">Cohomology</span>
+      <span class="chip">Hodge Theory</span><span class="chip">Dimensionality Reduction</span>
+      <span class="chip">Measure Theory</span>
+    </div>
+  </div>
+
+  <!-- ── ABSTRACT ── -->
+  <section id="abstract">
+    <div class="section-header reveal">
+      <div class="section-num">01</div>
+      <h2>Core Ideas &amp; Contributions</h2>
+    </div>
+
+    <div class="pullquote reveal">
+      <p>"Hallucination is not a defect of training data — it is a mathematically inevitable consequence of 
+      the structural mismatch between the nonlinear truth set and the linear, convex embedding space."</p>
+    </div>
+
+    <div class="concepts reveal">
+      <div class="concept">
+        <div class="concept-num">I</div>
+        <h4>DFT-Based Semantic Hierarchy</h4>
+        <p>Applying DFT along the sequence dimension decomposes token embeddings into frequency bands corresponding to global intent vs. local syntax</p>
+      </div>
+      <div class="concept">
+        <div class="concept-num">II</div>
+        <h4>Semantic Latent Variables</h4>
+        <p>Reducing the SCHS matrix (24,576 → 3,000 dimensions) achieves compact, low-cost semantic rigor while preserving meaning and intent</p>
+      </div>
+      <div class="concept">
+        <div class="concept-num">III</div>
+        <h4>Harmonic Gluing via Cohomology</h4>
+        <p>Hodge-theoretic harmonic projection extracts maximally globally consistent representations by quantifying inconsistencies as coboundary losses</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── THEORY ── -->
+  <section id="theory">
+    <div class="section-header reveal">
+      <div class="section-num">02</div>
+      <h2>Why Hallucination is Inevitable</h2>
+    </div>
+
+    <div class="card reveal">
+      <h3>The Measure-Theoretic View of LLMs</h3>
+      <p>
+        An autoregressive model decomposes the joint distribution as a product of conditionals. 
+        The past token sequence \(X_{&lt;t}\) generates a Borel σ-field 
+        \(\mathcal{F}_t = \sigma(x_1,\ldots,x_t)\), and each embedding vector becomes a random variable 
+        over a measurable space. The entire LLM is therefore a sequential approximator of 
+        <strong>conditional expectations</strong> — its output is not a pointwise truth value but 
+        average optimality over a probability distribution.
+      </p>
+      <div class="math-box">
+        <span class="math-label">LP Space Norm</span>
+        \[ \|f\|_p = \left(\int_\Omega |f(\omega)|^p \, dP(\omega)\right)^{1/p} \]
+      </div>
+      <p>
+        The Minkowski inequality \(\|f+g\|_p \leq \|f\|_p + \|g\|_p\) enables semantic superposition 
+        (the source of generative flexibility), but combined with incompleteness, it also allows 
+        non-existent propositions to arise.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>The Structural Mismatch</h3>
+      <div class="compare-grid">
+        <div class="compare-col">
+          <div class="compare-col-title">Truth Set \(T \subset V^*\)</div>
+          <div class="compare-item">Generally <strong>non-convex</strong></div>
+          <div class="compare-item">Not closed under linear combinations</div>
+          <div class="compare-item">Nonlinear topological structure</div>
+          <div class="compare-item">Čech-type consistency required</div>
+        </div>
+        <div class="compare-col">
+          <div class="compare-col-title">Embedding Space \(L^P(\Omega,\mathcal{F},P)\)</div>
+          <div class="compare-item">Linear and <strong>convex</strong></div>
+          <div class="compare-item">Closed under linear combinations</div>
+          <div class="compare-item">Minkowski structure</div>
+          <div class="compare-item">Statistical averaging only</div>
+        </div>
+      </div>
+      <p>
+        This fundamental mismatch makes LLMs well-suited for diverse text generation but inherently 
+        unsuited for inference requiring strict logical rigor — a critical failure mode in AI agents.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── METHOD ── -->
+  <section id="method">
+    <div class="section-header reveal">
+      <div class="section-num">03</div>
+      <h2>WavePhaseNet: The Method</h2>
+    </div>
+
+    <h3 class="reveal">Frequency Band Semantics</h3>
+    <div class="freq-bands reveal">
+      <div class="freq-band">
+        <div class="freq-wave">〰</div>
+        <div class="freq-name">Low Frequency</div>
+        <div class="freq-body">Global topic, summary &amp; intent. The DC component (k=0) contributes uniformly to all positions — mathematically guaranteed to encode sentence-level meaning</div>
+      </div>
+      <div class="freq-band">
+        <div class="freq-wave">〜〜</div>
+        <div class="freq-name">Mid Frequency</div>
+        <div class="freq-body">Discourse structure and semantic transitions. Multi-stage components bridging global intent and local expression</div>
+      </div>
+      <div class="freq-band">
+        <div class="freq-wave">∿∿∿∿</div>
+        <div class="freq-name">High Frequency</div>
+        <div class="freq-body">Syntactic variations, word order, pragmatic differences. Phase encodes positional relationships between tokens</div>
+      </div>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">Core DFT Formulation</h3>
+    <div class="math-box reveal">
+      <span class="math-label">Sequence-Direction DFT</span>
+      \[ \hat{X}_k = \sum_{n=0}^{N-1} X_n \, e^{-2\pi i k n / N}, \quad \hat{X} = X F_N^T \in \mathbb{C}^{d \times N} \]
+    </div>
+    <div class="math-box reveal">
+      <span class="math-label">Amplitude–Phase Decomposition</span>
+      \[ \hat{X}_k = A_k \odot e^{i\Phi_k}, \quad A_k = |\hat{X}_k| \in \mathbb{R}^d, \quad \Phi_k = \angle\hat{X}_k \in \mathbb{R}^d \]
+    </div>
+    <div class="math-box reveal">
+      <span class="math-label">Frequency Mask (Semantic Operator)</span>
+      \[ \tilde{X} = F^{-1} M(\omega) F X, \quad M(k) = \begin{cases} 1.0 & k=0 \; \text{(preserve global topic)} \\ 0.5 & k=1,3 \; \text{(attenuate expression)} \\ 0.0 & k=2 \; \text{(remove sharp syntax)} \end{cases} \]
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">Model Architecture</h3>
+    <div class="arch-steps reveal">
+      <div class="arch-step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Embedding Layer</div>
+          <div class="step-desc">Tokens → embedding matrix \(X \in \mathbb{R}^{N \times d}\) (sequence length N × embedding dimension d)</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">DFT Layer (FFT)</div>
+          <div class="step-desc">FFT along sequence direction → \(\hat{X} \in \mathbb{C}^{N \times d}\), computed in \(O(N \log N)\)</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Band Separation</div>
+          <div class="step-desc">Multi-stage split from low-frequency \(\{\hat{X}_k\}_{k \in L}\) to high-frequency components</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-title">Low-Freq Module (Intent)</div>
+          <div class="step-desc">Phase Φ and amplitude A encoded, frequency pooling yields global intent vector \(S \in \mathbb{R}^m\)</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="step-title">High-Freq Module (Generation)</div>
+          <div class="step-desc">Conditional generator \(G\) outputs \(\hat{X}'_H \sim p(\hat{X}_H | S)\) via normalizing flows or VAE</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <div class="step-title">Inverse DFT → Output Heads</div>
+          <div class="step-desc">\(\hat{X}_L + \hat{X}'_H\) reconstructed via iDFT. LM head (linear + softmax) generates tokens</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── RESULTS ── -->
+  <section id="results">
+    <div class="section-header reveal">
+      <div class="section-num">04</div>
+      <h2>Theoretical Results</h2>
+    </div>
+
+    <div class="card reveal">
+      <h3>GPT-4's 1/f Spectral Structure</h3>
+      <p>
+        Natural language obeys Zipf's law and exhibits self-similar structure. 
+        The energy spectrum of embedding amplitudes decays as:
+      </p>
+      <div class="math-box">
+        \[ E(f) \propto \frac{1}{f^\alpha}, \quad \alpha \approx 1.1 \sim 1.4 \]
+      </div>
+      <p>
+        The exponent exceeds 1 (pure 1/f) because syntactic constraints are more local than semantics, 
+        and LayerNorm/Attention regularizes high frequencies. If \(\alpha &lt; 1\), grammar dominates but 
+        attention disperses; if \(\alpha &gt; 2\), generation becomes monotonous and semantically shallow.
+      </p>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2rem;">Cumulative Energy: Justifying 24,576 → 3,000 Dimensions</h3>
+    <table class="energy-table reveal">
+      <thead>
+        <tr>
+          <th>Dimensions (K)</th>
+          <th>Cumulative Energy</th>
+          <th>Energy Bar</th>
+          <th>Assessment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1,024</td><td>55–60%</td>
+          <td><div class="energy-bar-wrap"><div class="energy-bar" style="width:57%"></div></div></td>
+          <td style="color:var(--ink-dim)">Insufficient</td>
+        </tr>
+        <tr>
+          <td>2,048</td><td>70–75%</td>
+          <td><div class="energy-bar-wrap"><div class="energy-bar" style="width:72%"></div></div></td>
+          <td style="color:var(--gold)">Partial</td>
+        </tr>
+        <tr class="highlight">
+          <td><strong>~3,000</strong></td><td><strong>82–88%</strong></td>
+          <td><div class="energy-bar-wrap"><div class="energy-bar" style="width:85%"></div></div></td>
+          <td><strong>✓ Lower bound for complete representation</strong></td>
+        </tr>
+        <tr>
+          <td>4,096</td><td>90–93%</td>
+          <td><div class="energy-bar-wrap"><div class="energy-bar" style="width:91%"></div></div></td>
+          <td style="color:var(--ink-light)">Redundant</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="reveal" style="font-size:0.85rem; color:var(--ink-light); font-style:italic;">
+      Below 3,000 dimensions, it becomes impossible to distinguish sentences that are 
+      semantically similar from those that are merely syntactically similar.
+    </p>
+
+    <div class="card reveal" style="margin-top:2rem;">
+      <h3>Unified Optimization Objective</h3>
+      <div class="math-box">
+        <span class="math-label">Total Loss</span>
+        \[ \mathcal{L} = \sum_i L_i^{\text{loc}}(s_i) + \lambda \, s^\top (L \otimes I_r) s + \mu \, D_{KL}(p \| p^{(\Omega)}) + \eta \sum_i \| s_i - P_i(g) \|_2^2 \]
+      </div>
+      <div class="loss-terms">
+        <div class="loss-term">
+          <div class="loss-term-eq">L^loc_i</div>
+          <p>Task-specific loss per window (cross-entropy or regression error)</p>
+        </div>
+        <div class="loss-term">
+          <div class="loss-term-eq">λ · s⊤(L⊗I)s</div>
+          <p>Local inconsistency penalty via squared coboundary norm (λ ≥ 0)</p>
+        </div>
+        <div class="loss-term">
+          <div class="loss-term-eq">μ · D_KL(p ‖ p^Ω)</div>
+          <p>KL divergence suppressing deviation from Zipf's law in band selection (μ ≥ 0)</p>
+        </div>
+        <div class="loss-term">
+          <div class="loss-term-eq">η · Σ‖s_i − P_i(g)‖²</div>
+          <p>Consistency enforcement with global intent projection (η ≥ 0)</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h3>Hodge Decomposition &amp; Harmonic Projection</h3>
+      <p>
+        On the graph Laplacian \(L = B^\top B\), the harmonic projection extracts globally consistent representations:
+      </p>
+      <div class="math-box">
+        \[ \mathbb{R}^{mr} = \mathrm{im}(\delta^\dagger) \oplus \ker(L \otimes I_r) \oplus \mathrm{im}(\delta) \]
+        \[ s_{\mathrm{harm}} = P_{\ker(L \otimes I_r)} \, s = U_0 U_0^\top s \]
+      </div>
+      <p>
+        The null space of the Laplacian (ker L) corresponds to harmonic 0-cochains — local representations 
+        that are mutually consistent across all windows. This projection does not eliminate genuine 
+        cohomological obstructions, but extracts the maximally consistent global semantic fragment.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── RELATED ── -->
+  <section id="related">
+    <div class="section-header reveal">
+      <div class="section-num">05</div>
+      <h2>Related Work</h2>
+    </div>
+
+    <div class="rule reveal"><span>Comparison</span></div>
+
+    <div class="card reveal">
+      <h3>FNet (Google Research)</h3>
+      <div class="compare-grid" style="margin-top:1rem;">
+        <div class="compare-col">
+          <div class="compare-col-title">Similarity</div>
+          <div class="compare-item">Replaces Attention with Fourier Transform for acceleration</div>
+          <div class="compare-item">Demonstrates efficacy of DFT-based semantic hierarchization</div>
+          <div class="compare-item">Token-level DFT application</div>
+        </div>
+        <div class="compare-col">
+          <div class="compare-col-title">WavePhaseNet Distinction</div>
+          <div class="compare-item"><strong>Retains phase information</strong> — FNet discards the imaginary part</div>
+          <div class="compare-item">Explicit semantic hierarchy operations on frequency bands</div>
+          <div class="compare-item">Handles coreference and contextual dependency more robustly</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h3>RAG-Based Approaches</h3>
+      <p>
+        Retrieval-Augmented Generation introduces strong external dependencies and poor extensibility. 
+        WavePhaseNet constructs the SCHS <em>intrinsically within</em> the embedding space itself, 
+        significantly reducing users' need for advanced prompt engineering skills and eliminating 
+        reliance on external knowledge stores.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── CONCLUSION ── -->
+  <section id="conclusion">
+    <div class="section-header reveal">
+      <div class="section-num">06</div>
+      <h2>Conclusion</h2>
+    </div>
+
+    <div class="conclusion reveal">
+      <p style="margin-bottom:1.2rem;">
+        This paper formalizes hallucination in large language models as a mathematically inevitable 
+        phenomenon arising from the structural mismatch between nonlinear truth sets and linear, 
+        convex embedding spaces — not from insufficient training or data defects.
+      </p>
+      <p style="margin-bottom:1.2rem;">
+        The central contribution is demonstrating that dimensionality reduction from <strong>24,576 → 3,000 
+        dimensions</strong> is theoretically justified by cumulative energy analysis grounded in Zipf's law 
+        and the 1/f spectrum, while preserving semantic meaning and intent.
+      </p>
+      <p style="margin:0;">
+        WavePhaseNet enables the semantic flow 
+        <em>intent space → expression space → sentence generation</em> 
+        to be written rigorously in linear algebraic form, opening a path toward next-generation 
+        reasoning-oriented language models with suppressed hallucination.
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrapper" style="padding-top:0; padding-bottom:0;">
+    WavePhaseNet Paper Explainer &nbsp;·&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;·&nbsp; This page was created for explanatory purposes
+  </div>
+</footer>
+
+<script>
+// Scroll reveal
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 50);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.08 });
+reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
