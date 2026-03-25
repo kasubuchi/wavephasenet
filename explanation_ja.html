@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WavePhaseNet 論文解説</title>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --color-bg: #ffffff;
+    --color-text: #1a1a1a;
+    --color-text-secondary: #555;
+    --color-accent: #2c5282;
+    --color-accent-light: #ebf4ff;
+    --color-border: #e2e8f0;
+    --color-highlight: #f7fafc;
+    --font-heading: 'Noto Sans JP', 'Source Serif 4', sans-serif;
+    --font-body: 'Noto Serif JP', 'Source Serif 4', serif;
+    --font-mono: 'SF Mono', 'Consolas', monospace;
+    --max-width: 780px;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 16px;
+    line-height: 1.9;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Navigation */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--color-border);
+  }
+  nav .nav-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  nav .nav-links {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+  nav a {
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
+  }
+  nav a:hover, nav a.active {
+    color: var(--color-accent);
+  }
+  nav a.active {
+    border-bottom: 2px solid var(--color-accent);
+    padding-bottom: 2px;
+  }
+  .lang-switch {
+    display: flex;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .lang-switch a {
+    padding: 4px 12px;
+    font-size: 12px;
+    border: none;
+  }
+  .lang-switch a.active {
+    background: var(--color-accent);
+    color: #fff;
+    border-bottom: none;
+    padding-bottom: 4px;
+  }
+
+  /* Header */
+  header {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 64px 24px 40px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  header .paper-label {
+    font-family: var(--font-heading);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-family: var(--font-heading);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 12px;
+    color: var(--color-text);
+  }
+  header .subtitle {
+    font-size: 17px;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  header .meta {
+    font-family: var(--font-heading);
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+
+  /* Main content */
+  main {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  section {
+    padding: 40px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  section:last-child { border-bottom: none; }
+
+  h2 {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--color-text);
+    letter-spacing: -0.01em;
+  }
+  h2 .section-num {
+    color: var(--color-accent);
+    margin-right: 8px;
+  }
+
+  h3 {
+    font-family: var(--font-heading);
+    font-size: 17px;
+    font-weight: 700;
+    margin-top: 28px;
+    margin-bottom: 12px;
+    color: var(--color-text);
+  }
+
+  p {
+    margin-bottom: 16px;
+  }
+
+  .concept-box {
+    background: var(--color-highlight);
+    border-left: 3px solid var(--color-accent);
+    padding: 20px 24px;
+    margin: 24px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .concept-box p:last-child { margin-bottom: 0; }
+
+  .definition-box {
+    background: #fffbeb;
+    border: 1px solid #f6e05e;
+    padding: 20px 24px;
+    margin: 24px 0;
+    border-radius: 6px;
+  }
+  .definition-box .def-label {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 13px;
+    color: #975a16;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 24px 0;
+    padding: 20px;
+    background: var(--color-highlight);
+    border-radius: 8px;
+    font-family: var(--font-heading);
+    font-size: 14px;
+    justify-content: center;
+  }
+  .flow-step {
+    background: var(--color-accent);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .flow-arrow {
+    color: var(--color-accent);
+    font-size: 18px;
+  }
+
+  .math-block {
+    overflow-x: auto;
+    padding: 16px 0;
+  }
+
+  .key-insight {
+    background: var(--color-accent-light);
+    border: 1px solid #bee3f8;
+    padding: 20px 24px;
+    margin: 24px 0;
+    border-radius: 6px;
+  }
+  .key-insight strong {
+    color: var(--color-accent);
+  }
+
+  /* Footer */
+  footer {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 24px;
+    border-top: 1px solid var(--color-border);
+    font-family: var(--font-heading);
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    text-align: center;
+  }
+
+  @media (max-width: 640px) {
+    header h1 { font-size: 24px; }
+    header { padding: 40px 16px 32px; }
+    main { padding: 0 16px 60px; }
+    nav .nav-inner { padding: 10px 16px; }
+    .flow-diagram { flex-direction: column; align-items: center; }
+    .flow-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-links">
+      <a href="explanation_ja.html" class="active">論文解説</a>
+      <a href="faq_ja.html">FAQ</a>
+    </div>
+    <div class="lang-switch">
+      <a href="explanation_ja.html" class="active">JP</a>
+      <a href="explanation_en.html">EN</a>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="paper-label">Paper Explanation</div>
+  <h1>WavePhaseNet</h1>
+  <p class="subtitle">DFTに基づく意味概念階層構造（SCHS）の構築手法<br>— LLMのハルシネーション抑制に向けた理論的枠組み —</p>
+  <p class="meta">粕渕 清孝・吹谷 和夫 &nbsp;|&nbsp; 2026.01.12 &nbsp;|&nbsp; arXiv preprint</p>
+</header>
+
+<main>
+
+<!-- Section 1: Overview -->
+<section>
+  <h2><span class="section-num">1.</span> 概要</h2>
+  <p>大規模言語モデル（LLM）は高い文生成能力を持つ一方で、事実に反する出力——すなわち<strong>ハルシネーション</strong>——を不可避的に生成します。本論文は、ハルシネーションをデータ不足や学習不足の結果ではなく、<strong>モデルの数学的構造そのものに起因する必然的現象</strong>として位置づけ、その抑制手法としてWavePhaseNetを提案します。</p>
+
+  <div class="concept-box">
+    <p><strong>WavePhaseNetの核心：</strong>トークン埋め込み行列に離散フーリエ変換（DFT）を適用し、意味情報を周波数帯域に分解する。低周波成分は大局的な意図・要約に、高周波成分は局所的な構文・表現に対応する。この分離により、意味概念の階層構造（SCHS）を埋め込み空間内に明示的に構築できる。</p>
+  </div>
+</section>
+
+<!-- Section 2: Problem -->
+<section>
+  <h2><span class="section-num">2.</span> ハルシネーションの構造的必然性</h2>
+  <p>Transformerベースの自己回帰（AR）モデルは、トークン列の条件付き確率分布を逐次的に近似します。測度論の枠組みでは、過去のトークン列が生成するσ-加法族 $\mathcal{F}_t = \sigma(x_1, \ldots, x_t)$ 上の条件付き期待値として解釈できます。</p>
+
+  <div class="definition-box">
+    <div class="def-label">定義：ハルシネーション</div>
+    <p>σ-加法族上では最適（高確率）であるが、実世界の真理集合 $T$ には属さない出力。</p>
+    <div class="math-block">$$T \neq \arg\min_{f} E[l(f(X), Y)]$$</div>
+  </div>
+
+  <p>ハルシネーションが構造的に不可避である根本原因は以下の不一致にあります：</p>
+
+  <h3>真理集合と表現空間の構造的不一致</h3>
+  <p>真理集合は一般に<strong>非凸・非線形</strong>です。一方、埋め込み空間は $L^p$ 空間として<strong>凸構造</strong>を持ちます。Minkowski不等式が成立するため、異なる意味の仮説を線形結合しても空間のノルムは安定しますが、その結合が実世界で正しい命題であるとは限りません。</p>
+
+  <div class="key-insight">
+    <p><strong>核心的洞察：</strong>LLMは「確率的に最もらしい出力」を生成するが、「論理的に正しい出力」を保証する機構を持たない。この隔たりは、統計的平均最適化と事実整合性の間にある構造的断絶である。</p>
+  </div>
+</section>
+
+<!-- Section 3: Idea Origin -->
+<section>
+  <h2><span class="section-num">3.</span> アイデアの根源：特性関数とDFT</h2>
+  <p>WavePhaseNetの着想は、確率論における<strong>特性関数</strong>の定義に基づいています。</p>
+
+  <p>確率空間 $(\Omega, \mathcal{F}, P)$ 上の確率変数 $X$ に対し、特性関数は次で定義されます：</p>
+  <div class="math-block">$$\varphi_X(t) = E[e^{itX}] = \int_\Omega e^{itX(\omega)} P(d\omega)$$</div>
+
+  <p>この定義が示唆する重要な点は以下です：</p>
+
+  <h3>なぜ複素指数関数でなければならないか</h3>
+  <p>実指数関数 $e^{tX}$ では、コーシー分布など裾の重い分布では発散してしまい、普遍的な解析道具として成立しません。一方、複素指数関数 $|e^{itX}| = 1$ は常に有界であり、<strong>どんな確率分布に対しても特性関数が定義可能</strong>です。</p>
+
+  <p>さらに、複素指数関数は位相（振動）を持ちます。この位相情報が、分布の微細構造——対称性、尖り、裾の重さ——を潰さずに保持する鍵です。</p>
+
+  <div class="concept-box">
+    <p><strong>WavePhaseNetへの接続：</strong>埋め込み空間上の近傍による「期待値」で正当な文生成を行うためには、DFTの複素指数を介した<strong>意味階層構造の埋め込み空間</strong>が必要である。Transformer/Attentionは周辺埋め込み空間だけの期待値で文生成しているため、ハルシネーションが起きる。</p>
+  </div>
+</section>
+
+<!-- Section 4: SCHS -->
+<section>
+  <h2><span class="section-num">4.</span> 意味概念階層構造（SCHS）の構築</h2>
+  <p>WavePhaseNetは、トークン埋め込み行列にDFTを適用し、意味を周波数帯域で階層的に表現します。</p>
+
+  <h3>処理フロー</h3>
+  <div class="flow-diagram">
+    <span class="flow-step">埋め込み行列 $X$</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">DFT $\hat{X}$</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">帯域分離</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">意味操作 $M(k)$</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">iDFT $\tilde{X}$</span>
+  </div>
+
+  <h3>シーケンス方向DFT</h3>
+  <p>トークン列長 $N$、埋め込み次元 $d$ の埋め込み行列 $X \in \mathbb{R}^{N \times d}$ に対し、シーケンス方向のDFTを適用します：</p>
+  <div class="math-block">$$\hat{X}_k = \sum_{n=0}^{N-1} X_n \, e^{-2\pi i k n / N}$$</div>
+
+  <h3>周波数帯域の意味論的解釈</h3>
+  <p>低周波成分（$k=0$, DC成分）はシーケンス方向の平均であり、全トークンに一様に寄与します。これは文全体の<strong>要約・意図・トピック</strong>に対応します。高周波成分は局所的な変動——<strong>語順・表現・構文的差異</strong>——をエンコードします。</p>
+
+  <p>この対応はFNetなどの先行研究で実証されており、DFTのDC成分が大局的意味構造に対応するという仮定は信号処理と言語学の両面から支持されています。</p>
+
+  <h3>周波数マスクによる意味操作</h3>
+  <p>DFTの真の価値は可逆変換そのものではなく、周波数依存の意味操作子 $M(k)$ を挿入できる点にあります：</p>
+  <div class="math-block">$$\tilde{X} = F^{-1} M(\omega) F X$$</div>
+  <p>低周波を保存し高周波を抑制することで、「意図を保ちながら表現を変える」ことが可能になります。</p>
+</section>
+
+<!-- Section 5: Dimensionality Reduction -->
+<section>
+  <h2><span class="section-num">5.</span> 24,576次元から3,000次元への縮約</h2>
+  <p>自然言語はZipf則に従い、自己相似構造を示します。その結果、埋め込み振幅のエネルギースペクトルは $1/f$ 型の減衰を示します：</p>
+  <div class="math-block">$$E(f) \propto \frac{1}{f^\alpha}, \quad \alpha \approx 1.1 \sim 1.4$$</div>
+
+  <p>GPT-4クラスのモデル（24,576次元）における累積エネルギー解析の結果：</p>
+
+  <div class="concept-box">
+    <p><strong>$K \approx 1024$：</strong>累積エネルギー 55–60%<br>
+    <strong>$K \approx 2048$：</strong>累積エネルギー 70–75%<br>
+    <strong>$K \approx 3072$：</strong>累積エネルギー 82–88%（意味・意図保存の下限閾値）<br>
+    <strong>$K \approx 4096$：</strong>累積エネルギー 90–93%</p>
+  </div>
+
+  <p>3,000次元未満では、意味的に類似した文と構文的に類似した文の分離が不可能になります。したがって、<strong>$\hat{d} = 3{,}000$</strong> が「完全表現」の下限次元です。この縮約はZipf則とYule-Simon過程に基づく理論的導出であり、情報論と言語統計学の両面から正当化されます。</p>
+</section>
+
+<!-- Section 6: Cohomology -->
+<section>
+  <h2><span class="section-num">6.</span> コホモロジー正則化と調和射影</h2>
+  <p>縮約された低次元埋め込み空間において、重なり合う局所窓（ウインドウ被覆）上にグラフ構造を導入し、コチェイン複体を定義します。</p>
+
+  <h3>局所窓と不整合エネルギー</h3>
+  <p>トークン列を覆う重なり窓族 $\mathcal{U} = \{U_i\}$ に対し、各窓から局所推論表現 $s_i$ を出力します。隣接窓間の不整合は、グラフラプラシアン $L$ を用いて定量化されます：</p>
+  <div class="math-block">$$\|\delta s\|_2^2 = s^\top (L \otimes I_r) s$$</div>
+
+  <h3>Hodge分解と調和射影</h3>
+  <p>ラプラシアンの固有分解において、零固有値に対応する部分空間（調和空間）は、<strong>全窓間で矛盾のない表現</strong>に対応します。調和射影：</p>
+  <div class="math-block">$$s_{\mathrm{harm}} = U_0 U_0^\top s$$</div>
+  <p>により、意味的に最大限一貫した大域表現が抽出されます。</p>
+
+  <h3>統合最適化目的関数</h3>
+  <div class="math-block">$$\mathcal{L} = \sum_i L_{\mathrm{task}}^i(s_i) + \lambda\, s^\top(L \otimes I_r)s + \mu\, D_{KL}(p \| p^{(\Omega)}) + \eta \sum_i \|s_i - P_i(G)\|_2^2$$</div>
+  <p>第1項はタスク損失、第2項はコバウンダリーによる局所不整合ペナルティ、第3項はZipf保存を促すKLダイバージェンス、第4項は大域意図との整合性項です。</p>
+</section>
+
+<!-- Section 7: Significance -->
+<section>
+  <h2><span class="section-num">7.</span> 理論的意義</h2>
+
+  <div class="key-insight">
+    <p><strong>推論とは、知識層の大域セクション探索問題である</strong></p>
+    <p>WavePhaseNetは、推論を「経路」ではなく「貼り合わせ可能性」で定義し、その正しさをグローバルセクションの存在として定式化します。ハルシネーションは位相的不整合として検出され、DFT・低周波仮説と自然に接続されます。</p>
+  </div>
+
+  <p>従来のTransformerでは、Attention機構が位置依存の非線形重み付き和を計算するため、大局的意味と局所的意味が混在します。WavePhaseNetの周波数ベース意味操作は：</p>
+
+  <div class="concept-box">
+    <p>意味操作が明示的であり、解像度（意味階層）による制御が可能です。「意図空間 → 表現空間 → 文生成」という意味フローを線形代数の形式で厳密に記述できます。これにより、複雑な推論タスクにおいてユーザーが高度なプロンプト設計スキルを必要とする問題が根本的に解消される可能性があります。</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>WavePhaseNet — Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp; arXiv preprint</p>
+</footer>
+
+</body>
+</html>

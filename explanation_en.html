@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WavePhaseNet — Paper Explanation</title>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --color-bg: #ffffff;
+    --color-text: #1a1a1a;
+    --color-text-secondary: #555;
+    --color-accent: #2c5282;
+    --color-accent-light: #ebf4ff;
+    --color-border: #e2e8f0;
+    --color-highlight: #f7fafc;
+    --font-heading: 'Inter', sans-serif;
+    --font-body: 'Source Serif 4', serif;
+    --max-width: 780px;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 16px;
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--color-border);
+  }
+  nav .nav-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  nav .nav-links {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+  nav a {
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
+  }
+  nav a:hover, nav a.active { color: var(--color-accent); }
+  nav a.active { border-bottom: 2px solid var(--color-accent); padding-bottom: 2px; }
+  .lang-switch {
+    display: flex;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .lang-switch a { padding: 4px 12px; font-size: 12px; border: none; }
+  .lang-switch a.active { background: var(--color-accent); color: #fff; border-bottom: none; padding-bottom: 4px; }
+
+  header {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 64px 24px 40px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  header .paper-label {
+    font-family: var(--font-heading);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-family: var(--font-heading);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+  header .subtitle {
+    font-size: 17px;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  header .meta {
+    font-family: var(--font-heading);
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+
+  main {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+  section {
+    padding: 40px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  section:last-child { border-bottom: none; }
+
+  h2 {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    letter-spacing: -0.01em;
+  }
+  h2 .section-num { color: var(--color-accent); margin-right: 8px; }
+  h3 {
+    font-family: var(--font-heading);
+    font-size: 17px;
+    font-weight: 700;
+    margin-top: 28px;
+    margin-bottom: 12px;
+  }
+  p { margin-bottom: 16px; }
+
+  .concept-box {
+    background: var(--color-highlight);
+    border-left: 3px solid var(--color-accent);
+    padding: 20px 24px;
+    margin: 24px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .concept-box p:last-child { margin-bottom: 0; }
+
+  .definition-box {
+    background: #fffbeb;
+    border: 1px solid #f6e05e;
+    padding: 20px 24px;
+    margin: 24px 0;
+    border-radius: 6px;
+  }
+  .definition-box .def-label {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 13px;
+    color: #975a16;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 24px 0;
+    padding: 20px;
+    background: var(--color-highlight);
+    border-radius: 8px;
+    font-family: var(--font-heading);
+    font-size: 14px;
+    justify-content: center;
+  }
+  .flow-step {
+    background: var(--color-accent);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .flow-arrow { color: var(--color-accent); font-size: 18px; }
+
+  .math-block { overflow-x: auto; padding: 16px 0; }
+
+  .key-insight {
+    background: var(--color-accent-light);
+    border: 1px solid #bee3f8;
+    padding: 20px 24px;
+    margin: 24px 0;
+    border-radius: 6px;
+  }
+  .key-insight strong { color: var(--color-accent); }
+
+  footer {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 24px;
+    border-top: 1px solid var(--color-border);
+    font-family: var(--font-heading);
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    text-align: center;
+  }
+
+  @media (max-width: 640px) {
+    header h1 { font-size: 24px; }
+    header { padding: 40px 16px 32px; }
+    main { padding: 0 16px 60px; }
+    .flow-diagram { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-links">
+      <a href="explanation_en.html" class="active">Explanation</a>
+      <a href="faq_en.html">FAQ</a>
+    </div>
+    <div class="lang-switch">
+      <a href="explanation_ja.html">JP</a>
+      <a href="explanation_en.html" class="active">EN</a>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="paper-label">Paper Explanation</div>
+  <h1>WavePhaseNet</h1>
+  <p class="subtitle">A DFT-Based Method for Constructing Semantic Conceptual Hierarchy Structures (SCHS)<br>— A Theoretical Framework for Suppressing Hallucination in LLMs —</p>
+  <p class="meta">Kiyotaka Kasubuchi &amp; Kazuo Fukiya &nbsp;|&nbsp; 2026.01.12 &nbsp;|&nbsp; arXiv preprint</p>
+</header>
+
+<main>
+
+<section>
+  <h2><span class="section-num">1.</span> Overview</h2>
+  <p>Large Language Models (LLMs) demonstrate remarkable text generation capabilities, yet they inevitably produce outputs that contradict factual reality — a phenomenon known as <strong>hallucination</strong>. This paper positions hallucination not as a consequence of insufficient training or data defects, but as an <strong>inevitable phenomenon arising from the mathematical structure of the model itself</strong>, and proposes WavePhaseNet as a principled solution.</p>
+
+  <div class="concept-box">
+    <p><strong>Core idea of WavePhaseNet:</strong> Apply the Discrete Fourier Transform (DFT) to token embedding matrices, decomposing semantic information into frequency bands. Low-frequency components correspond to global intent and summary, while high-frequency components encode local syntax and expression. This separation enables the explicit construction of a Semantic Conceptual Hierarchy Structure (SCHS) within the embedding space.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="section-num">2.</span> Structural Inevitability of Hallucination</h2>
+  <p>Transformer-based autoregressive (AR) models sequentially approximate the conditional probability distribution of token sequences. In the framework of measure theory, this can be interpreted as conditional expectations over the σ-algebra $\mathcal{F}_t = \sigma(x_1, \ldots, x_t)$ generated by past token sequences.</p>
+
+  <div class="definition-box">
+    <div class="def-label">Definition: Hallucination</div>
+    <p>An output that is optimal (high-probability) over a σ-algebra, but does not belong to the real-world truth set $T$.</p>
+    <div class="math-block">$$T \neq \arg\min_{f} E[l(f(X), Y)]$$</div>
+  </div>
+
+  <p>The fundamental cause of structural inevitability lies in the following mismatch:</p>
+
+  <h3>Structural Mismatch Between Truth Sets and Representation Spaces</h3>
+  <p>Truth sets are generally <strong>non-convex and nonlinear</strong>. In contrast, embedding spaces possess <strong>convex structure</strong> as $L^p$ spaces. The Minkowski inequality guarantees norm stability under linear combination of different semantic hypotheses, but such combinations do not guarantee factual correctness.</p>
+
+  <div class="key-insight">
+    <p><strong>Key insight:</strong> LLMs generate "probabilistically plausible outputs" but lack a mechanism to guarantee "logically correct outputs." This gap represents a structural disconnect between statistical average-optimality and factual consistency.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="section-num">3.</span> Theoretical Origin: Characteristic Functions and DFT</h2>
+  <p>The conceptual foundation of WavePhaseNet draws from the <strong>characteristic function</strong> in probability theory.</p>
+
+  <p>For a random variable $X$ defined on a probability space $(\Omega, \mathcal{F}, P)$, the characteristic function is:</p>
+  <div class="math-block">$$\varphi_X(t) = E[e^{itX}] = \int_\Omega e^{itX(\omega)} P(d\omega)$$</div>
+
+  <h3>Why Complex Exponentials Are Essential</h3>
+  <p>The real exponential $e^{tX}$ diverges for heavy-tailed distributions such as the Cauchy distribution, making it unsuitable as a universal analytical tool. In contrast, $|e^{itX}| = 1$, ensuring that the <strong>characteristic function is always well-defined for any probability distribution</strong>.</p>
+
+  <p>Furthermore, complex exponentials carry phase information (oscillation). This phase preserves fine structural details of distributions — symmetry, kurtosis, tail weight — without information destruction.</p>
+
+  <div class="concept-box">
+    <p><strong>Connection to WavePhaseNet:</strong> For valid sentence generation through "expectation" over neighborhoods in the embedding space, a <strong>semantic-hierarchically structured embedding space mediated by DFT complex exponentials</strong> is necessary. Transformer/Attention mechanisms generate text using expectations from the peripheral embedding space alone, which is the root cause of hallucination.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="section-num">4.</span> Constructing the Semantic Conceptual Hierarchy Structure</h2>
+  <p>WavePhaseNet applies DFT to token embedding matrices, representing semantics hierarchically across frequency bands.</p>
+
+  <h3>Processing Pipeline</h3>
+  <div class="flow-diagram">
+    <span class="flow-step">Embedding $X$</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">DFT $\hat{X}$</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Band Separation</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Semantic Op $M(k)$</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">iDFT $\tilde{X}$</span>
+  </div>
+
+  <h3>Sequence-Direction DFT</h3>
+  <p>For an embedding matrix $X \in \mathbb{R}^{N \times d}$ with token sequence length $N$ and embedding dimension $d$, the DFT along the sequence direction is:</p>
+  <div class="math-block">$$\hat{X}_k = \sum_{n=0}^{N-1} X_n \, e^{-2\pi i k n / N}$$</div>
+
+  <h3>Semantic Interpretation of Frequency Bands</h3>
+  <p>The DC component ($k=0$) represents the sequence-wise average, contributing uniformly to all tokens. This corresponds to the overall <strong>summary, intent, and topic</strong> of the sentence. Higher-frequency components encode local variations — <strong>word order, expressions, and syntactic differences</strong>.</p>
+
+  <p>This correspondence has been empirically supported by prior work such as FNet, and the assumption that the DC component maps to global semantic structure is backed by both signal processing theory and linguistics.</p>
+
+  <h3>Frequency Masks as Semantic Operators</h3>
+  <p>The true value of DFT lies not in the reversible transform itself, but in the ability to insert frequency-dependent semantic operators $M(k)$:</p>
+  <div class="math-block">$$\tilde{X} = F^{-1} M(\omega) F X$$</div>
+  <p>By preserving low frequencies and suppressing high frequencies, one can "reshape expressions while preserving intent."</p>
+</section>
+
+<section>
+  <h2><span class="section-num">5.</span> Dimensionality Reduction: 24,576 → 3,000</h2>
+  <p>Natural language follows Zipf's law and exhibits self-similar structure. Consequently, the energy spectrum of embedding amplitudes shows a $1/f$-type decay:</p>
+  <div class="math-block">$$E(f) \propto \frac{1}{f^\alpha}, \quad \alpha \approx 1.1 \sim 1.4$$</div>
+
+  <p>Cumulative energy analysis for GPT-4 class models (24,576 dimensions):</p>
+
+  <div class="concept-box">
+    <p><strong>$K \approx 1024$:</strong> cumulative energy 55–60%<br>
+    <strong>$K \approx 2048$:</strong> cumulative energy 70–75%<br>
+    <strong>$K \approx 3072$:</strong> cumulative energy 82–88% (minimum threshold for preserving meaning and intent)<br>
+    <strong>$K \approx 4096$:</strong> cumulative energy 90–93%</p>
+  </div>
+
+  <p>Below 3,000 dimensions, it becomes impossible to separate semantically similar sentences from merely syntactically similar ones. Therefore, <strong>$\hat{d} = 3{,}000$</strong> represents the lower bound of "complete representation." This reduction is theoretically derived from Zipf's law and the Yule–Simon process, justified from both information-theoretic and linguistic-statistical perspectives.</p>
+</section>
+
+<section>
+  <h2><span class="section-num">6.</span> Cohomological Regularization and Harmonic Projection</h2>
+  <p>In the reduced low-dimensional embedding space, a graph structure is introduced over overlapping local windows (window coverings), and a cochain complex is defined.</p>
+
+  <h3>Local Windows and Inconsistency Energy</h3>
+  <p>For a family of overlapping windows $\mathcal{U} = \{U_i\}$ covering the token set, each window outputs a local inference representation $s_i$. Inconsistency between adjacent windows is quantified via the graph Laplacian $L$:</p>
+  <div class="math-block">$$\|\delta s\|_2^2 = s^\top (L \otimes I_r) s$$</div>
+
+  <h3>Hodge Decomposition and Harmonic Projection</h3>
+  <p>In the eigendecomposition of the Laplacian, the subspace corresponding to zero eigenvalues (the harmonic space) corresponds to <strong>representations consistent across all windows</strong>. The harmonic projection:</p>
+  <div class="math-block">$$s_{\mathrm{harm}} = U_0 U_0^\top s$$</div>
+  <p>extracts the maximally semantically consistent global representation.</p>
+
+  <h3>Unified Optimization Objective</h3>
+  <div class="math-block">$$\mathcal{L} = \sum_i L_{\mathrm{task}}^i(s_i) + \lambda\, s^\top(L \otimes I_r)s + \mu\, D_{KL}(p \| p^{(\Omega)}) + \eta \sum_i \|s_i - P_i(G)\|_2^2$$</div>
+  <p>The first term is the task loss; the second penalizes local inconsistency via coboundaries; the third is a KL divergence encouraging Zipf preservation; the fourth enforces consistency with global intent.</p>
+</section>
+
+<section>
+  <h2><span class="section-num">7.</span> Theoretical Significance</h2>
+
+  <div class="key-insight">
+    <p><strong>Reasoning is a global section search problem over the knowledge sheaf.</strong></p>
+    <p>WavePhaseNet defines reasoning not as "path traversal" but as "glueability of local sections," formalizing correctness as the existence of a global section. Hallucination is detected as topological inconsistency, naturally connecting with the DFT and low-frequency hypotheses.</p>
+  </div>
+
+  <p>In conventional Transformers, the Attention mechanism computes position-dependent nonlinear weighted sums, mixing global and local semantics. WavePhaseNet's frequency-based semantic operations offer:</p>
+
+  <div class="concept-box">
+    <p>Explicit semantic operations controllable by resolution (semantic hierarchy). The semantic flow — from intent space to expression space to sentence generation — can be rigorously described in linear algebraic form. This fundamentally addresses the problem of requiring advanced prompt engineering skills for complex reasoning tasks.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>WavePhaseNet — Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp; arXiv preprint</p>
+</footer>
+
+</body>
+</html>
