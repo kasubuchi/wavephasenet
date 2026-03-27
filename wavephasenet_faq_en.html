@@ -335,28 +335,6 @@
     letter-spacing: 0.04em;
   }
 
-  /* Score table */
-  .score-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.85rem; }
-  .score-table th {
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    text-align: left;
-    padding: 0.4rem 0.7rem;
-    background: var(--surface2);
-    color: var(--ink-light);
-    border-bottom: 1px solid var(--border);
-  }
-  .score-table td {
-    padding: 0.5rem 0.7rem;
-    border-bottom: 1px solid var(--border);
-    color: var(--ink-mid);
-  }
-  .score-hi { color: var(--teal) !important; font-weight: 600; }
-  .score-lo { color: var(--red) !important; font-weight: 600; }
-  .score-mid { color: var(--amber) !important; font-weight: 600; }
-
   footer {
     border-top: 1px solid var(--border);
     padding: 2rem 0;
@@ -401,7 +379,7 @@
     <div class="legend">
       <div class="legend-item">
         <div class="legend-dot" style="background:var(--red)"></div>
-        Reviewer / Critical Comment
+        AI / Critical Comment
       </div>
       <div class="legend-item">
         <div class="legend-dot" style="background:var(--teal)"></div>
@@ -472,7 +450,7 @@
       </div>
       <div class="faq-body">
         <div class="ans-block critic-bg">
-          <div class="ans-label critic">Reviewer's Critique</div>
+          <div class="ans-label critic">AI's Critique</div>
           <div class="ans-text">
             <p>The claim that the truth set is non-convex is itself unproven. The identification of the LLM output space with the convex structure of an L<sup>p</sup> space is arbitrary. "Convex space → false propositions" is not a proof. The real causes of hallucination are distributional approximation error, data sparsity, and epistemic uncertainty.</p>
           </div>
@@ -569,7 +547,7 @@
       </div>
       <div class="faq-body">
         <div class="ans-block critic-bg">
-          <div class="ans-label critic">Reviewer's Critique</div>
+          <div class="ans-label critic">AI's Critique</div>
           <div class="ans-text">
             <p>There is no guarantee that meaning concentrates in low-frequency components. Negation and conditionals can disrupt low-frequency structure. "Low-frequency = meaning" is a hypothesis, not a theoretical necessity. The DC component is merely the sequence-wise mean; claiming it encodes "summary" requires additional assumptions.</p>
           </div>
@@ -599,7 +577,7 @@
       </div>
       <div class="faq-body">
         <div class="ans-block critic-bg">
-          <div class="ans-label critic">Reviewer's Critique</div>
+          <div class="ans-label critic">AI's Critique</div>
           <div class="ans-text">
             <p>The numerical example is a textbook DFT calculation. "Perfect reconstruction" is merely the trivial identity property of DFT followed by iDFT — it does not demonstrate the effectiveness of the proposed method.</p>
           </div>
@@ -670,7 +648,7 @@
       </div>
       <div class="faq-body">
         <div class="ans-block critic-bg">
-          <div class="ans-label critic">Reviewer's Critique</div>
+          <div class="ans-label critic">AI's Critique</div>
           <div class="ans-text">
             <p>No empirical data is provided. There are no actual GPT embedding spectral plots. The cumulative energy curve is based on theoretical assumptions alone. Neither the theory nor the empirics support the claim. The derivation of 3,000 dimensions is insufficiently rigorous.</p>
           </div>
@@ -761,7 +739,7 @@
       </div>
       <div class="faq-body">
         <div class="ans-block critic-bg">
-          <div class="ans-label critic">Reviewer's Critique</div>
+          <div class="ans-label critic">AI's Critique</div>
           <div class="ans-text">
             <p>Calling a token sequence a Borel set requires a topology to be defined. "Embeddings as conditional expectation" is at best metaphorical, not a rigorous isomorphism. Embeddings are not measurable functions over a measure space.</p>
           </div>
@@ -824,7 +802,7 @@
       </div>
       <div class="faq-body">
         <div class="ans-block critic-bg">
-          <div class="ans-label critic">Reviewer's Critique</div>
+          <div class="ans-label critic">AI's Critique</div>
           <div class="ans-text">
             <p>The cohomology section (0-cochains, coboundary energy, harmonic projection) is theoretically coherent, but the causal explanation for why this reduces LLM contradictions is weak.</p>
           </div>
@@ -893,22 +871,6 @@
         <span class="q-chevron">▾</span>
       </div>
       <div class="faq-body">
-        <div class="ans-block summary-bg">
-          <div class="ans-label summary">Reviewer's Scores (out of 10)</div>
-          <div class="ans-text">
-            <table class="score-table">
-              <thead><tr><th>Criterion</th><th>Score</th></tr></thead>
-              <tbody>
-                <tr><td>Originality</td><td class="score-hi">9/10</td></tr>
-                <tr><td>Mathematical rigor</td><td class="score-mid">5/10</td></tr>
-                <tr><td>Empirical validation</td><td class="score-lo">2/10</td></tr>
-                <tr><td>Logical consistency</td><td class="score-mid">6/10</td></tr>
-                <tr><td>Implementation feasibility</td><td class="score-mid">6/10</td></tr>
-                <tr><td>Acceptance likelihood</td><td class="score-lo">4/10</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
         <div class="ans-block author-bg">
           <div class="ans-label author">Authors' Position</div>
           <div class="ans-text">

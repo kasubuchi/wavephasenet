@@ -356,29 +356,6 @@
     transform: translateY(0);
   }
 
-  /* Score table */
-  .score-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; }
-  .score-table th {
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    text-align: left;
-    padding: 0.4rem 0.7rem;
-    background: var(--surface2);
-    color: var(--ink-light);
-    border-bottom: 1px solid var(--border);
-  }
-  .score-table td {
-    padding: 0.5rem 0.7rem;
-    font-size: 0.82rem;
-    border-bottom: 1px solid var(--border);
-    color: var(--ink-mid);
-  }
-  .score-hi { color: var(--teal) !important; font-weight: 500; }
-  .score-lo { color: var(--red) !important; font-weight: 500; }
-  .score-mid { color: var(--amber) !important; font-weight: 500; }
-
   footer {
     border-top: 1px solid var(--border);
     padding: 2rem 0;
@@ -493,7 +470,7 @@
       </div>
       <div class="faq-body">
         <div class="ans-block critic-bg">
-          <div class="ans-label critic">査読者の指摘</div>
+          <div class="ans-label critic">生成AIの指摘</div>
           <div class="ans-text">
             <p>「真理集合が非凸である」こと自体が証明されていない。LLMの出力空間がL<sup>p</sup>空間の凸構造にそのまま対応するという同一視が恣意的である。「凸空間だから虚偽命題が生じる」は証明になっていない。ハルシネーションの本質は分布近似誤差・データ欠損・認識的不確実性ではないか。</p>
           </div>
@@ -591,7 +568,7 @@
       </div>
       <div class="faq-body">
         <div class="ans-block critic-bg">
-          <div class="ans-label critic">査読者の指摘</div>
+          <div class="ans-label critic">生成AIの指摘</div>
           <div class="ans-text">
             <p>意味が低周波に集約される保証はない。否定（not）や条件文などは低周波的成分を破壊する。「低周波＝意味」は仮説であって理論的必然ではなく、現状は直感的説明に留まっている。DC成分は「系列方向の平均」に過ぎず、"summary"になるには追加仮定が必要だ。</p>
           </div>
@@ -621,7 +598,7 @@
       </div>
       <div class="faq-body">
         <div class="ans-block critic-bg">
-          <div class="ans-label critic">査読者の指摘</div>
+          <div class="ans-label critic">生成AIの指摘</div>
           <div class="ans-text">
             <p>数値例はDFTの教科書的な計算であり、「完全再構成ができた」はDFT・iDFTの恒等変換という自明な性質に過ぎない。提案手法の有効性を示すものではない。</p>
           </div>
@@ -693,7 +670,7 @@
       </div>
       <div class="faq-body">
         <div class="ans-block critic-bg">
-          <div class="ans-label critic">査読者の指摘</div>
+          <div class="ans-label critic">生成AIの指摘</div>
           <div class="ans-text">
             <p>実測データがない、実際のGPT埋め込みスペクトルの図がない、累積エネルギー曲線が理論仮定のみ。理論として証明されておらず実証もされていない。3,000という数字の導出が非厳密である。</p>
           </div>
@@ -785,7 +762,7 @@
       </div>
       <div class="faq-body">
         <div class="ans-block critic-bg">
-          <div class="ans-label critic">査読者の指摘</div>
+          <div class="ans-label critic">生成AIの指摘</div>
           <div class="ans-text">
             <p>トークン列をBorel集合と同一視するには位相空間の定義が必要。「埋め込みが条件付き期待値」は比喩レベルであって厳密な同型ではない。埋め込みは測度空間上の可測関数ではない。</p>
           </div>
@@ -814,7 +791,7 @@
       </div>
       <div class="faq-body">
         <div class="ans-block critic-bg">
-          <div class="ans-label critic">査読者の指摘</div>
+          <div class="ans-label critic">生成AIの指摘</div>
           <div class="ans-text">
             <p>Section 4では X ∈ R^{d×N}、Section 5では X ∈ R^{N×d} と転置した定義が混在している。また、DFT行列Fの定義でk=(0,...,d)としているが、シーケンス次元NにDFTをかける場合はk=(0,...,N-1)が正しい。</p>
           </div>
@@ -854,7 +831,7 @@
       </div>
       <div class="faq-body">
         <div class="ans-block critic-bg">
-          <div class="ans-label critic">査読者の指摘</div>
+          <div class="ans-label critic">生成AIの指摘</div>
           <div class="ans-text">
             <p>コホモロジー部分（0-cochain、coboundaryエネルギー、harmonic projection）は理論として筋が通っているが、「なぜこれがLLMの矛盾を減らすのか」の因果的説明が弱い。</p>
           </div>
@@ -924,22 +901,6 @@
         <span class="q-chevron">▾</span>
       </div>
       <div class="faq-body">
-        <div class="ans-block summary-bg">
-          <div class="ans-label summary">査読者による採点（10点満点）</div>
-          <div class="ans-text">
-            <table class="score-table">
-              <thead><tr><th>評価項目</th><th>点数</th></tr></thead>
-              <tbody>
-                <tr><td>独創性</td><td class="score-hi">9/10</td></tr>
-                <tr><td>数学的厳密性</td><td class="score-mid">5/10</td></tr>
-                <tr><td>実証性</td><td class="score-lo">2/10</td></tr>
-                <tr><td>論理的一貫性</td><td class="score-mid">6/10</td></tr>
-                <tr><td>実装可能性</td><td class="score-mid">6/10</td></tr>
-                <tr><td>査読通過可能性</td><td class="score-lo">4/10</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
         <div class="ans-block author-bg">
           <div class="ans-label author">著者の立場</div>
           <div class="ans-text">
