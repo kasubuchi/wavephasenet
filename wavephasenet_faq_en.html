@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WavePhaseNet — FAQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=JetBrains+Mono:wght@400;600&family=Source+Serif+4:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f8f8f8;
+    --surface2: #f0f4f8;
+    --border: #e2e8f0;
+    --border-dark: #cbd5e1;
+    --ink: #0f172a;
+    --ink-mid: #334155;
+    --ink-light: #64748b;
+    --ink-dim: #94a3b8;
+    --blue: #1e40af;
+    --blue-light: #dbeafe;
+    --teal: #0f766e;
+    --teal-light: #ccfbf1;
+    --amber: #b45309;
+    --amber-light: #fef3c7;
+    --red: #b91c1c;
+    --red-light: #fee2e2;
+    --purple: #6d28d9;
+    --purple-light: #ede9fe;
+    --font-display: 'Playfair Display', serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-body: 'Source Serif 4', serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-weight: 300;
+    line-height: 1.8;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 54px;
+    display: flex; align-items: center; gap: 0;
+  }
+  .nav-right {
+    display: flex; align-items: center; gap: 1.4rem;
+    margin-left: auto;
+  }
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--blue);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .nav-count {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--ink-light);
+    margin-left: 1rem;
+  }
+
+  /* ── Language toggle pill ── */
+  .nav-lang {
+    display: flex; align-items: center;
+    border: 1px solid var(--border-dark);
+    border-radius: 20px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .nav-lang a {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    padding: 0.28em 0.75em;
+    color: var(--ink-dim);
+    text-decoration: none;
+    transition: all 0.2s;
+    line-height: 1;
+  }
+  .nav-lang a.current {
+    background: var(--blue);
+    color: #fff;
+  }
+  .nav-lang a:not(.current):hover { color: var(--blue); }
+
+  /* ── Page tab link ── */
+  .nav-page-tab {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--ink-light);
+    text-decoration: none;
+    padding-bottom: 2px;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .nav-page-tab:hover {
+    color: var(--blue);
+    border-bottom-color: var(--blue);
+  }
+
+  /* ── Layout ── */
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 3rem 2rem 6rem;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 3rem 0 3.5rem;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 3rem;
+  }
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 0.8rem;
+  }
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+  }
+  .hero-desc {
+    font-size: 0.95rem;
+    color: var(--ink-light);
+    max-width: 620px;
+    line-height: 1.9;
+    margin-bottom: 2rem;
+  }
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 0.8rem;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.76rem; color: var(--ink-mid);
+    font-family: var(--font-mono);
+  }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── Category nav ── */
+  .cat-nav {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    margin-bottom: 2.5rem;
+  }
+  .cat-btn {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    padding: 0.3em 0.9em;
+    border: 1px solid var(--border-dark);
+    background: var(--bg);
+    color: var(--ink-light);
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.15s;
+    border-radius: 2px;
+  }
+  .cat-btn:hover, .cat-btn.active {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+
+  /* ── Category header ── */
+  .cat-section { margin-bottom: 2rem; }
+  .cat-header {
+    display: flex; align-items: center; gap: 0.8rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+  }
+  .cat-icon {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .cat-name {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .cat-count {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--ink-dim);
+    margin-left: auto;
+  }
+
+  /* ── FAQ Item ── */
+  .faq-item {
+    border: 1px solid var(--border);
+    margin-bottom: 0.75rem;
+    transition: box-shadow 0.2s, opacity 0.4s, transform 0.4s;
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  .faq-item.visible { opacity: 1; transform: translateY(0); }
+  .faq-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+  .faq-q {
+    display: flex; align-items: flex-start; gap: 1rem;
+    padding: 1.1rem 1.4rem;
+    cursor: pointer;
+    user-select: none;
+    background: var(--bg);
+    transition: background 0.15s;
+  }
+  .faq-q:hover { background: var(--surface); }
+  .faq-q.open { background: var(--surface); }
+
+  .q-badge {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15em 0.5em;
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+    letter-spacing: 0.05em;
+  }
+  .q-text {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.5;
+    flex: 1;
+    color: var(--ink);
+  }
+  .q-chevron {
+    color: var(--ink-dim);
+    font-size: 1rem;
+    transition: transform 0.25s;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .faq-q.open .q-chevron { transform: rotate(180deg); }
+
+  .faq-body {
+    display: none;
+    border-top: 1px solid var(--border);
+  }
+  .faq-body.open { display: block; }
+
+  /* Answer sections */
+  .ans-block {
+    padding: 1.2rem 1.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .ans-block:last-child { border-bottom: none; }
+
+  .ans-label {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .ans-label::before {
+    content: '';
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+  .ans-label.critic { color: var(--red); }
+  .ans-label.critic::before { background: var(--red); }
+  .ans-label.author { color: var(--teal); }
+  .ans-label.author::before { background: var(--teal); }
+  .ans-label.summary { color: var(--blue); }
+  .ans-label.summary::before { background: var(--blue); }
+
+  .ans-text {
+    font-size: 0.88rem;
+    color: var(--ink-mid);
+    line-height: 1.85;
+  }
+  .ans-text p { margin-bottom: 0.7rem; }
+  .ans-text p:last-child { margin-bottom: 0; }
+  .ans-text strong { color: var(--ink); font-weight: 600; }
+  .ans-text em { color: var(--teal); font-style: italic; }
+
+  .critic-bg { background: #fffafa; }
+  .author-bg { background: #f0faf9; }
+  .summary-bg { background: #f0f5ff; }
+
+  .keypoint {
+    margin: 0.8rem 0;
+    padding: 1rem 1.2rem;
+    border-left: 3px solid;
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: var(--ink-mid);
+  }
+  .keypoint.blue { border-color: var(--blue); background: var(--blue-light); }
+  .keypoint.teal { border-color: var(--teal); background: var(--teal-light); }
+  .keypoint.amber { border-color: var(--amber); background: var(--amber-light); }
+  .keypoint.red { border-color: var(--red); background: var(--red-light); }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.7rem; }
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    padding: 0.15em 0.55em;
+    border: 1px solid var(--border-dark);
+    color: var(--ink-dim);
+    border-radius: 2px;
+    letter-spacing: 0.04em;
+  }
+
+  /* Score table */
+  .score-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.85rem; }
+  .score-table th {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 0.4rem 0.7rem;
+    background: var(--surface2);
+    color: var(--ink-light);
+    border-bottom: 1px solid var(--border);
+  }
+  .score-table td {
+    padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink-mid);
+  }
+  .score-hi { color: var(--teal) !important; font-weight: 600; }
+  .score-lo { color: var(--red) !important; font-weight: 600; }
+  .score-mid { color: var(--amber) !important; font-weight: 600; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 0;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--ink-dim);
+    letter-spacing: 0.08em;
+  }
+
+  @media (max-width: 640px) {
+    .page { padding: 2rem 1.2rem 4rem; }
+    .hero-title { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">WavePhaseNet // FAQ</div>
+  <div class="nav-count" id="faq-count">— items</div>
+  <div class="nav-right">
+    <a href="wavephasenet_en.html" class="nav-page-tab">← Explainer</a>
+    <div class="nav-lang">
+      <a href="wavephasenet_faq.html">JA</a>
+      <a href="wavephasenet_faq_en.html" class="current">EN</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-eyebrow">Frequently Asked Questions</div>
+    <h1 class="hero-title">WavePhaseNet<br>FAQ</h1>
+    <p class="hero-desc">
+      Questions and answers regarding the paper
+      <em>"WavePhaseNet: A DFT-Based Method for Constructing Semantic Conceptual Hierarchy Structures (SCHS)"</em>,
+      including responses to peer review critiques and common points of inquiry.
+    </p>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--red)"></div>
+        Reviewer / Critical Comment
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--teal)"></div>
+        Authors' Response
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--blue)"></div>
+        Key Point Summary
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Category filter ── -->
+  <div class="cat-nav">
+    <button class="cat-btn active" data-cat="all">All</button>
+    <button class="cat-btn" data-cat="hallucination">Hallucination Theory</button>
+    <button class="cat-btn" data-cat="dft">DFT &amp; Semantics</button>
+    <button class="cat-btn" data-cat="dim">Dimensionality</button>
+    <button class="cat-btn" data-cat="math">Mathematical Rigor</button>
+    <button class="cat-btn" data-cat="cohomology">Cohomology</button>
+    <button class="cat-btn" data-cat="related">Related Work &amp; Empirics</button>
+  </div>
+
+  <!-- ══════════════════════════════ -->
+  <!--  SECTION 1: Hallucination     -->
+  <!-- ══════════════════════════════ -->
+  <div class="cat-section">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:#fee2e2;">🔴</div>
+      <span class="cat-name">Hallucination Theory</span>
+      <span class="cat-count">4 Q&amp;A</span>
+    </div>
+
+    <!-- Q1 -->
+    <div class="faq-item" data-cat="hallucination">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#fee2e2;color:#b91c1c;">Q1</span>
+        <span class="q-text">What does it mean that hallucination is a "mathematical inevitability" rather than a training problem?</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block summary-bg">
+          <div class="ans-label summary">Key Point</div>
+          <div class="ans-text">
+            <p>The paper's central claim is that LLM hallucination does not arise from insufficient training data or imperfect optimization. It is a <strong>structural consequence</strong> of the mismatch between the mathematical framework LLMs operate in (sequential approximation of conditional expectations over a σ-additive family) and the nature of real-world truth sets.</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">Authors' Position</div>
+          <div class="ans-text">
+            <p>The <strong>semantic space of an LLM is non-complete</strong>. Specifically:</p>
+            <div class="keypoint teal">
+              The semantic space is deformed at each Transformer layer, locally distorted by Attention, and dynamically reconstructed by context. As a result, it cannot be treated as a fixed metric space with a well-defined notion of completeness. It does not converge, lacks limit points, changes shape with context, and has unstable distances — all hallmarks of a <em>non-complete space</em>.
+            </div>
+            <p>This "semantic drift" and "inference runaway" are the natural consequences of the non-completeness. The truth set (the set of correct real-world propositions) has a non-convex Čech-type consistency structure, while the LLM embedding space is linear and convex — this <em>fundamental mismatch</em> is the root cause of hallucination.</p>
+            <div class="tags"><span class="tag">σ-additive family</span><span class="tag">completeness</span><span class="tag">non-convexity</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="faq-item" data-cat="hallucination">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#fee2e2;color:#b91c1c;">Q2</span>
+        <span class="q-text">Isn't "truth set is non-convex, embedding space is convex, therefore hallucination is inevitable" a circular argument without proof?</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block critic-bg">
+          <div class="ans-label critic">Reviewer's Critique</div>
+          <div class="ans-text">
+            <p>The claim that the truth set is non-convex is itself unproven. The identification of the LLM output space with the convex structure of an L<sup>p</sup> space is arbitrary. "Convex space → false propositions" is not a proof. The real causes of hallucination are distributional approximation error, data sparsity, and epistemic uncertainty.</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">Authors' Response</div>
+          <div class="ans-text">
+            <p>The paper does <strong>not</strong> argue that "convex space causes false propositions." <strong>This is a misreading.</strong></p>
+            <p>Section 2.3 uses the Minkowski inequality to demonstrate that the embedding space supports <em>linear superposition of contexts</em>, which is the source of generative flexibility — not directly of hallucination.</p>
+            <div class="keypoint blue">
+              <strong>Embedding vector space</strong> (finite-dimensional Hilbert space over ℝ) is complete — this is not in dispute.<br><br>
+              The <strong>semantic space</strong>, however, is a dynamic space formed by chains of reasoning, association, and knowledge. Attention's nonlinear, stochastic, context-dependent nature means the space cannot be treated as a fixed complete metric space.
+            </div>
+            <p>That the truth set has a non-convex Čech-coherent structure is addressed in Section 3.2 — this is a <em>topological consistency argument</em>, not a simple convex/non-convex comparison.</p>
+            <div class="tags"><span class="tag">Minkowski inequality</span><span class="tag">non-complete space</span><span class="tag">Čech cohomology</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="faq-item" data-cat="hallucination">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#fee2e2;color:#b91c1c;">Q3</span>
+        <span class="q-text">What exactly does the definition "an output that is optimal over a σ-additive family but does not belong to the truth set" mean?</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block summary-bg">
+          <div class="ans-label summary">Mathematical Summary</div>
+          <div class="ans-text">
+            <div class="keypoint blue">
+              · <strong>Truth set:</strong> \(T \subset V^*\) — the set of correct real-world propositions<br>
+              · <strong>Model-optimal set:</strong> \(\arg\min_f \mathbb{E}[l(f(X), Y)]\)<br>
+              · <strong>Hallucination:</strong> output in the model-optimal set but <em>not</em> in \(T\)
+            </div>
+            <p>An LLM sequentially approximates conditional expectations over the σ-additive family generated by past token sequences (\(\mathcal{F}_t = \sigma(x_1,\ldots,x_t)\)). This yields <em>average optimality over a probability distribution</em>, not a guarantee of truth. This structural divergence makes hallucination inevitable.</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">Why the "insufficient data" theory is incorrect</div>
+          <div class="ans-text">
+            <p>Some reviewers suggest hallucination stems from insufficient information. The paper explicitly refutes this: even a perfectly trained model with complete data will hallucinate, because the structural mismatch between the truth set and the embedding space persists regardless of data quantity. This is why the problem becomes <em>critical in AI agents</em> requiring strict logical consistency.</p>
+            <div class="tags"><span class="tag">σ-additive family</span><span class="tag">conditional expectation</span><span class="tag">truth set</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="faq-item" data-cat="hallucination">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#fee2e2;color:#b91c1c;">Q4</span>
+        <span class="q-text">In what sense is the LLM's semantic space "non-complete"? Isn't the embedding space a Hilbert space and therefore complete?</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block author-bg">
+          <div class="ans-label author">Authors' Explanation</div>
+          <div class="ans-text">
+            <p>The embedding <em>vector</em> space (a finite-dimensional Hilbert space over ℝ) is indeed complete. The <strong>semantic space</strong> that emerges during inference is a distinct entity.</p>
+            <div class="keypoint amber">
+              LLM inference (via Attention) is nonlinear, stochastic, and context-dependent. The space is deformed as it passes through each layer. Since the destination of inference changes with context, temperature, sampling, and Attention weights, the concept of a "limit point" is ill-defined.<br><br>
+              Consequently the semantic space:<br>
+              · does not converge<br>
+              · has no well-defined limits<br>
+              · changes shape with context<br>
+              · has unstable distance metrics<br><br>
+              These are precisely the characteristics of a <em>non-complete space</em>.
+            </div>
+            <p>WavePhaseNet addresses this non-completeness through the lens of dynamical systems, Riemannian manifolds, measure spaces, homotopy-theoretic spaces, and Laplace-transform-type analysis.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ -->
+  <!--  SECTION 2: DFT & Semantics   -->
+  <!-- ══════════════════════════════ -->
+  <div class="cat-section">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:#dbeafe;">🔵</div>
+      <span class="cat-name">DFT &amp; Semantic Decomposition</span>
+      <span class="cat-count">3 Q&amp;A</span>
+    </div>
+
+    <!-- Q5 -->
+    <div class="faq-item" data-cat="dft">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#dbeafe;color:#1e40af;">Q5</span>
+        <span class="q-text">Is there a mathematical basis for "low-frequency components = global meaning / intent"? Or is this merely an assumption?</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block critic-bg">
+          <div class="ans-label critic">Reviewer's Critique</div>
+          <div class="ans-text">
+            <p>There is no guarantee that meaning concentrates in low-frequency components. Negation and conditionals can disrupt low-frequency structure. "Low-frequency = meaning" is a hypothesis, not a theoretical necessity. The DC component is merely the sequence-wise mean; claiming it encodes "summary" requires additional assumptions.</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">Authors' Response</div>
+          <div class="ans-text">
+            <p><strong>This critique overlooks prior empirical work.</strong> The correspondence between low-frequency DFT bands and semantic intent has been demonstrated in the prior work <em>FNet</em> (Google Research), which is cited in Section 10 of the paper.</p>
+            <div class="keypoint teal">
+              <strong>Mathematical guarantee of the DC component (k=0):</strong><br>
+              The DC component in DFT is by mathematical definition the lowest-frequency component — the sequence-wise mean. Interpreted over token embedding vectors, this component contributes <em>uniformly to every position</em>.<br><br>
+              This is why it is mathematically guaranteed to correspond to sentence-level summary, intent, and topic — properties that are, by definition, independent of individual token positions.
+            </div>
+            <p>Negation and conditionals are local syntactic structures — they manifest as <em>high-frequency variations</em> in the DFT domain and are handled by the high-frequency module. Separating them from the global intent signal (low-frequency) is precisely the goal of SCHS construction.</p>
+            <div class="tags"><span class="tag">DC component</span><span class="tag">FNet</span><span class="tag">semantic hierarchy</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="faq-item" data-cat="dft">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#dbeafe;color:#1e40af;">Q6</span>
+        <span class="q-text">Isn't the "perfect reconstruction" in the numerical example (d=4, N=3) just the trivial identity property of DFT/iDFT? It doesn't demonstrate the method's effectiveness.</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block critic-bg">
+          <div class="ans-label critic">Reviewer's Critique</div>
+          <div class="ans-text">
+            <p>The numerical example is a textbook DFT calculation. "Perfect reconstruction" is merely the trivial identity property of DFT followed by iDFT — it does not demonstrate the effectiveness of the proposed method.</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">Authors' Response</div>
+          <div class="ans-text">
+            <p>The perfect reconstruction example (Section 6) serves a specific purpose: demonstrating that <strong>DFT itself is mathematically sound</strong> as a minimal instance of the general theory. The paper states this explicitly (Section 6.1).</p>
+            <div class="keypoint blue">
+              The essential value of WavePhaseNet lies <em>not</em> in the reversibility of DFT per se, but in the ability to insert frequency-dependent semantic operators between DFT and iDFT:<br><br>
+              \(X \xrightarrow{\mathrm{DFT}} \hat{X} \xrightarrow{M(k)} \tilde{\hat{X}} \xrightarrow{\mathrm{iDFT}} \tilde{X}\)<br><br>
+              Section 7 demonstrates with concrete numbers that after applying the frequency mask \(M(k)\), the inverse transform yields an embedding matrix <em>semantically distinct</em> from the original — preserving intent while suppressing syntactic variation. This is fundamentally different from the identity transform.
+            </div>
+            <div class="tags"><span class="tag">perfect reconstruction</span><span class="tag">semantic operator</span><span class="tag">frequency mask</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q7 -->
+    <div class="faq-item" data-cat="dft">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#dbeafe;color:#1e40af;">Q7</span>
+        <span class="q-text">How is WavePhaseNet fundamentally different from FNet? What is the genuine novelty?</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block summary-bg">
+          <div class="ans-label summary">Key Distinction</div>
+          <div class="ans-text">
+            <p>FNet replaces Attention with Fourier transforms for speed and semantic analysis, but <strong>discards the imaginary part</strong> of the complex representation — losing all phase information.</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">WavePhaseNet's Distinctions</div>
+          <div class="ans-text">
+            <div class="keypoint teal">
+              <strong>FNet:</strong> discards imaginary part → no phase → weak on coreference and contextual dependency<br><br>
+              <strong>WavePhaseNet:</strong> <em>explicitly retains and utilizes phase (Φ)</em> → preserves positional sequence information and mutual synchronization between tokens<br><br>
+              Additional novelties not present in FNet:<br>
+              · Explicit semantic operators on frequency bands via \(M(k)\)<br>
+              · Cohomology regularization for local inference consistency control<br>
+              · Dimensionality reduction theory grounded in Zipf's law
+            </div>
+            <div class="tags"><span class="tag">FNet comparison</span><span class="tag">phase information</span><span class="tag">novelty</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ -->
+  <!--  SECTION 3: Dimensionality        -->
+  <!-- ══════════════════════════════════ -->
+  <div class="cat-section">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:#fef3c7;">🟡</div>
+      <span class="cat-name">Dimensionality Reduction (24,576 → 3,000)</span>
+      <span class="cat-count">3 Q&amp;A</span>
+    </div>
+
+    <!-- Q8 -->
+    <div class="faq-item" data-cat="dim">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#fef3c7;color:#b45309;">Q8</span>
+        <span class="q-text">How is the reduction from 24,576 to ~3,000 dimensions theoretically justified without empirical measurements?</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block critic-bg">
+          <div class="ans-label critic">Reviewer's Critique</div>
+          <div class="ans-text">
+            <p>No empirical data is provided. There are no actual GPT embedding spectral plots. The cumulative energy curve is based on theoretical assumptions alone. Neither the theory nor the empirics support the claim. The derivation of 3,000 dimensions is insufficiently rigorous.</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">Authors' Response</div>
+          <div class="ans-text">
+            <p><strong>This is a mathematical theory paper.</strong> The approach is: establish the theory first, then empirically validate it — consistent with how mathematical physics papers are structured.</p>
+            <div class="keypoint amber">
+              <strong>Derivation logic:</strong><br><br>
+              ① Natural language follows Zipf's law and is self-similar<br>
+              → Energy spectrum of embedding amplitudes decays as \(E(f) \propto 1/f^\alpha\)<br><br>
+              ② Via the Yule–Simon process, eigenvalues decay in the limit of this scale-free distribution<br><br>
+              ③ For GPT-4 scale (d = 24,576), syntactic constraints + LayerNorm/Attention regularization push \(\alpha \in [1.1, 1.4]\)<br><br>
+              ④ At this \(\alpha\), cumulative energy of 82–88% corresponds to K ≈ 3,072<br><br>
+              ⑤ Therefore <em>~3,000 dimensions is the lower bound for preserving meaning and intent</em>
+            </div>
+            <p>The 3,000 figure is not heuristically chosen — it is derived from the scale-invariant structure of the Zipf + Yule–Simon framework. Empirical validation is the <em>next step</em>, not a prerequisite for the theory.</p>
+            <div class="tags"><span class="tag">Zipf's law</span><span class="tag">1/f spectrum</span><span class="tag">cumulative energy</span><span class="tag">Yule–Simon process</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q9 -->
+    <div class="faq-item" data-cat="dim">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#fef3c7;color:#b45309;">Q9</span>
+        <span class="q-text">GPT-4's internal dimensionality is not publicly disclosed by OpenAI. Is it valid to use 24,576 as a premise?</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block author-bg">
+          <div class="ans-label author">Authors' Position</div>
+          <div class="ans-text">
+            <p>The paper explicitly treats this as an assumed value. Section 8.3.1 states: "we explain the theoretical development using the latest 24,576-dimensional embedding σ-additive family space" — this is presented as a <strong>hypothetical example</strong>, not an empirically verified fact.</p>
+            <div class="keypoint blue">
+              The core of the theoretical argument is the <em>relationship between dimensionality d and spectral exponent α</em>. The specific value d = 24,576 serves as an illustrative example. The general framework applies to any d, and the derivation of α ∈ [1.1, 1.4] follows from the structural properties of language models at GPT scale — not from d = 24,576 specifically.
+            </div>
+            <div class="tags"><span class="tag">GPT-4</span><span class="tag">assumed value</span><span class="tag">spectral exponent α</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q10 -->
+    <div class="faq-item" data-cat="dim">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#fef3c7;color:#b45309;">Q10</span>
+        <span class="q-text">Why exactly is 3,000 the "lower bound"? What breaks below this threshold?</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block summary-bg">
+          <div class="ans-label summary">Key Point</div>
+          <div class="ans-text">
+            <p>From an NLP perspective, the intrinsic dimensionality of GPT-4 embeddings can be analyzed as:</p>
+            <div class="keypoint blue">
+              · Word semantic space: 300–800 dimensions<br>
+              · Sentence-level semantics: 1,000–2,000 dimensions<br>
+              · <em>Sentence intent + discourse structure: 2,000–3,000 dimensions</em><br><br>
+              Below 3,000 dimensions, it becomes impossible to distinguish sentences that are <strong>semantically similar</strong> from those that are merely <strong>syntactically similar</strong>. This is why 3,000 is the lower bound for "complete representation."
+            </div>
+            <p>The value α ∈ [1.1, 1.4] also implies that LLM semantic energy has precisely this degree of structure — which incidentally explains why current LLMs can generate plausible text despite their structural limitations.</p>
+            <div class="tags"><span class="tag">intrinsic dimension</span><span class="tag">semantic preservation</span><span class="tag">discourse structure</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ -->
+  <!--  SECTION 4: Mathematical Rigor    -->
+  <!-- ══════════════════════════════════ -->
+  <div class="cat-section">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:#ede9fe;">🟣</div>
+      <span class="cat-name">Mathematical Rigor</span>
+      <span class="cat-count">2 Q&amp;A</span>
+    </div>
+
+    <!-- Q11 -->
+    <div class="faq-item" data-cat="math">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#ede9fe;color:#6d28d9;">Q11</span>
+        <span class="q-text">Isn't equating embeddings with a "σ-additive family" a category mistake? Is this just a metaphor?</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block critic-bg">
+          <div class="ans-label critic">Reviewer's Critique</div>
+          <div class="ans-text">
+            <p>Calling a token sequence a Borel set requires a topology to be defined. "Embeddings as conditional expectation" is at best metaphorical, not a rigorous isomorphism. Embeddings are not measurable functions over a measure space.</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">Authors' Response</div>
+          <div class="ans-text">
+            <p><strong>This is a mathematical definition, not a metaphor.</strong></p>
+            <div class="keypoint teal">
+              The identification of the embedding space with a σ-additive family generated by the Borel sets of a token sequence is mathematically correct. Without this identification, the entire framework of sequential approximation in autoregressive models — and the definition of learning representations over all contexts — would collapse.
+            </div>
+            <p>The sequential update \(\mathcal{F}_t = \sigma(x_1,\ldots,x_t)\) is the canonical construction in probability theory for representing the growth of information over time. The reviewer's critique reflects a surface-level syntactic reading rather than a semantic understanding of the formalism — which is itself an illustration of the very problem WavePhaseNet aims to address.</p>
+            <p>Full technical details, including topology definitions, are provided in the final version of the paper.</p>
+            <div class="tags"><span class="tag">σ-additive family</span><span class="tag">Borel set</span><span class="tag">conditional expectation</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q12 -->
+    <div class="faq-item" data-cat="math">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#ede9fe;color:#6d28d9;">Q12</span>
+        <span class="q-text">There appear to be notation inconsistencies in the paper (X ∈ ℝ^{d×N} vs. X ∈ ℝ^{N×d}). Which is correct?</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block author-bg">
+          <div class="ans-label author">Authors' Position</div>
+          <div class="ans-text">
+            <p>This notation inconsistency is acknowledged. The final version of the paper resolves this with unified conventions.</p>
+            <div class="keypoint amber">
+              The theoretical substance is:<br>
+              · Embedding dimension <em>d</em> treated as the "channel" axis<br>
+              · Sequence length <em>N</em> treated as the axis along which DFT is applied<br><br>
+              The transposition in notation reflects different conventions used in different sections and does not affect the content of the theory. The DFT index should run k = 0,…,N−1 when applied along the sequence direction; this is corrected in the final version.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ -->
+  <!--  SECTION 5: Cohomology            -->
+  <!-- ══════════════════════════════════ -->
+  <div class="cat-section">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:#ccfbf1;">🟢</div>
+      <span class="cat-name">Cohomology &amp; Hodge Theory</span>
+      <span class="cat-count">2 Q&amp;A</span>
+    </div>
+
+    <!-- Q13 -->
+    <div class="faq-item" data-cat="cohomology">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#ccfbf1;color:#0f766e;">Q13</span>
+        <span class="q-text">How does cohomology regularization actually reduce contradictions in LLM reasoning?</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block critic-bg">
+          <div class="ans-label critic">Reviewer's Critique</div>
+          <div class="ans-text">
+            <p>The cohomology section (0-cochains, coboundary energy, harmonic projection) is theoretically coherent, but the causal explanation for why this reduces LLM contradictions is weak.</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">Authors' Clarification</div>
+          <div class="ans-text">
+            <p>More precisely: the paper proposes cohomology as a means to <em>compensate for one of the structural defects</em> that causes hallucination, not to "reduce LLM contradictions" in general.</p>
+            <div class="keypoint teal">
+              <strong>Role of each component:</strong><br><br>
+              <strong>· Local window Čech cohomology connection</strong><br>
+              → Enables reasoning that is consistent with global semantic structure<br><br>
+              <strong>· Coboundary energy (difference operator)</strong><br>
+              → Computes differences in "energy" across the connections of meaning-preserving representations, quantifying the validity of inference<br><br>
+              <strong>· Harmonic projection</strong><br>
+              → Projects onto the "minimum energy state without spurious oscillations" (the harmonic form)<br>
+              → The projected vector preserves intent-level meaning from the low-frequency band, thereby reducing hallucination
+            </div>
+            <div class="tags"><span class="tag">Čech cohomology</span><span class="tag">coboundary</span><span class="tag">harmonic projection</span><span class="tag">Hodge theory</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q14 -->
+    <div class="faq-item" data-cat="cohomology">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#ccfbf1;color:#0f766e;">Q14</span>
+        <span class="q-text">How is the cohomology regularization fundamentally different from graph Laplacian regularization in Graph Attention Networks?</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block author-bg">
+          <div class="ans-label author">Authors' Position</div>
+          <div class="ans-text">
+            <div class="keypoint teal">
+              <strong>GAT graph Laplacian regularization</strong> is an <em>approximate regularizer</em> that encourages feature agreement among neighboring nodes — essentially a smoothness prior over a graph.<br><br>
+              <strong>WavePhaseNet's cohomology regularization</strong> differs structurally:<br>
+              ① Based on <em>Čech cohomology over a window covering structure</em><br>
+              ② Algebraic chain: 0-cochains → coboundary operator → 1-cochains<br>
+              ③ <em>Orthogonal Hodge decomposition</em> into harmonic, exact, and co-exact components<br>
+              ④ Joint optimization with DFT-derived global intent via the η-term in the unified loss
+            </div>
+            <p>This is a topological "gluing of knowledge fragments" — fundamentally distinct from a neighborhood consistency penalty.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ -->
+  <!--  SECTION 6: Related Work          -->
+  <!-- ══════════════════════════════════ -->
+  <div class="cat-section">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:#f1f5f9;">⚪</div>
+      <span class="cat-name">Related Work &amp; Empirics</span>
+      <span class="cat-count">2 Q&amp;A</span>
+    </div>
+
+    <!-- Q15 -->
+    <div class="faq-item" data-cat="related">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#f1f5f9;color:#334155;">Q15</span>
+        <span class="q-text">Can a paper with no experiments be accepted at top venues? Where does WavePhaseNet currently stand?</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block summary-bg">
+          <div class="ans-label summary">Reviewer's Scores (out of 10)</div>
+          <div class="ans-text">
+            <table class="score-table">
+              <thead><tr><th>Criterion</th><th>Score</th></tr></thead>
+              <tbody>
+                <tr><td>Originality</td><td class="score-hi">9/10</td></tr>
+                <tr><td>Mathematical rigor</td><td class="score-mid">5/10</td></tr>
+                <tr><td>Empirical validation</td><td class="score-lo">2/10</td></tr>
+                <tr><td>Logical consistency</td><td class="score-mid">6/10</td></tr>
+                <tr><td>Implementation feasibility</td><td class="score-mid">6/10</td></tr>
+                <tr><td>Acceptance likelihood</td><td class="score-lo">4/10</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">Authors' Position</div>
+          <div class="ans-text">
+            <p>The review was conducted against an earlier draft. <strong>The final version includes figures, graphs, and theoretical proofs.</strong></p>
+            <div class="keypoint amber">
+              This paper is positioned as a <em>mathematical theory paper</em>. The analogy is a paper proposing a new mechanism of action in medicine — the clinical trials (empirical experiments) follow the theoretical establishment, they do not precede it.<br><br>
+              Asking a classical-propulsion engineer to evaluate a fundamentally different propulsion mechanism and concluding "this craft cannot exist" because the mechanism is unfamiliar is analogous to evaluating WavePhaseNet's DFT + Cohomology framework solely through the lens of existing ML benchmarks.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q16 -->
+    <div class="faq-item" data-cat="related">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#f1f5f9;color:#334155;">Q16</span>
+        <span class="q-text">How does WavePhaseNet differ from RAG-based approaches? Why is it preferable?</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block summary-bg">
+          <div class="ans-label summary">Comparison</div>
+          <div class="ans-text">
+            <div class="keypoint blue">
+              <strong>RAG-based approaches:</strong><br>
+              · Strong dependency on external knowledge bases<br>
+              · Poor extensibility (new external DB required per domain)<br>
+              · Users must possess advanced prompt engineering skills<br><br>
+              <strong>WavePhaseNet:</strong><br>
+              · Constructs SCHS <em>intrinsically within the embedding space</em> — no external dependency<br>
+              · Semantic conceptual hierarchy is inherent to the model itself<br>
+              · Complex reasoning tasks become tractable without advanced prompt design from users
+            </div>
+            <p>Traditional thesauri, ontologies, and semantic networks cannot be directly embedded into the σ-additive family embedding space. SCHS resolves this by constructing the hierarchy within the embedding space itself.</p>
+            <div class="tags"><span class="tag">RAG comparison</span><span class="tag">SCHS</span><span class="tag">prompt engineering</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.page -->
+
+<footer>
+  <div style="max-width:860px; margin:0 auto; padding:0 2rem;">
+    WavePhaseNet FAQ &nbsp;·&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;·&nbsp; Created for explanatory purposes based on the paper and peer review comments
+  </div>
+</footer>
+
+<script>
+// FAQ accordion
+document.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => {
+    const body = q.nextElementSibling;
+    const isOpen = body.classList.contains('open');
+    document.querySelectorAll('.faq-body.open').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.faq-q.open').forEach(qq => qq.classList.remove('open'));
+    if (!isOpen) { body.classList.add('open'); q.classList.add('open'); }
+  });
+});
+
+// Category filter
+document.querySelectorAll('.cat-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cat = btn.dataset.cat;
+    document.querySelectorAll('.faq-item').forEach(item => {
+      item.style.display = (cat === 'all' || item.dataset.cat === cat) ? '' : 'none';
+    });
+    const visible = document.querySelectorAll('.faq-item:not([style*="display: none"])').length;
+    document.getElementById('faq-count').textContent = visible + ' items';
+  });
+});
+
+// Count
+document.getElementById('faq-count').textContent = document.querySelectorAll('.faq-item').length + ' items';
+
+// Scroll reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 40);
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.05 });
+document.querySelectorAll('.faq-item').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WavePhaseNet — FAQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f8f8f8;
+    --surface2: #f0f4f8;
+    --border: #e2e8f0;
+    --border-dark: #cbd5e1;
+    --ink: #0f172a;
+    --ink-mid: #334155;
+    --ink-light: #64748b;
+    --ink-dim: #94a3b8;
+    --blue: #1e40af;
+    --blue-light: #dbeafe;
+    --teal: #0f766e;
+    --teal-light: #ccfbf1;
+    --amber: #b45309;
+    --amber-light: #fef3c7;
+    --red: #b91c1c;
+    --red-light: #fee2e2;
+    --purple: #6d28d9;
+    --purple-light: #ede9fe;
+    --font-serif: 'Noto Serif JP', serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-sans: 'Noto Sans JP', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    line-height: 1.8;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 54px;
+    display: flex; align-items: center; gap: 0;
+  }
+  .nav-right {
+    display: flex; align-items: center; gap: 1.4rem;
+    margin-left: auto;
+  }
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--blue);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .nav-count {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--ink-light);
+    margin-left: 1rem;
+  }
+
+  /* ── Language toggle pill ── */
+  .nav-lang {
+    display: flex; align-items: center;
+    border: 1px solid var(--border-dark);
+    border-radius: 20px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .nav-lang a {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    padding: 0.28em 0.75em;
+    color: var(--ink-dim);
+    text-decoration: none;
+    transition: all 0.2s;
+    line-height: 1;
+  }
+  .nav-lang a.current {
+    background: var(--blue);
+    color: #fff;
+  }
+  .nav-lang a:not(.current):hover { color: var(--blue); }
+
+  /* ── Page tab link ── */
+  .nav-page-tab {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--ink-light);
+    text-decoration: none;
+    padding-bottom: 2px;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .nav-page-tab:hover {
+    color: var(--blue);
+    border-bottom-color: var(--blue);
+  }
+
+  /* ── Layout ── */
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 3rem 2rem 6rem;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 3rem 0 3.5rem;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 3rem;
+  }
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 0.8rem;
+  }
+  .hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+  .hero-desc {
+    font-size: 0.92rem;
+    color: var(--ink-light);
+    max-width: 600px;
+    line-height: 1.9;
+    margin-bottom: 2rem;
+  }
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 0.8rem;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.76rem; color: var(--ink-mid);
+  }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── Category nav ── */
+  .cat-nav {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    margin-bottom: 2.5rem;
+  }
+  .cat-btn {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    padding: 0.3em 0.9em;
+    border: 1px solid var(--border-dark);
+    background: var(--bg);
+    color: var(--ink-light);
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    transition: all 0.15s;
+    border-radius: 2px;
+  }
+  .cat-btn:hover, .cat-btn.active {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+
+  /* ── Category header ── */
+  .cat-section { margin-bottom: 2rem; }
+  .cat-header {
+    display: flex; align-items: center; gap: 0.8rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+    cursor: default;
+  }
+  .cat-icon {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .cat-name {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cat-count {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--ink-dim);
+    margin-left: auto;
+  }
+
+  /* ── FAQ Item ── */
+  .faq-item {
+    border: 1px solid var(--border);
+    margin-bottom: 0.75rem;
+    transition: box-shadow 0.2s;
+  }
+  .faq-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .faq-q {
+    display: flex; align-items: flex-start; gap: 1rem;
+    padding: 1.1rem 1.4rem;
+    cursor: pointer;
+    user-select: none;
+    background: var(--bg);
+    transition: background 0.15s;
+  }
+  .faq-q:hover { background: var(--surface); }
+  .faq-q.open { background: var(--surface); }
+  .q-badge {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15em 0.5em;
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    letter-spacing: 0.05em;
+  }
+  .q-text {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.5;
+    flex: 1;
+    color: var(--ink);
+  }
+  .q-chevron {
+    color: var(--ink-dim);
+    font-size: 1rem;
+    transition: transform 0.25s;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .faq-q.open .q-chevron { transform: rotate(180deg); }
+
+  .faq-body {
+    display: none;
+    border-top: 1px solid var(--border);
+  }
+  .faq-body.open { display: block; }
+
+  /* Answer sections */
+  .ans-block {
+    padding: 1.2rem 1.4rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .ans-block:last-child { border-bottom: none; }
+  .ans-label {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .ans-label::before {
+    content: '';
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+  .ans-label.critic { color: var(--red); }
+  .ans-label.critic::before { background: var(--red); }
+  .ans-label.author { color: var(--teal); }
+  .ans-label.author::before { background: var(--teal); }
+  .ans-label.summary { color: var(--blue); }
+  .ans-label.summary::before { background: var(--blue); }
+
+  .ans-text {
+    font-size: 0.86rem;
+    color: var(--ink-mid);
+    line-height: 1.85;
+  }
+  .ans-text p { margin-bottom: 0.7rem; }
+  .ans-text p:last-child { margin-bottom: 0; }
+  .ans-text strong { color: var(--ink); font-weight: 500; }
+  .ans-text em { color: var(--teal); font-style: normal; font-weight: 500; }
+
+  /* Colored blocks within answers */
+  .critic-bg { background: #fffafa; }
+  .author-bg { background: #f0faf9; }
+  .summary-bg { background: #f0f5ff; }
+
+  /* Key point box */
+  .keypoint {
+    margin: 0.8rem 0;
+    padding: 0.9rem 1.1rem;
+    border-left: 3px solid;
+    font-size: 0.84rem;
+    line-height: 1.75;
+    color: var(--ink-mid);
+  }
+  .keypoint.blue { border-color: var(--blue); background: var(--blue-light); }
+  .keypoint.teal { border-color: var(--teal); background: var(--teal-light); }
+  .keypoint.amber { border-color: var(--amber); background: var(--amber-light); }
+  .keypoint.red { border-color: var(--red); background: var(--red-light); }
+
+  /* Math inline */
+  .math-inline {
+    background: var(--surface2);
+    padding: 0.05em 0.4em;
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    border-radius: 2px;
+    color: var(--blue);
+  }
+
+  /* Tags */
+  .tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.7rem; }
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    padding: 0.15em 0.55em;
+    border: 1px solid var(--border-dark);
+    color: var(--ink-dim);
+    border-radius: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Reveal animation */
+  .faq-item {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.4s ease, transform 0.4s ease, box-shadow 0.2s;
+  }
+  .faq-item.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Score table */
+  .score-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; }
+  .score-table th {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 0.4rem 0.7rem;
+    background: var(--surface2);
+    color: var(--ink-light);
+    border-bottom: 1px solid var(--border);
+  }
+  .score-table td {
+    padding: 0.5rem 0.7rem;
+    font-size: 0.82rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink-mid);
+  }
+  .score-hi { color: var(--teal) !important; font-weight: 500; }
+  .score-lo { color: var(--red) !important; font-weight: 500; }
+  .score-mid { color: var(--amber) !important; font-weight: 500; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 0;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--ink-dim);
+    letter-spacing: 0.08em;
+  }
+
+  @media (max-width: 640px) {
+    .page { padding: 2rem 1.2rem 4rem; }
+    .hero-title { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">WavePhaseNet // FAQ</div>
+  <div class="nav-count" id="faq-count">— 件</div>
+  <div class="nav-right">
+    <a href="wavephasenet_ja.html" class="nav-page-tab">← 論文解説</a>
+    <div class="nav-lang">
+      <a href="wavephasenet_faq.html" class="current">JA</a>
+      <a href="wavephasenet_faq_en.html">EN</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-eyebrow">Frequently Asked Questions</div>
+    <h1 class="hero-title">WavePhaseNet<br>よくある質問と回答</h1>
+    <p class="hero-desc">
+      論文「WavePhaseNet: A DFT-Based Method for Constructing Semantic Conceptual Hierarchy Structures (SCHS)」
+      に対する査読コメントおよびよくある疑問点について、論文の理論的立場から回答します。
+    </p>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--red)"></div>
+        <span>査読者・批判的指摘</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--teal)"></div>
+        <span>著者の回答・解説</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--blue)"></div>
+        <span>ポイント整理</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Category filter ── -->
+  <div class="cat-nav">
+    <button class="cat-btn active" data-cat="all">すべて</button>
+    <button class="cat-btn" data-cat="hallucination">ハルシネーション理論</button>
+    <button class="cat-btn" data-cat="dft">DFT・意味分解</button>
+    <button class="cat-btn" data-cat="dim">次元削減</button>
+    <button class="cat-btn" data-cat="math">数学的厳密性</button>
+    <button class="cat-btn" data-cat="cohomology">コホモロジー</button>
+    <button class="cat-btn" data-cat="related">関連研究・実証</button>
+  </div>
+
+  <!-- ════════════════════════════════ -->
+  <!--  SECTION 1: ハルシネーション理論  -->
+  <!-- ════════════════════════════════ -->
+  <div class="cat-section" id="sec-hallucination">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:#fee2e2;">🔴</div>
+      <span class="cat-name">ハルシネーション理論</span>
+      <span class="cat-count">4 Q&A</span>
+    </div>
+
+    <!-- Q1 -->
+    <div class="faq-item" data-cat="hallucination">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#fee2e2;color:#b91c1c;">Q1</span>
+        <span class="q-text">ハルシネーションが「訓練データの問題ではなく数学的構造の必然」とはどういう意味ですか？</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block summary-bg">
+          <div class="ans-label summary">ポイント整理</div>
+          <div class="ans-text">
+            <p>本論文の核心的主張は、LLMのハルシネーションは「データ不足」「訓練の不備」という偶発的な問題ではなく、LLMが用いる数学的な枠組み（σ-加法族上の条件付き期待値）と現実の真理集合の間の<strong>構造的ミスマッチ</strong>から生じる必然的現象だということです。</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">論文の立場</div>
+          <div class="ans-text">
+            <p><strong>LLMの意味空間は非完備</strong>です。具体的には：</p>
+            <div class="keypoint teal">
+              Transformerの各層で意味空間が変形され、Attentionによって局所的に歪み、文脈によって動的に再構成されるため、固定された距離空間としての「完備性」が成立しない。収束しない・極限が存在しない・文脈で空間が変形する・距離が安定しない——これらすべてが数学的に「非完備空間の特徴」に該当します。
+            </div>
+            <p>この「意味の揺らぎ」「推論の暴走」がハルシネーションの自然な帰結です。真理集合（現実世界の正しい命題の集合）はČech的整合性を持つ非凸な構造を持つのに対し、LLMの埋め込み空間は線形・凸であるという<em>本質的なミスマッチ</em>が根本原因です。</p>
+            <div class="tags"><span class="tag">σ-additive family</span><span class="tag">完備性</span><span class="tag">非凸性</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="faq-item" data-cat="hallucination">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#fee2e2;color:#b91c1c;">Q2</span>
+        <span class="q-text">「真理集合は非凸、埋め込み空間は凸だからハルシネーションは不可避」という主張は証明になっていないのでは？</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block critic-bg">
+          <div class="ans-label critic">査読者の指摘</div>
+          <div class="ans-text">
+            <p>「真理集合が非凸である」こと自体が証明されていない。LLMの出力空間がL<sup>p</sup>空間の凸構造にそのまま対応するという同一視が恣意的である。「凸空間だから虚偽命題が生じる」は証明になっていない。ハルシネーションの本質は分布近似誤差・データ欠損・認識的不確実性ではないか。</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">著者の回答</div>
+          <div class="ans-text">
+            <p>論文の主張は「凸空間だから虚偽が生じる」ではありません。<strong>読み違いです</strong>。</p>
+            <p>論文「2.3 ノルムとMinkowski不等式」で説明しているのは、埋め込み空間上では文脈などの<em>線形合成が可能</em>であり、意味の重ね合わせを許容しているために生成AIの柔軟性が生まれているという点です。</p>
+            <div class="keypoint blue">
+              【埋め込みベクトル空間】は有限次元・内積・ノルムが定義された有限次元ヒルベルト空間（ユークリッド空間）であり、基礎体が実数なので「完備性」は保証されています。<br><br>
+              しかし【意味空間】は「推論・連想・知識の連鎖で生まれる動的な空間」であり、Attentionの非線形・確率的・文脈依存な挙動により固定された距離空間としての完備性が議論できません。
+            </div>
+            <p>真理集合がČech的整合性によって定義される非凸構造を持つことは、「3.2 LLMのHallucination」で説明しています。これは「凸/非凸」を単純に比較しているのではなく、<em>位相的な整合性構造の違い</em>を議論しています。</p>
+            <div class="tags"><span class="tag">Minkowski不等式</span><span class="tag">非完備空間</span><span class="tag">Čechコホモロジー</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="faq-item" data-cat="hallucination">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#fee2e2;color:#b91c1c;">Q3</span>
+        <span class="q-text">ハルシネーションの定義「σ-加法族上で最適だが真理集合に属さない出力」はどういう意味ですか？</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block summary-bg">
+          <div class="ans-label summary">ポイント整理</div>
+          <div class="ans-text">
+            <p>数学的に整理すると：</p>
+            <div class="keypoint blue">
+              ・<strong>真値集合</strong>： \(T \subset V^*\)（現実世界の正しい命題の集合）<br>
+              ・<strong>モデル最適化集合</strong>：\(\arg\min_f \, \mathbb{E}[l(f(X), Y)]\)<br>
+              ・<strong>ハルシネーション</strong>：上記最適化集合に属するが \(T\) には属さない出力
+            </div>
+            <p>LLMはσ-加法族（過去トークン列が生成するBorel集合の族）上での条件付き期待値を逐次近似します。これはあくまで<em>確率分布上の平均的最適性</em>であり、現実の真理値を保証するものではありません。この構造的乖離がハルシネーションを必然にします。</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">補足：なぜ「情報不足」説は誤りか</div>
+          <div class="ans-text">
+            <p>一部の査読コメントは「ハルシネーションの原因は情報不足」と主張しますが、本論文はその説を否定します。十分なデータで訓練されたモデルでも、上記の構造的ミスマッチが存在する限りハルシネーションは生じます。AIエージェントや推論要求タスクで致命的な問題となる所以がここにあります。</p>
+            <div class="tags"><span class="tag">σ-additive family</span><span class="tag">条件付き期待値</span><span class="tag">真理集合</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="faq-item" data-cat="hallucination">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#fee2e2;color:#b91c1c;">Q4</span>
+        <span class="q-text">LLMの意味空間が「非完備」というのはどういう意味ですか？完備ではないのですか？</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block author-bg">
+          <div class="ans-label author">著者の解説</div>
+          <div class="ans-text">
+            <p>埋め込みベクトル空間それ自体（有限次元ヒルベルト空間）は完備です。しかし、LLMが生成する「意味空間」はそれとは異なります。</p>
+            <div class="keypoint amber">
+              LLMの推論（Attention機構）は非線形・確率的・文脈依存であり、層を通るたびに空間が変形されます。推論の「行き先」が文脈・温度・サンプリング・Attention機構によって変化するため、「極限点」という概念が成立しません。<br><br>
+              これは：<br>
+              　• 収束しない<br>
+              　• 極限が存在しない<br>
+              　• 文脈で空間が変形する<br>
+              　• 距離が安定しない<br><br>
+              という「非完備空間」の特徴すべてに該当します。
+            </div>
+            <p>この「非完備な意味空間」を扱う方法として、本論文では動的システム・リーマン多様体・測度空間・ホモトピー的空間・ラプラス変換的空間などの観点からWavePhaseNetによる解決を提示しています。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════ -->
+  <!--  SECTION 2: DFT・意味分解        -->
+  <!-- ════════════════════════════════ -->
+  <div class="cat-section" id="sec-dft">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:#dbeafe;">🔵</div>
+      <span class="cat-name">DFT・意味分解</span>
+      <span class="cat-count">3 Q&A</span>
+    </div>
+
+    <!-- Q5 -->
+    <div class="faq-item" data-cat="dft">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#dbeafe;color:#1e40af;">Q5</span>
+        <span class="q-text">「低周波成分＝グローバルな意味・意図」という対応に数学的な根拠はあるのですか？仮説に過ぎないのでは？</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block critic-bg">
+          <div class="ans-label critic">査読者の指摘</div>
+          <div class="ans-text">
+            <p>意味が低周波に集約される保証はない。否定（not）や条件文などは低周波的成分を破壊する。「低周波＝意味」は仮説であって理論的必然ではなく、現状は直感的説明に留まっている。DC成分は「系列方向の平均」に過ぎず、"summary"になるには追加仮定が必要だ。</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">著者の回答</div>
+          <div class="ans-text">
+            <p><strong>この指摘は先行研究の見落としです</strong>。DFTが意味的な階層構造において「低周波バンドが意図や要約の役割をしている」ことは、先行論文 <em>FNet</em> で実証済みです。WavePhaseNet論文中にもこの点は記載されています（Section 10）。</p>
+            <div class="keypoint teal">
+              <strong>DC成分（k=0）の数理的保証：</strong><br>
+              フーリエ変換におけるDC（Direct Current）成分とは、DFTの最初の波形成分であり、低周波帯域を示すことは数理的に保証されています。<br><br>
+              これを埋め込み意味概念ベクトルのフーリエ変換として解釈すると、DC成分は全トークンに<em>均一に寄与する成分</em>であり、文全体の要約・意図・トピックに対応することが先行研究でも実証されています。
+            </div>
+            <p>否定語や条件文についても、それらはむしろ高周波成分（局所的構文変化）として表現され、低周波成分（大局的意図）とは分離して扱われます。これがSCHS構築の目的のひとつです。</p>
+            <div class="tags"><span class="tag">DC成分</span><span class="tag">FNet</span><span class="tag">意味的階層</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="faq-item" data-cat="dft">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#dbeafe;color:#1e40af;">Q6</span>
+        <span class="q-text">数値例（d=4, N=3）での「完全再構成」は、DFT・iDFTの恒等変換という自明な性質では？提案手法の有効性を示していないのでは？</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block critic-bg">
+          <div class="ans-label critic">査読者の指摘</div>
+          <div class="ans-text">
+            <p>数値例はDFTの教科書的な計算であり、「完全再構成ができた」はDFT・iDFTの恒等変換という自明な性質に過ぎない。提案手法の有効性を示すものではない。</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">著者の回答</div>
+          <div class="ans-text">
+            <p>完全再構成の数値例（Section 6）の目的は「DFT自体が数学的に健全であることの実証」です。これは<em>最小設定での一般理論の具体例</em>であり、論文はそのように明示しています（Section 6.1）。</p>
+            <div class="keypoint blue">
+              本提案の本質的価値は「可逆変換そのもの」にあるのではなく、<strong>周波数依存の意味演算子の挿入</strong>にあります：<br><br>
+              \(X \xrightarrow{\text{DFT}} \hat{X} \xrightarrow{M(k)\text{演算子}} \tilde{\hat{X}} \xrightarrow{\text{iDFT}} \tilde{X}\)<br><br>
+              Section 7の数値例では、周波数マスク \(M(k)\) を適用後に逆変換すると<em>元とは異なる意味的に変換された埋め込み行列</em>が得られることを具体的に示しています。これはDFTの恒等変換とは本質的に異なります。
+            </div>
+            <div class="tags"><span class="tag">完全再構成</span><span class="tag">意味演算子</span><span class="tag">周波数マスク</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q7 -->
+    <div class="faq-item" data-cat="dft">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#dbeafe;color:#1e40af;">Q7</span>
+        <span class="q-text">WavePhaseNetはFNetとどこが違うのですか？本質的な新規性はあるのですか？</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block summary-bg">
+          <div class="ans-label summary">ポイント整理</div>
+          <div class="ans-text">
+            <p>FNetはAttentionをFourier変換で置換して高速化と意味解析を実現しましたが、<strong>複素表現の虚部（位相情報）を破棄</strong>しています。</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">本質的な違い</div>
+          <div class="ans-text">
+            <div class="keypoint teal">
+              <strong>FNetとWavePhaseNetの核心的差異：</strong><br><br>
+              FNet: 虚部を破棄 → 位相情報なし → 共参照関係・文脈依存性の処理が弱い<br><br>
+              WavePhaseNet: <em>位相（Phase）を明示的に保持・利用</em> → 位置的系列情報・相互同期情報を保存<br><br>
+              さらにWavePhaseNetは：<br>
+              • 意味演算子による周波数帯域への明示的操作（FNetにはない）<br>
+              • コホモロジー正則化による局所推論の整合性制御（全く新しい）<br>
+              • Zipf則に基づく次元削減理論（新規）
+            </div>
+            <div class="tags"><span class="tag">FNet比較</span><span class="tag">位相情報</span><span class="tag">新規性</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════ -->
+  <!--  SECTION 3: 次元削減             -->
+  <!-- ════════════════════════════════ -->
+  <div class="cat-section" id="sec-dim">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:#fef3c7;">🟡</div>
+      <span class="cat-name">次元削減理論（24,576 → 3,000次元）</span>
+      <span class="cat-count">3 Q&A</span>
+    </div>
+
+    <!-- Q8 -->
+    <div class="faq-item" data-cat="dim">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#fef3c7;color:#b45309;">Q8</span>
+        <span class="q-text">24,576次元から3,000次元への削減はどのように理論的に正当化されますか？実測データなしで主張できますか？</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block critic-bg">
+          <div class="ans-label critic">査読者の指摘</div>
+          <div class="ans-text">
+            <p>実測データがない、実際のGPT埋め込みスペクトルの図がない、累積エネルギー曲線が理論仮定のみ。理論として証明されておらず実証もされていない。3,000という数字の導出が非厳密である。</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">著者の回答</div>
+          <div class="ans-text">
+            <p><strong>本論文は数学系論文です</strong>。まず理論があり、それを証明するのが実証という立場をとっています。</p>
+            <div class="keypoint amber">
+              <strong>導出の論理：</strong><br><br>
+              ① 自然言語はZipf則に従い自己相似構造を持つ<br>
+              → 埋め込み振幅のエネルギースペクトルは \(E(f) \propto 1/f^\alpha\) の1/f型減衰を示す<br><br>
+              ② Yule-Simon過程によりこのスケール自由分布の極限では固有値が減衰する<br><br>
+              ③ GPT-4規模（24,576次元）では \(\alpha \in [1.1, 1.4]\) となる（構文制約・LayerNorm・Attention正則化によりα&gt;1）<br><br>
+              ④ この \(\alpha\) のとき累積エネルギー82〜88%がK≈3,072に対応する<br><br>
+              ⑤ したがって <em>意味保存の下限は3,000次元</em>
+            </div>
+            <p>3,000という数字は試行錯誤で求めたものではなく、「Zipf則＋Yule-Simon過程のスケール不変性」という数学的理論から導出された数値です。</p>
+            <div class="tags"><span class="tag">Zipf則</span><span class="tag">1/fスペクトル</span><span class="tag">累積エネルギー</span><span class="tag">Yule-Simon過程</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q9 -->
+    <div class="faq-item" data-cat="dim">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#fef3c7;color:#b45309;">Q9</span>
+        <span class="q-text">GPT-4の内部次元数（24,576次元）はOpenAIが非公開ですが、この数字を前提にすることは問題ではないですか？</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block author-bg">
+          <div class="ans-label author">著者の立場</div>
+          <div class="ans-text">
+            <p>この点は明示的に「仮定」として設定しています（Section 8.3.1）。GPT-4の24,576次元という数字は正式に発表されていないため<strong>仮定値</strong>です。</p>
+            <div class="keypoint blue">
+              理論展開の本質は「次元数dとスペクトル指数αの関係」にあり、d=24,576という特定値は<em>理論の説明的例示</em>として用いられています。実際の論文が主張する理論は、任意のdに対して適用可能な一般的な枠組みです。
+            </div>
+            <p>α∈[1.1, 1.4]という範囲も、特定のd値ありきではなく、GPT規模の言語モデルにおける構造化エネルギーの特性から導かれる推定値です。</p>
+            <div class="tags"><span class="tag">GPT-4</span><span class="tag">仮定値</span><span class="tag">スペクトル指数α</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q10 -->
+    <div class="faq-item" data-cat="dim">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#fef3c7;color:#b45309;">Q10</span>
+        <span class="q-text">3,000次元以下で意味が保てないとはどういうことですか？なぜ3,000が「下限」なのですか？</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block summary-bg">
+          <div class="ans-label summary">ポイント整理</div>
+          <div class="ans-text">
+            <p>NLPの観点からGPT-4埋め込みの内在次元を分析すると：</p>
+            <div class="keypoint blue">
+              ・語義的意味空間：300〜800次元<br>
+              ・文レベル意味論：1,000〜2,000次元<br>
+              ・<em>文の意図＋談話構造：2,000〜3,000次元</em>（← ここが下限）<br><br>
+              3,000次元を下回ると「意味的に類似した文」と「構文的に類似した文」の区別が不可能になります。これが「3,000次元が意味保存の下限」と呼ばれる理由です。
+            </div>
+            <p>α∈[1.1, 1.4]という値は、LLMの意味エネルギーがこの程度の構造しか持っていないことも示しており、従来の生成AIが（ある程度の）成果を出せている理由でもあります。</p>
+            <div class="tags"><span class="tag">内在次元</span><span class="tag">意味保存</span><span class="tag">談話構造</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════ -->
+  <!--  SECTION 4: 数学的厳密性         -->
+  <!-- ════════════════════════════════ -->
+  <div class="cat-section" id="sec-math">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:#ede9fe;">🟣</div>
+      <span class="cat-name">数学的厳密性</span>
+      <span class="cat-count">2 Q&A</span>
+    </div>
+
+    <!-- Q11 -->
+    <div class="faq-item" data-cat="math">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#ede9fe;color:#6d28d9;">Q11</span>
+        <span class="q-text">「σ-加法族」と埋め込みを同一視するのは"category mistake"では？比喩的な説明に過ぎないのでは？</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block critic-bg">
+          <div class="ans-label critic">査読者の指摘</div>
+          <div class="ans-text">
+            <p>トークン列をBorel集合と同一視するには位相空間の定義が必要。「埋め込みが条件付き期待値」は比喩レベルであって厳密な同型ではない。埋め込みは測度空間上の可測関数ではない。</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">著者の回答</div>
+          <div class="ans-text">
+            <p><strong>比喩ではなく数学的定義です。</strong></p>
+            <div class="keypoint teal">
+              埋め込み空間がトークン系列のBorel集合によるσ-加法族になっていることは数学的に正しい定義です。これが成立しなければ、あらゆる文脈の学習表現と逐次近似モデル（ARモデル）の定式化が破綻します。
+            </div>
+            <p>査読コメントは「表面的な構文情報から生成されたARモデルの回答」であり、これ自体がARモデルが意味的な因果関係を理解していないことの例証です。位相空間の定義等については最終論文の例題に記載されています。</p>
+            <p>σ-加法族は確率論的な「情報の成長」を記述する自然な枠組みであり、自己回帰モデルにおける条件付き期待値の逐次更新 \(\mathcal{F}_t = \sigma(x_1,\ldots,x_t)\) との対応は数学的に妥当です。</p>
+            <div class="tags"><span class="tag">σ-加法族</span><span class="tag">Borel集合</span><span class="tag">条件付き期待値</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q12 -->
+    <div class="faq-item" data-cat="math">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#ede9fe;color:#6d28d9;">Q12</span>
+        <span class="q-text">論文の記号に不整合があります（X∈R^{d×N}とX∈R^{N×d}が混在）。どちらが正しいですか？</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block critic-bg">
+          <div class="ans-label critic">査読者の指摘</div>
+          <div class="ans-text">
+            <p>Section 4では X ∈ R^{d×N}、Section 5では X ∈ R^{N×d} と転置した定義が混在している。また、DFT行列Fの定義でk=(0,...,d)としているが、シーケンス次元NにDFTをかける場合はk=(0,...,N-1)が正しい。</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">著者の立場</div>
+          <div class="ans-text">
+            <p>この指摘は記法上の課題として認識しています。最終論文では記号の統一が図られています。</p>
+            <div class="keypoint amber">
+              理論の本質は：<br>
+              • 埋め込み次元 d 方向を「チャンネル」<br>
+              • 系列長 N 方向を「DFTを適用する次元」<br>
+              として扱うことです。表記の転置は文脈によって異なる慣習を使用したものであり、理論の内容自体に影響しません。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════ -->
+  <!--  SECTION 5: コホモロジー         -->
+  <!-- ════════════════════════════════ -->
+  <div class="cat-section" id="sec-cohomology">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:#ccfbf1;">🟢</div>
+      <span class="cat-name">コホモロジー・Hodge理論</span>
+      <span class="cat-count">2 Q&A</span>
+    </div>
+
+    <!-- Q13 -->
+    <div class="faq-item" data-cat="cohomology">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#ccfbf1;color:#0f766e;">Q13</span>
+        <span class="q-text">コホモロジー正則化がLLMの推論矛盾を減らす仕組みはどうなっているのですか？</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block critic-bg">
+          <div class="ans-label critic">査読者の指摘</div>
+          <div class="ans-text">
+            <p>コホモロジー部分（0-cochain、coboundaryエネルギー、harmonic projection）は理論として筋が通っているが、「なぜこれがLLMの矛盾を減らすのか」の因果的説明が弱い。</p>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">著者の解説</div>
+          <div class="ans-text">
+            <p>「LLMの矛盾を減らす」という表現は正確ではありません。本論文は「LLMの構造的欠陥がハルシネーションを引き起こす原因の一つを、コホモロジーで補正する」という立場です。</p>
+            <div class="keypoint teal">
+              <strong>各要素の役割：</strong><br><br>
+              <strong>• 局所位相的窓（Window）のČech cohomologyの接続</strong><br>
+              → 大域的意味に沿った推論が可能になる<br><br>
+              <strong>• Coboundaryエネルギー（差分演算）</strong><br>
+              → 意味保存を表す「エネルギー」の繋がりの差分を計算し、推論の正当性を測定する<br><br>
+              <strong>• 調和射影（Harmonic Projection）</strong><br>
+              → 「余計な振動がなく最もエネルギーが低い状態」（調和形式）への射影<br>
+              → 低周波帯域である意図による意味が保存された射影ベクトルで、ハルシネーションを低減する
+            </div>
+            <div class="tags"><span class="tag">Čechコホモロジー</span><span class="tag">coboundary</span><span class="tag">調和射影</span><span class="tag">Hodge理論</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q14 -->
+    <div class="faq-item" data-cat="cohomology">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#ccfbf1;color:#0f766e;">Q14</span>
+        <span class="q-text">提案のコホモロジー正則化はグラフラプラシアン正則化（Graph Attention Network）と本質的に何が違うのですか？</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block author-bg">
+          <div class="ans-label author">著者の立場</div>
+          <div class="ans-text">
+            <div class="keypoint teal">
+              <strong>本質的な差異：</strong><br><br>
+              GATのグラフラプラシアン正則化は「近傍ノード間の特徴量の一致度」を高めるための<em>近似的な正則化</em>です。<br><br>
+              WavePhaseNetのコホモロジー正則化は：<br>
+              ① <em>局所ウィンドウの被覆構造</em>に基づくČech cohomologyの接続<br>
+              ② 0-コチェイン → コバウンダリ演算子 → 1-コチェインという<em>代数的構造</em><br>
+              ③ Hodge分解による<em>調和成分・完全成分・共完全成分への直交分解</em><br>
+              ④ DFTで得た低周波グローバル意図との整合性制約（η項）の同時最適化
+            </div>
+            <p>これはトポロジー的な「知識断片の貼り合わせ（gluing）」であり、単純な近傍一致ペナルティとは構造的に異なります。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════ -->
+  <!--  SECTION 6: 関連研究・実証       -->
+  <!-- ════════════════════════════════ -->
+  <div class="cat-section" id="sec-related">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:#f1f5f9;">⚪</div>
+      <span class="cat-name">関連研究・実証・位置づけ</span>
+      <span class="cat-count">2 Q&A</span>
+    </div>
+
+    <!-- Q15 -->
+    <div class="faq-item" data-cat="related">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#f1f5f9;color:#334155;">Q15</span>
+        <span class="q-text">実証実験がない論文がトップ会議で採択される可能性はありますか？また本論文の現在地はどこですか？</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block summary-bg">
+          <div class="ans-label summary">査読者による採点（10点満点）</div>
+          <div class="ans-text">
+            <table class="score-table">
+              <thead><tr><th>評価項目</th><th>点数</th></tr></thead>
+              <tbody>
+                <tr><td>独創性</td><td class="score-hi">9/10</td></tr>
+                <tr><td>数学的厳密性</td><td class="score-mid">5/10</td></tr>
+                <tr><td>実証性</td><td class="score-lo">2/10</td></tr>
+                <tr><td>論理的一貫性</td><td class="score-mid">6/10</td></tr>
+                <tr><td>実装可能性</td><td class="score-mid">6/10</td></tr>
+                <tr><td>査読通過可能性</td><td class="score-lo">4/10</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="ans-block author-bg">
+          <div class="ans-label author">著者の立場</div>
+          <div class="ans-text">
+            <p>この評価コメントの対象論文はひとつ前のバージョンであり、<strong>最終論文には図解・グラフ・理論的実証が追加されています</strong>。</p>
+            <div class="keypoint amber">
+              本論文は「数学系の理論論文」として位置づけられています。医学で言えば「新しい作用機序の理論的証明」に相当し、臨床試験（実証実験）はそれに続くステップです。<br><br>
+              現在の評価をたとえるなら：「従来のジェット推進技術者にUFOを評価させ、推進力の機構が分からないから架空のものだと言っている」ようなものです。WavePhaseNetのDFT＋Cohomologyは新しいAGI/ASIへの理論的な架け橋です。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q16 -->
+    <div class="faq-item" data-cat="related">
+      <div class="faq-q">
+        <span class="q-badge" style="background:#f1f5f9;color:#334155;">Q16</span>
+        <span class="q-text">WavePhaseNetとRAGベースのアプローチはどう違いますか？なぜRAGより優れているのですか？</span>
+        <span class="q-chevron">▾</span>
+      </div>
+      <div class="faq-body">
+        <div class="ans-block summary-bg">
+          <div class="ans-label summary">比較</div>
+          <div class="ans-text">
+            <div class="keypoint blue">
+              <strong>RAGベースアプローチの課題：</strong><br>
+              • 外部知識ベースへの強い依存性<br>
+              • 拡張性が低い（新しいドメインごとに外部DBが必要）<br>
+              • ユーザが高度なプロンプトエンジニアリングスキルを持つ必要がある<br><br>
+              <strong>WavePhaseNetのアプローチ：</strong><br>
+              • <em>埋め込み空間の内部</em>にSCHSを構築（外部依存なし）<br>
+              • 意味概念階層構造がモデル自体に内在する<br>
+              • 複雑な推論タスクでもユーザの高度なプロンプト技術が不要になる
+            </div>
+            <p>従来の類義語辞書（シソーラス）・オントロジー・意味ネットワークは埋め込み空間（σ-加法族空間）に直接埋め込むことができませんでしたが、SCHSによりこの問題が解決されます。</p>
+            <div class="tags"><span class="tag">RAG比較</span><span class="tag">SCHS</span><span class="tag">プロンプトエンジニアリング</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.page -->
+
+<footer>
+  <div style="max-width:860px; margin:0 auto; padding:0 2rem;">
+    WavePhaseNet FAQ &nbsp;·&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;·&nbsp; 本ページは論文および査読コメントをもとに作成されました
+  </div>
+</footer>
+
+<script>
+// FAQ accordion
+document.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => {
+    const body = q.nextElementSibling;
+    const isOpen = body.classList.contains('open');
+    // close all
+    document.querySelectorAll('.faq-body.open').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.faq-q.open').forEach(qq => qq.classList.remove('open'));
+    if (!isOpen) {
+      body.classList.add('open');
+      q.classList.add('open');
+    }
+  });
+});
+
+// Category filter
+const btns = document.querySelectorAll('.cat-btn');
+btns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    btns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cat = btn.dataset.cat;
+    document.querySelectorAll('.faq-item').forEach(item => {
+      if (cat === 'all' || item.dataset.cat === cat) {
+        item.style.display = '';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+    // update count
+    const visible = document.querySelectorAll('.faq-item:not([style*="display: none"])').length;
+    document.getElementById('faq-count').textContent = visible + ' 件';
+  });
+});
+
+// Count
+const total = document.querySelectorAll('.faq-item').length;
+document.getElementById('faq-count').textContent = total + ' 件';
+
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 40);
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.05 });
+document.querySelectorAll('.faq-item').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
