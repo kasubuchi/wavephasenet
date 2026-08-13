@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuantumPhaseNet — 論文解説</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f7f5fd;
+    --surface2: #ede9fa;
+    --border: #d5cdf0;
+    --accent: #6d28d9;
+    --accent2: #0891b2;
+    --accent3: #d97706;
+    --text: #14102b;
+    --text-muted: #46406b;
+    --text-dim: #9a92b8;
+    --glow: rgba(109,40,217,0.12);
+    --font-serif: 'Noto Serif JP', serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-sans: 'Noto Sans JP', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    line-height: 1.8;
+    overflow-x: hidden;
+  }
+
+  /* ── Canvas Background ── */
+  #bg-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex; align-items: center; gap: 0;
+  }
+  .nav-right {
+    display: flex; align-items: center; gap: 1.4rem;
+    margin-left: auto;
+  }
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+  .nav-links {
+    display: flex; gap: 1.6rem; list-style: none;
+    margin-left: 2rem;
+  }
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* ── Language toggle pill ── */
+  .nav-lang {
+    display: flex; align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .nav-lang a {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    padding: 0.28em 0.75em;
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: all 0.2s;
+    line-height: 1;
+  }
+  .nav-lang a.current {
+    background: var(--accent);
+    color: #fff;
+  }
+  .nav-lang a:not(.current):hover { color: var(--accent); }
+
+  /* ── Page tab link ── */
+  .nav-page-tab {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding-bottom: 2px;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .nav-page-tab:hover {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* ── Main wrapper ── */
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding-top: 80px;
+    position: relative;
+  }
+  .hero-tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.3em 0.9em;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.2s forwards;
+  }
+  .hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(2.2rem, 5.6vw, 4rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.35s forwards;
+  }
+  .hero-title .wave {
+    color: var(--accent);
+    display: inline-block;
+    animation: pulse 3s ease-in-out infinite;
+  }
+  .hero-subtitle {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--accent2);
+    letter-spacing: 0.05em;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.45s forwards;
+  }
+  .hero-meta {
+    display: flex; gap: 2rem; flex-wrap: wrap;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.55s forwards;
+  }
+  .hero-meta span { display: flex; align-items: center; gap: 0.4rem; }
+  .hero-desc {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 640px;
+    line-height: 1.9;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.65s forwards;
+    margin-bottom: 3rem;
+  }
+  .scroll-hint {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    display: flex; align-items: center; gap: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.8s forwards;
+  }
+  .scroll-hint::after {
+    content: '';
+    display: block; width: 40px; height: 1px;
+    background: var(--text-dim);
+    animation: expandLine 1.5s ease infinite;
+  }
+
+  /* ── Section layout ── */
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+    opacity: 0.8;
+  }
+  h2 {
+    font-family: var(--font-serif);
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    line-height: 1.3;
+  }
+  h3 {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  p { margin-bottom: 1.2rem; color: var(--text-muted); }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .card:hover { border-color: rgba(109,40,217,0.4); }
+  .card:hover::before { opacity: 1; }
+
+  /* ── Abstract ── */
+  .abstract-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+  .abstract-box::before {
+    content: '"';
+    position: absolute; top: 1rem; left: 2rem;
+    font-family: var(--font-serif);
+    font-size: 5rem;
+    color: var(--accent);
+    opacity: 0.08;
+    line-height: 1;
+  }
+
+  /* ── Concept flow ── */
+  .concept-flow {
+    display: flex; align-items: center; gap: 0;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+  }
+  .concept-node {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.9rem 1.4rem;
+    font-size: 0.82rem;
+    font-family: var(--font-mono);
+    color: var(--text);
+    position: relative;
+    white-space: nowrap;
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .concept-node:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 20px var(--glow);
+  }
+  .concept-arrow {
+    color: var(--accent);
+    font-size: 1.2rem;
+    padding: 0 0.5rem;
+    opacity: 0.6;
+  }
+
+  /* ── Triple grid ── */
+  .freq-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+    margin: 2rem 0;
+  }
+  .freq-cell {
+    background: var(--surface);
+    padding: 1.8rem 1.5rem;
+    text-align: center;
+    transition: background 0.2s;
+  }
+  .freq-cell:hover { background: var(--surface2); }
+  .freq-icon {
+    font-family: var(--font-mono);
+    font-size: 1.6rem;
+    margin-bottom: 0.8rem;
+    display: block;
+  }
+  .freq-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .freq-cell:nth-child(1) .freq-label { color: var(--accent); }
+  .freq-cell:nth-child(2) .freq-label { color: var(--accent3); }
+  .freq-cell:nth-child(3) .freq-label { color: var(--accent2); }
+  .freq-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* ── Two-column split ── */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem 0; }
+  .split-cell {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 1.6rem 1.5rem;
+  }
+  .split-cell.hot { border-color: rgba(109,40,217,0.45); }
+  .split-cell h4 {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 0.7rem;
+  }
+  .split-cell.cool h4 { color: var(--accent2); }
+  .split-cell p { font-size: 0.82rem; margin: 0; }
+
+  /* ── Math box ── */
+  .math-box {
+    background: #14102b;
+    border: 1px solid var(--border);
+    border-radius: 1px;
+    padding: 1.8rem 2rem;
+    margin: 1.5rem 0;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    overflow-x: auto;
+    position: relative;
+  }
+  .math-box .math-label {
+    position: absolute; top: 0.6rem; right: 1rem;
+    font-size: 0.62rem;
+    color: #8b7fc0;
+    letter-spacing: 0.1em;
+  }
+  .math-box mjx-container,
+  .math-box mjx-container * {
+    color: #ece9f8 !important;
+  }
+
+  /* ── Table ── */
+  .energy-table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
+  .energy-table th {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-align: left;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .energy-table td {
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+    border-bottom: 1px solid rgba(200,190,230,0.6);
+    color: var(--text-muted);
+    vertical-align: top;
+  }
+  .energy-table tr:hover td { background: var(--surface); }
+  .energy-highlight td { color: var(--accent) !important; font-weight: 500; }
+  .table-scroll { overflow-x: auto; }
+
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    padding: 0.15em 0.55em;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .badge.thm { border-color: var(--accent); color: var(--accent); }
+  .badge.emp { border-color: var(--accent3); color: var(--accent3); }
+  .badge.open { border-color: var(--text-dim); color: var(--text-dim); }
+
+  /* ── 3-pillars ── */
+  .pillars { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin: 2rem 0; }
+  .pillar {
+    border: 1px solid var(--border);
+    padding: 1.8rem 1.4rem;
+    position: relative;
+    background: var(--surface);
+    transition: all 0.3s;
+  }
+  .pillar:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(109,40,217,0.1);
+  }
+  .pillar-num {
+    font-family: var(--font-mono);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 0.8rem;
+    transition: color 0.3s;
+  }
+  .pillar:hover .pillar-num { color: var(--accent); opacity: 0.4; }
+  .pillar h4 {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    color: var(--text);
+  }
+  .pillar p { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+
+  /* ── Architecture ── */
+  .arch-flow {
+    margin: 2rem 0;
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .arch-step {
+    display: flex; align-items: stretch;
+    gap: 0;
+  }
+  .arch-step-num {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--accent);
+    width: 36px; min-width: 36px;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    position: relative;
+  }
+  .arch-step-num::after {
+    content: '';
+    position: absolute; bottom: 0; left: 50%;
+    width: 1px; height: 100%;
+    background: var(--border);
+    top: 50%;
+  }
+  .arch-step:last-child .arch-step-num::after { display: none; }
+  .arch-step-body {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1.2rem 1.5rem;
+    margin: 4px 0;
+    margin-left: 1rem;
+    transition: border-color 0.2s;
+  }
+  .arch-step-body:hover { border-color: rgba(109,40,217,0.35); }
+  .arch-step-title {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.4rem;
+  }
+  .arch-step-desc { font-size: 0.82rem; color: var(--text-muted); }
+
+  /* ── Risk terms ── */
+  .term-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-top: 1rem; }
+  .term { padding-left: 0.8rem; }
+  .term-name { font-size: 0.75rem; font-family: var(--font-mono); }
+  .term-desc { font-size: 0.78rem; color: var(--text-muted); }
+
+  /* ── Related work ── */
+  .ref-card {
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    background: var(--surface);
+    margin-bottom: 1rem;
+    display: grid; grid-template-columns: auto 1fr;
+    gap: 1.2rem;
+    align-items: start;
+    transition: border-color 0.2s;
+  }
+  .ref-card:hover { border-color: rgba(109,40,217,0.35); }
+  .ref-tag {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 0.2em 0.6em;
+    border: 1px solid;
+    white-space: nowrap;
+    align-self: start;
+    margin-top: 0.1rem;
+  }
+  .ref-tag.sim { border-color: var(--accent2); color: var(--accent2); }
+  .ref-tag.diff { border-color: var(--accent); color: var(--accent); }
+  .ref-tag.warn { border-color: var(--accent3); color: var(--accent3); }
+  .ref-name { font-weight: 500; font-size: 0.88rem; margin-bottom: 0.4rem; }
+  .ref-desc { font-size: 0.78rem; color: var(--text-muted); }
+
+  /* ── Caution list ── */
+  .caution {
+    border: 1px dashed var(--accent3);
+    background: rgba(217,119,6,0.04);
+    padding: 1.5rem 1.8rem;
+    margin: 1.5rem 0;
+  }
+  .caution-title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--accent3);
+    margin-bottom: 0.8rem;
+  }
+  .caution ul { margin: 0; padding-left: 1.2rem; }
+  .caution li { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+
+  /* ── Conclusion highlight ── */
+  .conclusion-box {
+    background: linear-gradient(135deg, rgba(109,40,217,0.06), rgba(8,145,178,0.06));
+    border: 1px solid rgba(109,40,217,0.2);
+    padding: 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .conclusion-box::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(109,40,217,0.07), transparent 70%);
+  }
+  .conclusion-box h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+  .conclusion-box p { max-width: 620px; margin: 0 auto; font-size: 0.92rem; }
+
+  /* ── Tag chip ── */
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 0.25em 0.75em;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 0 2rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    position: relative; z-index: 1;
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%,100% { text-shadow: 0 0 20px rgba(109,40,217,0.25); }
+    50% { text-shadow: 0 0 40px rgba(109,40,217,0.6); }
+  }
+  @keyframes expandLine {
+    0% { width: 20px; opacity: 0.3; }
+    50% { width: 60px; opacity: 0.8; }
+    100% { width: 20px; opacity: 0.3; }
+  }
+
+  .reveal {
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1; transform: translateY(0);
+  }
+
+  @media (max-width: 760px) {
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 640px) {
+    .pillars { grid-template-columns: 1fr; }
+    .freq-grid { grid-template-columns: 1fr; }
+    .split { grid-template-columns: 1fr; }
+    .term-grid { grid-template-columns: 1fr; }
+    .concept-flow { gap: 0.3rem; }
+    .concept-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<nav>
+  <div class="nav-logo">QuantumPhaseNet // 論文解説</div>
+  <ul class="nav-links">
+    <li><a href="#abstract">概要</a></li>
+    <li><a href="#geometry">幾何</a></li>
+    <li><a href="#quantum">量子</a></li>
+    <li><a href="#attention">Attention</a></li>
+    <li><a href="#risk">リスク</a></li>
+    <li><a href="#experiments">検証</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="wavephasenet_ja.html" class="nav-page-tab">WavePhaseNet →</a>
+    <div class="nav-lang">
+      <a href="quantumphasenet_ja.html" class="current">JA</a>
+      <a href="quantumphasenet_en.html">EN</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrapper">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-tag">arXiv preprint · 2026.07.23</div>
+    <h1 class="hero-title">
+      <span class="wave">Quantum</span>PhaseNet
+    </h1>
+    <div class="hero-subtitle">A Gauge-Covariant Geometric and Quantum-Spectral Theory of Semantic Concept Hierarchies</div>
+    <div class="hero-meta">
+      <span>👤 Kiyotaka Kasubuchi, Kazuo Fukiya</span>
+      <span>📅 2026年7月23日</span>
+    </div>
+    <p class="hero-desc">
+      意味を「複素ベクトル束の切断」として表し、<strong>ゲージ不変な位相速度</strong>から意味波長を、
+      <strong>グラフ低周波モード</strong>から文章の論旨方向を取り出す。
+      さらに QFT・QPE・Oracle・振幅増幅で標的スペクトル成分を選択し、
+      Hallucination を「確率」ではなく<strong>校正可能な幾何リスク</strong>として扱う理論枠組み。
+    </p>
+    <div class="chips">
+      <span class="chip">ゲージ接続</span><span class="chip">共変位相</span><span class="chip">意味波長</span>
+      <span class="chip">グラフFourier</span><span class="chip">QFT / QPE</span><span class="chip">振幅増幅</span>
+      <span class="chip">WavePhase Attention</span><span class="chip">校正</span>
+    </div>
+    <div class="scroll-hint">SCROLL TO EXPLORE</div>
+  </div>
+
+  <!-- ── ABSTRACT ── -->
+  <section id="abstract">
+    <div class="section-label">01 // ABSTRACT</div>
+    <h2>この論文が主張していること</h2>
+
+    <div class="abstract-box reveal">
+      <p>
+        QuantumPhaseNet は、Transformer の分布表現を
+        <strong>意味多様体・複素ベクトル束・接続・曲率・スペクトル分解・量子振幅増幅</strong>によって拡張する理論枠組みである。
+        文脈依存の意味状態を複素振幅 \(\psi\) として表し、その位相の<em>共変</em>変化率から「意味波長」を定義し、
+        概念の抽象度を測る代理変数として用いる。さらにグラフ Laplacian の低周波モードから
+        文章全体の論旨方向を抽出し、生成軌道を目的・根拠・概念階層へ整合させる。
+      </p>
+      <p>
+        本稿の最大の特徴は、<strong>証明できることと、実験で反証されうることを厳密に分離した</strong>点にある。
+        ゲージ不変性、Oracle の対合性、振幅増幅の成功確率、Attention の有界性・安定性は定理として証明される。
+        一方「長波長＝上位概念」「低周波＝正しい論旨」「幾何リスク＝事実誤り予測」は経験仮説として明示され、
+        反証条件まで事前に書き下されている。<strong>量子計算上の優位性は主張されない。</strong>
+      </p>
+    </div>
+
+    <div class="pillars reveal">
+      <div class="pillar">
+        <div class="pillar-num">01</div>
+        <h4>位相をゲージ不変量へ</h4>
+        <p>単純な位相差 \(\phi_i-\phi_j\) は局所基底の取り方に依存する。接続による平行移動を挟むことで、座標に依らない観測量として位相整合と波長を定義し直す</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">02</div>
+        <h4>二つのFourierの分離</h4>
+        <p>トークン座標→周波数座標の「外部QFT」と、位相推定(QPE)内部の「逆QFT」は作用レジスタも役割も異なる。混同を排し作用素列として明示する</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">03</div>
+        <h4>リスクは確率ではない</h4>
+        <p>Hallucination を幾何偏差・根拠不足・意味的不確実性の非負スコアとして定義。確率解釈は校正後に初めて与えられ、棄権判断と分離される</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── GEOMETRY ── -->
+  <section id="geometry">
+    <div class="section-label">02 // GEOMETRY</div>
+    <h2>意味の幾何：多様体・束・接続</h2>
+
+    <div class="card reveal">
+      <h3>意味多様体と複素意味束</h3>
+      <p>
+        埋め込み空間全体が一枚の滑らかな多様体であることは要求しない。
+        観測データの近傍でのみ成り立つ<strong>局所チャートのアトラス</strong>として意味多様体 \((\mathcal{M},g)\) を置き、
+        トークンの意味点を \(x_t\in\mathcal{M}\) とする。計量は学習可能な正定値形式として与える。
+      </p>
+      <div class="math-box">
+        <span class="math-label">学習可能計量</span>
+        \[ g_\theta(x) = A_\theta(x)^\top A_\theta(x) + \varepsilon I \succ 0, \qquad
+           d_g(x,y) = \inf_{\gamma} \int_0^1 \sqrt{g_{\gamma(s)}(\dot\gamma,\dot\gamma)}\, ds \]
+      </div>
+      <p>
+        意味の内部自由度は、階数 \(r\) の Hermite ベクトル束 \(E\to\mathcal{M}\) の切断
+        \(\psi:\mathcal{M}\to E\) が担う。ユニタリ接続 \(\nabla\) が、
+        <strong>異なる文脈の間で意味状態を比較するための規則</strong>を与える。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>共変位相速度と意味波長</h3>
+      <p>
+        生成・読解に沿う曲線 \(\gamma(t)\) と正規化状態 \(\hat\psi\) に対し、
+        曲線上の共変微分 \(D_t\hat\psi=\nabla_{\dot\gamma}\hat\psi\) を用いて位相の変化率を定義する。
+      </p>
+      <div class="math-box">
+        <span class="math-label">共変位相速度・意味波長</span>
+        \[ \omega(t) \;=\; \operatorname{Im}\big\langle \hat\psi(t),\, D_t\hat\psi(t)\big\rangle,
+           \qquad
+           \lambda(t) \;=\; \frac{2\pi c_s}{|\omega(t)| + \varepsilon} \]
+      </div>
+      <p>
+        位相の変化が<strong>遅い</strong>ほど波長は長く、<strong>速い</strong>ほど短い。
+        論文はこの長波長側を「上位・抽象概念」の候補と見なすが、これは定理ではなく検証対象の仮説である。
+        \(\varepsilon\) は極低周波での発散を防ぐ安定化項として必須である。
+      </p>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">混同されがちな三つの「位相」</h3>
+    <p class="reveal">論文が最初に行う整理は、日常語の「位相」を三つの異なる数学的対象へ分けることである。</p>
+    <div class="freq-grid reveal">
+      <div class="freq-cell">
+        <span class="freq-icon">∠</span>
+        <div class="freq-label">位相角 φ</div>
+        <div class="freq-desc">円周上の局所座標。局所基底に依存するため、それ自体を意味的実体として解釈してはならない</div>
+      </div>
+      <div class="freq-cell">
+        <span class="freq-icon">∫</span>
+        <div class="freq-label">累積位相量 Θ</div>
+        <div class="freq-desc">区間に沿う位相経路長 \(\int|\omega|dt\)。文脈をたどる間に蓄積された変化の総量</div>
+      </div>
+      <div class="freq-cell">
+        <span class="freq-icon">λ</span>
+        <div class="freq-label">意味波長 λ</div>
+        <div class="freq-desc">共変位相速度の逆尺度。概念スケールの代理変数として階層構築に使われる</div>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h3>定理：局所ゲージ不変性</h3>
+      <p>
+        局所 U(1) 変換 \(\hat\psi\mapsto e^{i\chi}\hat\psi,\ A\mapsto A - i\,d\chi\) の下で、
+        接続の変換則と Hermite 内積のユニタリ不変性から次が従う。
+      </p>
+      <div class="math-box">
+        <span class="math-label">定理 5</span>
+        \[ \omega'(t) = \omega(t), \qquad \lambda'(t) = \lambda(t) \]
+      </div>
+      <p>
+        さらに二点間の整合性も、経路 \(\gamma\) に沿う平行移動 \(\Gamma_{j\to i}\) を挟むことでゲージ不変になる。
+        これにより、素朴な位相差が暗に要求していた「大域的な共通基底」が不要になる。
+      </p>
+      <div class="math-box">
+        <span class="math-label">共変位相整合・波長整合</span>
+        \[ \Phi_{ij} = \arg\big\langle \hat\psi_i,\ \Gamma_{j\to i}\hat\psi_j \big\rangle,
+           \qquad c^{\mathrm{ph}}_{ij}=\cos\Phi_{ij},
+           \qquad c^{\lambda}_{ij}=\exp\!\left(-\frac{|\log\lambda_i-\log\lambda_j|}{\tau}\right) \]
+      </div>
+    </div>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ 経路依存性という代償</div>
+      <ul>
+        <li>平行移動は経路に依存する。最短測地線・文章順序に沿う経路・学習された参照経路のいずれかを固定する必要がある。</li>
+        <li>閉曲線を一周した際のズレ（ホロノミー）は曲率として現れ、それ自体は誤りを意味しない。比喩・視点変更・正当な話題転換でも曲率は上がる。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── HIERARCHY ── -->
+  <section id="hierarchy">
+    <div class="section-label">03 // HIERARCHY</div>
+    <h2>波長から概念階層をつくる</h2>
+
+    <div class="card reveal">
+      <h3>全前順序 → 商集合上の全順序 → 分配束</h3>
+      <p>
+        単一の波長場 \(\lambda\) で \(x\preceq y \iff \lambda(x)\le\lambda(y)\) と定めると、
+        反射的・推移的・全比較可能だが<strong>反対称ではない</strong>（異なる点が同じ波長を持ちうる）。
+        すなわち全前順序にとどまる。そこで波長の同値類で商をとる。
+      </p>
+      <div class="math-box">
+        <span class="math-label">定理 10</span>
+        \[ x\sim y \iff \lambda(x)=\lambda(y), \qquad
+           (\mathcal{M}/\!\sim,\ \preceq)\ \text{は全順序},\quad
+           a\vee b=\max,\ a\wedge b=\min \]
+      </div>
+      <p>
+        全順序集合は二項演算 \(\vee,\wedge\) について分配束をなす。
+        ただしこれは「任意の部分集合が上限下限を持つ完備束」ではなく、
+        <strong>波長順序が実際の語彙的含意と一致することも定理ではない</strong>。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>単一軸では足りない：多軸波長</h3>
+      <p>
+        多義性、属性階層、部分全体関係、因果抽象度を一本の実数に押し込むことはできない。
+        論文は \(m\) 個のゲージ不変尺度 \(\lambda^{(1)},\dots,\lambda^{(m)}\) を導入し、成分ごとの順序で半順序を定める。
+      </p>
+      <div class="math-box">
+        <span class="math-label">命題 11</span>
+        \[ [x]\preceq_m [y] \iff \lambda^{(k)}(x)\le\lambda^{(k)}(y)\ \ (\forall k),
+           \qquad \text{像が成分ごとの}\min,\max\text{に閉じれば分配束} \]
+      </div>
+      <p style="margin-bottom:0;">
+        実装上は、包含教師対に対して「下位概念の尺度が上位概念を成分ごとに超えない」という
+        <strong>符号規約をデータセット全体で固定</strong>し、Order Embedding 型の非対称損失と併用する。
+        波長の大小の向きは恣意的に決めてよいものではない。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── DISCOURSE ── -->
+  <section id="discourse">
+    <div class="section-label">04 // DISCOURSE</div>
+    <h2>低周波モードとしての「論旨」</h2>
+
+    <p class="reveal">
+      文章内の意味点から重み付きグラフを構成し、正規化 Laplacian の低固有値モードを取り出す。
+      グラフ上で滑らかな成分＝大域的な話の流れ、という直観を数式化する。
+    </p>
+
+    <div class="math-box reveal">
+      <span class="math-label">意味グラフと Laplacian</span>
+      \[ w_{ij} = \exp\!\left(-\frac{d_g(x_i,x_j)^2}{2\sigma^2}\right),
+         \qquad L = I - D^{-1/2} W D^{-1/2},
+         \qquad 0=\mu_1\le\mu_2\le\cdots\le\mu_n\le 2 \]
+    </div>
+
+    <div class="arch-flow reveal">
+      <div class="arch-step">
+        <div class="arch-step-num">1</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">FRÉCHET MEAN</div>
+          <div class="arch-step-desc">文章の基準点 \(\bar{x}=\arg\min_x\sum_i d_g(x,x_i)^2\) を求める。カット locus を避けるため局所凸領域に制限する</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">2</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">LOG MAP</div>
+          <div class="arch-step-desc">各意味点を基準接空間へ持ち上げ \(v_i=\mathrm{Log}_{\bar{x}}(x_i)\in T_{\bar{x}}\mathcal{M}\) とし、ベクトル信号を得る</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">3</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">LOW-PASS FILTER</div>
+          <div class="arch-step-desc">上位 \(K\) 個の低周波モードへ射影 \(\mathcal{S}_{\text{low}}v\)。高周波の局所変動を落とす</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">4</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">DISCOURSE DIRECTION</div>
+          <div class="arch-step-desc">文レベル重要度 \(\beta_i\) で重み付け和をとり正規化。\(d_{\text{doc}}\in T_{\bar{x}}\mathcal{M}\) が文章方向ベクトル</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">5</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">PARALLEL TRANSPORT</div>
+          <div class="arch-step-desc">生成点 \(x_t\) へ \(d_{\text{doc}}\) を平行移動し、候補方向との内積で方向整合度 \(a^{\text{dir}}\) を測る</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h3>接続 Laplacian への一般化</h3>
+      <p>
+        基準点へ一括で持ち上げる方法は、遠い点ほど歪みが大きい。
+        各点の接空間に留めたまま、辺ごとの平行移動 \(O_{ij}\) を使って滑らかさを測るのが接続 Laplacian である。
+      </p>
+      <div class="math-box">
+        <span class="math-label">接続 Laplacian（離散形）</span>
+        \[ (\mathcal{L}_\nabla v)_i = \sum_{j\sim i} w_{ij}\left(v_i - O_{ij} v_j\right) \]
+      </div>
+      <p style="margin-bottom:0;">
+        最小実装では通常 Laplacian ＋ 単一基準接空間で始め、拡張段階で接続 Laplacian へ移行することが推奨されている。
+      </p>
+    </div>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ 低周波バイアス</div>
+      <ul>
+        <li>長く反復される誤情報は低周波成分になりうる。低周波＝真実ではない。</li>
+        <li>冗長な引用、話題の固着も低周波として現れる。文章方向は根拠検証と<strong>独立に</strong>評価しなければならない。</li>
+        <li>方向項を強くしすぎると、必要な話題転換まで抑制する。これは論文自身が挙げる反証条件の一つ。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── QUANTUM ── -->
+  <section id="quantum">
+    <div class="section-label">05 // QUANTUM</div>
+    <h2>量子スペクトル選択の作用素列</h2>
+
+    <p class="reveal">
+      意味ハミルトニアン \(H=H^\dagger\) を構成し、そのスペクトルのうち
+      「目的方向・波長帯域・根拠あり・禁止条件を満たさない」成分だけを増幅する。
+      鍵は<strong>外部 QFT と QPE 内部の逆 QFT を別物として扱う</strong>ことにある。
+    </p>
+
+    <div class="concept-flow reveal">
+      <div class="concept-node">外部 F<sub>N</sub></div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">QPE(U)</div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">Oracle O<sub>S</sub></div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">振幅増幅 Q<sup>k</sup></div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">逆計算</div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">外部 F<sub>N</sub><sup>†</sup></div>
+    </div>
+
+    <div class="card reveal">
+      <h3>位相 aliasing を避けるスケーリング</h3>
+      <p>
+        QPE は固有位相を補助レジスタへ書き込むが、スケーリングを明示しないと
+        異なる固有エネルギーが同じ位相へ折り返される。論文は次のスケールを課す。
+      </p>
+      <div class="math-box">
+        <span class="math-label">ユニタリ化と固有位相</span>
+        \[ U = \exp\!\left(\frac{2\pi i H}{\Lambda}\right),\quad \Lambda \ge 2\|H\|,
+           \qquad \theta_k = \frac{E_k}{\Lambda} \in [0,1) \]
+      </div>
+      <p style="margin-bottom:0;">
+        有限精度 QPE では位相窓の境界近傍に漏れが生じる。したがって Oracle の hard threshold ではなく、
+        余裕幅つき窓、あるいは raised-cosine のような滑らかな窓を用いる。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>定理：Oracle の自己共役性と対合性</h3>
+      <p>
+        目的方向ビン・波長ビン・根拠フラグ・禁止条件から可逆述語を組み、標的部分空間への射影 \(\Pi_S\) を定める。
+        Oracle はその部分空間についての<strong>反射</strong>として定義される。
+      </p>
+      <div class="math-box">
+        <span class="math-label">定理 15</span>
+        \[ O_S = I - 2\Pi_S, \qquad O_S^\dagger = O_S, \qquad O_S^2 = I \]
+      </div>
+      <p style="margin-bottom:0;">
+        \(\Pi_S\) が直交射影（\(\Pi_S^2=\Pi_S=\Pi_S^\dagger\)）であることから直ちに従う。
+        「マークした状態に \(-1\) を掛ける」という Grover 的操作を、意味部分空間へ持ち込んだ形である。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>定理：一般初期状態での振幅増幅</h3>
+      <p>
+        標的質量 \(a=\|\Pi_S\varphi\|^2\) が任意の初期値をとる場合でも、
+        状態は標的成分と非標的成分が張る二次元平面に留まり、\(Q=-R_\varphi O_S\) はその平面上の回転として作用する。
+      </p>
+      <div class="math-box">
+        <span class="math-label">定理 16</span>
+        \[ P_S(k) = \sin^2\!\big((2k+1)\theta_a\big),\quad \sin^2\theta_a = a,
+           \qquad k^\star=\left\lfloor \frac{\pi}{4\theta_a}-\frac12 \right\rceil \Rightarrow P_S(k^\star)\ge 1-a \]
+      </div>
+      <div class="caution" style="margin-bottom:0;">
+        <div class="caution-title">⚠ overshoot という実務上の罠</div>
+        <ul>
+          <li>標的質量 \(a\) が未知のまま固定反復回数を使うと、増幅しすぎて確率が再び下がる。</li>
+          <li>対策は反復回数推定、ランダム化反復、fixed-point 振幅増幅、または滑らかなスペクトルフィルタへの置換。</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">量子実行版と量子着想古典版</h3>
+    <p class="reveal">論文は「量子」という語が指す二つの計算様式を最初に切り分ける。ここを混ぜないことが本稿の誠実さの中心にある。</p>
+    <div class="split reveal">
+      <div class="split-cell hot">
+        <h4>QUANTUM-EXECUTABLE</h4>
+        <p>
+          状態準備、外部QFT、QPE、可逆Oracle、振幅増幅、逆計算、測定を実際の量子回路として実行する。
+          一般振幅を全て読み出すには \(O(N)\) 規模の測定が必要になりうるため、
+          少数観測量の測定か次段量子処理との連結を前提とする。
+        </p>
+      </div>
+      <div class="split-cell cool">
+        <h4>QUANTUM-INSPIRED CLASSICAL</h4>
+        <p>
+          同じスペクトル変換・位相マスク・反射・振幅再重み付けを古典線形代数で実装する。
+          Lanczos による低モード抽出、Chebyshev 多項式フィルタ、低ランク近似で \(\Pi_S\) を近似する。
+          Grover の二次高速化は主張しないが、標的部分空間の重みは明示的に増幅される。
+        </p>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h3>定理 17：ブロックのユニタリ性 — そして、それが意味しないこと</h3>
+      <p>
+        構成要素がユニタリなら、その積と随伴からなる量子選択ブロック全体もユニタリである。証明は一行で済む。
+        重要なのは<strong>この定理が計算量上の優位性を全く意味しない</strong>という但し書きの方である。
+      </p>
+      <p style="margin-bottom:0;">
+        さらに、途中に測定や post-selection を挟む場合、全過程はユニタリではなく
+        <strong>量子チャネル</strong>として記述すべきであることも明記されている。
+        複素数とユニタリ行列を使うこと自体は、物理的な高速化を一切生まない。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── ATTENTION ── -->
+  <section id="attention">
+    <div class="section-label">06 // ATTENTION</div>
+    <h2>WavePhase Attention</h2>
+
+    <p class="reveal">
+      標準の内積 logit に、幾何・位相由来の五つの補正項と causal mask を加える。
+      置き換えではなく<strong>補正と残差</strong>として統合する設計になっている。
+    </p>
+
+    <div class="math-box reveal">
+      <span class="math-label">WavePhase logit (WP)</span>
+      \[ e_{ij} = \frac{\langle q_i, k_j\rangle}{\sqrt{d}}
+        + \alpha\, c^{\mathrm{ph}}_{ij}
+        + \beta\, c^{\lambda}_{ij}
+        + \gamma\, a^{\mathrm{dir}}_{ij}
+        - \delta\, d_g(x_i,x_j)
+        + \zeta\, s^{\mathrm{ev}}_{ij}
+        + m^{\mathrm{causal}}_{ij} \]
+    </div>
+
+    <div class="table-scroll reveal">
+    <table class="energy-table">
+      <thead>
+        <tr><th>補正項</th><th>測っているもの</th><th>設計上の注意</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>\(c^{\mathrm{ph}}\)</strong> 共変位相整合</td>
+          <td>平行移動を挟んだ複素内積の偏角。文脈間で意味状態が強め合うか</td>
+          <td>単純な位相差では大域的共通基底を暗に要求してしまう</td>
+        </tr>
+        <tr>
+          <td><strong>\(c^{\lambda}\)</strong> 波長整合</td>
+          <td>概念スケールが近いか。抽象度の合う語同士を結びつける</td>
+          <td>対数スケールで測り、極端な尺度比はクリップする</td>
+        </tr>
+        <tr>
+          <td><strong>\(a^{\mathrm{dir}}\)</strong> 方向整合</td>
+          <td>キーがクエリから見て文章方向に沿うか</td>
+          <td><strong>非対称でよい</strong>。前方参照と後方参照は等価ではない</td>
+        </tr>
+        <tr>
+          <td><strong>\(d_g\)</strong> 測地近接</td>
+          <td>意味多様体上の距離。近いほど logit を上げる</td>
+          <td>全対計算は高価。局所接空間距離・Nyström・landmark で近似</td>
+        </tr>
+        <tr>
+          <td><strong>\(s^{\mathrm{ev}}\)</strong> 根拠支持</td>
+          <td>検索された根拠がその参照を支持するか</td>
+          <td>RAG 由来のスコアを logit に直結させる唯一の外部項</td>
+        </tr>
+        <tr class="energy-highlight">
+          <td><strong>\(m^{\mathrm{causal}}\)</strong> mask</td>
+          <td>未来トークンの参照を \(-\infty\) で遮断</td>
+          <td>これが無いと生成モデルとして成立しない</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="card reveal">
+      <h3>定理 20–21：不変性と有界性</h3>
+      <p>
+        五つの特徴がすべてゲージ不変量として構成されているため、logit も出力も局所ユニタリゲージ変換に対して不変である。
+        また softmax 重みは非負で総和 1 だから、出力は値ベクトルの<strong>凸結合</strong>にとどまる。
+      </p>
+      <div class="math-box">
+        <span class="math-label">行ノルム有界性</span>
+        \[ \|\mathrm{out}_i\| = \Big\|\sum_j \pi_{ij} v_j\Big\| \le \max_j \|v_j\|,
+           \qquad \pi_{ij}\ge 0,\ \sum_j \pi_{ij}=1 \]
+      </div>
+      <p style="margin-bottom:0;">
+        さらにコンパクト領域上で各特徴が Lipschitz 連続なら、写像全体も Lipschitz 連続になる（定理 23）。
+        softmax の Jacobian ノルムが \(1/2\) 以下で抑えられることが効いている。
+        ただし<strong>これは adversarial robustness の保証ではない</strong>。
+        測地線が分岐する場合や hard Oracle 境界を直接学習に流す場合、仮定は破れる。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>退化条件という健全性チェック</h3>
+      <p style="margin-bottom:0;">
+        論文は付録に unit test を並べている。中でも重要なのは
+        <strong>\(\alpha=\beta=\gamma=\delta=\zeta=0\) で標準 Attention に厳密に一致する</strong>という要求である。
+        ランダム局所位相を加えても出力が不変であること、固有ベクトルの符号や縮退部分空間内の基底を変えても
+        スペクトル射影が不変であること、padding 長を変えても非 padding 部分が一致すること —
+        これらは実装の正しさを機械的に検査できる形に落とし込まれている。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── RISK ── -->
+  <section id="risk">
+    <div class="section-label">07 // RISK</div>
+    <h2>Hallucination を「確率」と呼ばない</h2>
+
+    <p class="reveal">
+      生成文を原子的主張 \(c_1,\dots,c_M\) へ分解し、各主張に根拠集合を対応させる。
+      その上で五つの偏差を非負スコアへ束ね、<strong>校正して初めて確率と呼ぶ</strong>。
+    </p>
+
+    <div class="math-box reveal">
+      <span class="math-label">ステップリスクと校正</span>
+      \[ R_t = w_1\delta^{\mathrm{dir}}_t + w_2\delta^{\mathrm{path}}_t + w_3\delta^{\mathrm{curv}}_t
+              + w_4\big(1-e_t\big) + w_5 u_t \;\ge 0,
+         \qquad \hat{p}_t = \sigma\!\left(a R_t + b\right) \]
+    </div>
+
+    <div class="card reveal">
+      <h3>五つの偏差</h3>
+      <div class="term-grid">
+        <div class="term" style="border-left:2px solid var(--accent);">
+          <div class="term-name" style="color:var(--accent);">δ_dir｜方向偏差</div>
+          <div class="term-desc">生成の進行方向が文章方向 \(d_{\text{doc}}\) からどれだけ外れたか</div>
+        </div>
+        <div class="term" style="border-left:2px solid var(--accent);">
+          <div class="term-name" style="color:var(--accent);">δ_path｜経路偏差</div>
+          <div class="term-desc">参照経路（指示・事実・安全・形式制約を満たす経路）からの測地距離</div>
+        </div>
+        <div class="term" style="border-left:2px solid var(--accent3);">
+          <div class="term-name" style="color:var(--accent3);">δ_curv｜曲率偏差</div>
+          <div class="term-desc">近傍での接続曲率。比喩や正当な転換でも上がるため単独では使えない</div>
+        </div>
+        <div class="term" style="border-left:2px solid var(--accent2);">
+          <div class="term-name" style="color:var(--accent2);">1−e｜根拠不足</div>
+          <div class="term-desc">検証器が主張を支持しない度合い。RAG の検索結果と直結する</div>
+        </div>
+        <div class="term" style="border-left:2px solid var(--text-dim); grid-column:span 2;">
+          <div class="term-name" style="color:var(--text-muted);">u｜意味的不確実性</div>
+          <div class="term-desc">量子標的部分空間からの漏れ \(1-\|\Pi_S\varphi\|^2\)、あるいは意味クラス上のエントロピー（semantic entropy）</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h3>校正と選択的生成</h3>
+      <p>
+        \(R_t\) は定義上のスコアであって真の誤り確率ではない。
+        検証データで logistic calibration または isotonic regression を学習し、
+        Brier score・ECE・AUROC・risk–coverage 曲線で評価する。
+        <strong>学習用・校正用・最終評価用のデータ分割は必ず分離する。</strong>
+      </p>
+      <div class="math-box">
+        <span class="math-label">棄権規則</span>
+        \[ \text{abstain}(t) \iff R_t > \tau \qquad
+           \text{（固定閾値だけでなく conformal abstention と比較する）} \]
+      </div>
+      <p style="margin-bottom:0;">
+        保証を主張する場合は、交換可能性・校正集合サイズ・損失の単調性といった仮定を明示せよ、
+        と論文は釘を刺している。
+      </p>
+    </div>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ このリスクが捉えられないもの</div>
+      <ul>
+        <li>流暢な誤答が<strong>一貫して</strong>生成される場合、意味的不確実性だけでは検出できない。</li>
+        <li>検索源そのものが誤っている場合、根拠項は誤りを支持してしまう。</li>
+        <li>価値判断・将来予測・曖昧な質問では、そもそも真偽ラベルが定義しにくい。</li>
+        <li>高リスク分野では、自動生成を単独の意思決定根拠にせず、人間確認と出典提示を組み込むこと。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── EXPERIMENTS ── -->
+  <section id="experiments">
+    <div class="section-label">08 // EXPERIMENTS</div>
+    <h2>反証可能性を先に書く実験計画</h2>
+
+    <p class="reveal">
+      この論文の設計上もっとも特徴的なのは、<strong>何が起きたら仮説を捨てるかを先に宣言している</strong>点である。
+      五つの研究質問それぞれに、支持条件ではなく反証条件が対応づけられている。
+    </p>
+
+    <div class="table-scroll reveal">
+    <table class="energy-table">
+      <thead>
+        <tr><th>RQ</th><th>問い</th><th>反証条件（これが起きたら棄却・修正）</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>RQ1</strong><br>階層</td>
+          <td>学習された波長は既知の上位下位関係と整合するか（WordNet / HyperLex）</td>
+          <td>波長相関がゼロ付近、または多軸化しても Order / Poincaré Embeddings を超えない</td>
+        </tr>
+        <tr>
+          <td><strong>RQ2</strong><br>論旨</td>
+          <td>低周波方向は要約・指示と整合し、長文生成の話題逸脱を減らすか</td>
+          <td>低周波方向が topic drift を<strong>悪化</strong>させる、または必要な話題転換まで抑制する</td>
+        </tr>
+        <tr>
+          <td><strong>RQ3</strong><br>位相</td>
+          <td>共変位相整合は単純な cosine 類似度を超える予測力を持つか</td>
+          <td>位相シャッフル対照と統計的に区別できない</td>
+        </tr>
+        <tr>
+          <td><strong>RQ4</strong><br>根拠</td>
+          <td>幾何リスクは entropy・SelfCheckGPT・semantic entropy を超えて誤りを識別・校正できるか</td>
+          <td>単独の既存基準を上回らない、または曲率が正当な転換と誤りを分離できない</td>
+        </tr>
+        <tr>
+          <td><strong>RQ5</strong><br>量子</td>
+          <td>スペクトル選択は同一計算予算の古典フィルタより有効か</td>
+          <td>ノイズ・状態準備・読み出しを含む<strong>総コスト</strong>で利点がない</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">計算量：どこが本当に高くつくか</h3>
+    <div class="table-scroll reveal">
+    <table class="energy-table">
+      <thead>
+        <tr><th>方式</th><th>計算量</th><th>読み方</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>密 Attention</td><td>\(O(n^2 d)\)</td><td>基準。\(n\) が2倍なら全対計算は概ね4倍</td></tr>
+        <tr><td>全対 WavePhase</td><td>\(O(n^2 d)\)</td><td>同次数だが定数因子が増える</td></tr>
+        <tr><td>完全固有分解</td><td>\(O(n^3)\)</td><td>大規模では非現実的</td></tr>
+        <tr class="energy-highlight"><td>Lanczos（低 \(K\) モード）</td><td>\(\tilde{O}(T K |E|)\)</td><td>疎グラフ前提。実用的な現実解</td></tr>
+        <tr><td>Chebyshev フィルタ</td><td>\(O(P|E|d)\)</td><td>固有分解なしの多項式近似</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ 見落とされがちな二次コスト</div>
+      <ul>
+        <li>厳密 kNN を毎回全点比較で作ると、<strong>グラフ構築自体が二次</strong>になり疎化の利点が消える。ANN・landmark・グラフ再利用も測定する。</li>
+        <li>測地距離の全対計算も同様。局所接空間距離や Nyström 近似との比較が必要。</li>
+        <li>量子側は QFT のゲート数だけでは語れない。状態準備、\(e^{iHt}\) のブロック符号化、QPE 精度 \(\epsilon\) に必要な制御時間、振幅増幅反復 \(O(1/\sqrt{a})\)、誤り訂正、読み出し shots がすべて総コストに乗る。</li>
+      </ul>
+    </div>
+
+    <div class="card reveal">
+      <h3>統計設計</h3>
+      <p style="margin-bottom:0;">
+        最低 5 seed で平均と 95% 信頼区間を報告する。同一入力に対しては paired bootstrap を用いる。
+        ハイパーパラメータ探索予算を比較モデル間で揃える。主要指標と棄却条件は<strong>事前に</strong>定める。
+        効果量と計算量を同時に報告し、統計的有意差だけで結論しない。
+        日本語評価では英語データの単純翻訳に頼らず、省略・敬語・主語省略・多義語・表記揺れを含む独立セットを作る。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── CLAIMS MAP ── -->
+  <section id="claims">
+    <div class="section-label">09 // CLAIMS MAP</div>
+    <h2>証明済み・経験仮説・未証明の地図</h2>
+
+    <p class="reveal">
+      論文第19節の対応表を、主張の強さで色分けして読み直したもの。
+      <span class="badge thm">定理</span> は定義した数学系の内部整合性、
+      <span class="badge emp">仮説</span> は実データで反証されうる対応、
+      <span class="badge open">未証明</span> は今後の課題である。
+    </p>
+
+    <div class="table-scroll reveal">
+    <table class="energy-table">
+      <thead>
+        <tr><th>区分</th><th>結果</th><th>内容</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="badge thm">定理</span></td><td>共変位相速度の不変性</td><td>局所ゲージ変換下で \(\omega\) と \(\lambda\) は不変</td></tr>
+        <tr><td><span class="badge thm">定理</span></td><td>商集合階層</td><td>単一波長の同値類は全順序をなし、二項演算で分配束</td></tr>
+        <tr><td><span class="badge thm">命題</span></td><td>多軸階層</td><td>成分ごとの min / max に閉じれば分配束</td></tr>
+        <tr><td><span class="badge thm">定理</span></td><td>Oracle</td><td>\(O_S=I-2\Pi_S\) は自己共役かつ対合的</td></tr>
+        <tr><td><span class="badge thm">定理</span></td><td>振幅増幅</td><td>成功確率は \(\sin^2((2k+1)\theta_a)\)</td></tr>
+        <tr><td><span class="badge thm">定理</span></td><td>量子ブロック</td><td>構成要素がユニタリなら全ブロックもユニタリ</td></tr>
+        <tr><td><span class="badge thm">定理</span></td><td>Attention 有界性</td><td>出力は値ベクトルの凸包内に留まる</td></tr>
+        <tr><td><span class="badge thm">定理</span></td><td>局所安定性</td><td>有界 Lipschitz 特徴の下で Attention は Lipschitz</td></tr>
+        <tr><td><span class="badge thm">条件付</span></td><td>生成収束</td><td>Hadamard 多様体・強凸・smooth の下で線形収束（前提は強い）</td></tr>
+        <tr><td><span class="badge emp">仮説</span></td><td>長波長＝上位概念</td><td>HyperLex / WordNet 等で検証</td></tr>
+        <tr><td><span class="badge emp">仮説</span></td><td>低周波＝論旨</td><td>要約整合と topic drift で検証</td></tr>
+        <tr><td><span class="badge emp">仮説</span></td><td>リスク＝誤り予測</td><td>独立事実ラベルと校正指標で検証</td></tr>
+        <tr class="energy-highlight"><td><span class="badge open">未証明</span></td><td>量子優位性</td><td>end-to-end 資源見積りが必要。<strong>本稿は主張しない</strong></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="card reveal">
+      <h3>段階的実装：全部を一度に入れない</h3>
+      <p>
+        再現用最小モデルでは \(\mathcal{M}=\mathbb{R}^d\)、\(g=I\)、接続を自明として始める。
+        このとき測地距離は Euclid 距離、平行移動は恒等写像、共変位相整合は通常の複素内積に退化する。
+      </p>
+      <div class="concept-flow" style="margin-bottom:0;">
+        <div class="concept-node">① Phase-only</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">② Wavelength</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">③ Direction</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">④ WP Attention</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">⑤ Evidence risk</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">⑥ Learned geometry</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">⑦ Quantum sim</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── RELATED ── -->
+  <section id="related">
+    <div class="section-label">10 // RELATED WORK</div>
+    <h2>関連研究との距離</h2>
+
+    <div class="ref-card reveal">
+      <span class="ref-tag sim">前提を共有</span>
+      <div>
+        <div class="ref-name">Order Embeddings / Poincaré Embeddings</div>
+        <div class="ref-desc">対称な距離だけでは上位下位関係を表せないという問題意識は共通。ただし本稿の波長順序はこれらの<strong>代替ではなく別座標</strong>であり、波長だけで包含を決定せず多軸順序・双曲幾何・教師付き包含損失と併用する立場をとる。</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <span class="ref-tag sim">数学的背景</span>
+      <div>
+        <div class="ref-name">Vector Diffusion Maps / 接続 Laplacian (Singer &amp; Wu 2012)</div>
+        <div class="ref-desc">異なる接空間のベクトルを比較するには平行移動が要る、という核心的道具を提供。本稿の文章方向は、スカラー重みではなく基準接空間へ移したベクトル信号の低域成分として構成される。</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <span class="ref-tag diff">差別化点</span>
+      <div>
+        <div class="ref-name">WavePhaseNet（前稿）との関係</div>
+        <div class="ref-desc">前稿はトークン列への DFT で意味階層を構築した。本稿は同じ直観を<strong>ゲージ共変な枠組みへ書き直し</strong>、位相角そのものではなく共変位相速度を観測量とする。WavePhase Attention はその結果を標準 Attention と競合させず、補正 logit と残差特徴として統合する。</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <span class="ref-tag diff">差別化点</span>
+      <div>
+        <div class="ref-name">量子自然言語処理 (Coecke et al.)</div>
+        <div class="ref-desc">意味合成をヒルベルト空間・圏論・テンソル積で記述する先行例。本稿はさらに QPE と振幅増幅による<strong>離散帯域選択</strong>を中核に据え、滑らかなフィルタの代替として QSVT を位置づける。</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <span class="ref-tag warn">置換しない</span>
+      <div>
+        <div class="ref-name">SelfCheckGPT / semantic entropy / RAG</div>
+        <div class="ref-desc">既存のハルシネーション検出を置き換えるのではなく、根拠整合と意味的不確実性を<strong>明示的な項として取り込む</strong>。最終的な確率解釈には校正が必要で、棄権保証には conformal risk control 等を組み合わせる余地があるとする。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── LIMITS ── -->
+  <section id="limits">
+    <div class="section-label">11 // LIMITS</div>
+    <h2>同定可能性と限界</h2>
+
+    <div class="card reveal">
+      <h3>ゲージと座標の非一意性</h3>
+      <p style="margin-bottom:0;">
+        埋め込み写像 \(\iota\)、計量 \(g\)、接続 \(\nabla\)、局所基底のいずれも一意ではない。
+        観測可能なのは測地距離、平行移動内積、Wilson loop、共変位相速度といった<strong>不変量だけ</strong>である。
+        位相角そのものや接続係数そのものを意味的実体として解釈してはならない —
+        これは可視化ツールを作る側が最も踏みやすい地雷でもある。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>階層の非一意性</h3>
+      <p style="margin-bottom:0;">
+        同じ概念対でも、種類・部分全体・時間尺度・因果抽象度・社会的カテゴリで異なる階層軸が存在する。
+        単一波長を普遍的な「概念深度」とみなすことはできない。多軸尺度と教師付き関係タイプが必要である。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>量子優位性は未確立</h3>
+      <p style="margin-bottom:0;">
+        QFT や振幅増幅の部分的計算量だけから end-to-end の高速化は結論できない。
+        古典側には FFT、疎行列法、Lanczos、Chebyshev、GPU 並列化がある。
+        公平な比較のためには入力・出力モデルと目標精度を揃えなければならない。
+        論文は繰り返しこの点を明言しており、この慎重さ自体が本稿の設計思想を表している。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── CONCLUSION ── -->
+  <section id="conclusion">
+    <div class="conclusion-box reveal">
+      <div class="section-label" style="text-align:center;">12 // CONCLUSION</div>
+      <h2>結論</h2>
+      <p>
+        QuantumPhaseNet は意味を「多様体 × 複素束 × 接続 × スペクトル × 量子作用素」という複合数学対象として表す。
+        複素振幅は文脈的干渉を、共変位相速度は文脈に沿う位相変化を、意味波長は概念尺度を、
+        低周波方向は論旨を、接続は文脈間の比較規則を、曲率は意味連結の非可換性を担う。
+      </p>
+      <p style="margin-top:1rem;">
+        最も重要な改善点は、位相と波長を<strong>ゲージ依存な座標から不変な観測量へ移した</strong>こと、
+        QPE 内部の逆 QFT と外部スペクトル変換を区別したこと、
+        Hallucination リスクを校正以前に「確率」と呼ばなかったこと、
+        そして数学的整合性・経験的有効性・量子計算優位性を<strong>別々の主張として扱った</strong>ことである。
+      </p>
+      <p style="margin-top:1rem;">
+        今後の中心課題は、(i) 波長と概念階層の同定可能性、(ii) 低周波方向と論旨の対応、
+        (iii) 曲率と正当な意味転換の識別、(iv) 根拠付き長文生成における校正、
+        (v) 古典近似と量子回路の公平な資源比較である。
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrapper" style="padding-top:0; padding-bottom:0;">
+    QuantumPhaseNet 論文解説ページ &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp; 本ページは論文の解説を目的として作成されました
+  </div>
+</footer>
+
+<script>
+// ── Gauge phase-field canvas ──
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, frame = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Local phase field: each lattice site carries a U(1) phase that winds
+// around two "vortices" — a visual stand-in for a gauge connection.
+function phaseAt(x, y, t) {
+  const v1x = W * 0.28, v1y = H * 0.35;
+  const v2x = W * 0.74, v2y = H * 0.68;
+  const a1 = Math.atan2(y - v1y, x - v1x);
+  const a2 = Math.atan2(y - v2y, x - v2x);
+  const r  = Math.hypot(x - W * 0.5, y - H * 0.5);
+  return a1 - a2 + r * 0.004 + t * 0.012;
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  const step = 64, len = 13;
+
+  // phase arrows
+  for (let x = step * 0.5; x < W; x += step) {
+    for (let y = step * 0.5; y < H; y += step) {
+      const th = phaseAt(x, y, frame);
+      const dx = Math.cos(th) * len, dy = Math.sin(th) * len;
+      const shade = 0.5 + 0.5 * Math.cos(th);
+      ctx.beginPath();
+      ctx.strokeStyle = shade > 0.5 ? '#6d28d9' : '#0891b2';
+      ctx.globalAlpha = 0.10 + 0.20 * shade;
+      ctx.lineWidth = 1.2;
+      ctx.moveTo(x - dx, y - dy);
+      ctx.lineTo(x + dx, y + dy);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.fillStyle = '#6d28d9';
+      ctx.globalAlpha = 0.16;
+      ctx.arc(x + dx, y + dy, 1.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // expanding holonomy rings around each vortex
+  const rings = [
+    { cx: W * 0.28, cy: H * 0.35, color: '#6d28d9' },
+    { cx: W * 0.74, cy: H * 0.68, color: '#0891b2' }
+  ];
+  rings.forEach((rg, i) => {
+    for (let k = 0; k < 3; k++) {
+      const period = 320;
+      const p = ((frame + k * period / 3 + i * 90) % period) / period;
+      const rad = p * Math.max(W, H) * 0.42;
+      ctx.beginPath();
+      ctx.strokeStyle = rg.color;
+      ctx.globalAlpha = 0.16 * (1 - p);
+      ctx.lineWidth = 1;
+      ctx.arc(rg.cx, rg.cy, rad, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  });
+
+  ctx.globalAlpha = 1;
+  frame++;
+  if (!reduceMotion) requestAnimationFrame(draw);
+}
+draw();
+
+// ── Scroll reveal ──
+const reveals = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+reveals.forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
