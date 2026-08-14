@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WavePhaseNet — Paper Explainer</title>
+<title>WavePhaseNet — Paper Explainer (Detailed)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
@@ -18,7 +18,7 @@
     --accent3: #d97706;
     --text: #0d1829;
     --text-muted: #3d5166;
-    --text-dim: #8fa4bc;
+    --text-dim: #7d8fa3;
     --glow: rgba(0,136,170,0.12);
     --font-serif: 'Noto Serif JP', serif;
     --font-mono: 'Space Mono', monospace;
@@ -26,6 +26,7 @@
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
+
   html { scroll-behavior: smooth; }
 
   body {
@@ -37,13 +38,15 @@
     overflow-x: hidden;
   }
 
+  /* ── Canvas Background ── */
   #bg-canvas {
     position: fixed; top: 0; left: 0;
     width: 100%; height: 100%;
-    z-index: 0; opacity: 0.55;
+    z-index: 0; opacity: 0.5;
     pointer-events: none;
   }
 
+  /* ── Nav ── */
   nav {
     position: fixed; top: 0; left: 0; right: 0;
     z-index: 100;
@@ -58,9 +61,24 @@
     display: flex; align-items: center; gap: 1.4rem;
     margin-left: auto;
   }
-  .nav-logo { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); letter-spacing: 0.1em; }
-  .nav-links { display: flex; gap: 2rem; list-style: none; margin-left: 2rem; }
-  .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.78rem; letter-spacing: 0.08em; transition: color 0.2s; }
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+  .nav-links {
+    display: flex; gap: 1.6rem; list-style: none;
+    margin-left: 2rem;
+  }
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    transition: color 0.2s;
+  }
   .nav-links a:hover { color: var(--accent); }
 
   /* ── Language toggle pill ── */
@@ -105,174 +123,535 @@
     border-bottom-color: var(--accent);
   }
 
-  .wrapper { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 2rem 6rem; }
+  /* ── Main wrapper ── */
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
 
+  /* ── Hero ── */
   .hero {
     min-height: 100vh;
     display: flex; flex-direction: column;
     justify-content: center; align-items: flex-start;
     padding-top: 80px;
+    position: relative;
   }
   .hero-tag {
-    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.2em;
-    color: var(--accent); border: 1px solid var(--accent); padding: 0.3em 0.9em;
-    display: inline-block; margin-bottom: 1.5rem;
-    opacity: 0; animation: fadeUp 0.6s ease 0.2s forwards;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.3em 0.9em;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.2s forwards;
   }
   .hero-title {
-    font-family: var(--font-serif); font-size: clamp(2.4rem, 6vw, 4.2rem);
-    font-weight: 700; line-height: 1.15; letter-spacing: -0.01em; margin-bottom: 0.5rem;
-    opacity: 0; animation: fadeUp 0.6s ease 0.35s forwards;
+    font-family: var(--font-serif);
+    font-size: clamp(2.2rem, 5.6vw, 4rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.35s forwards;
   }
-  .hero-title .wave { color: var(--accent); display: inline-block; animation: pulse 3s ease-in-out infinite; }
+  .hero-title .wave {
+    color: var(--accent);
+    display: inline-block;
+    animation: pulse 3s ease-in-out infinite;
+  }
   .hero-subtitle {
-    font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent2);
-    letter-spacing: 0.05em; margin-bottom: 2rem;
-    opacity: 0; animation: fadeUp 0.6s ease 0.45s forwards;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--accent2);
+    letter-spacing: 0.05em;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.45s forwards;
   }
   .hero-meta {
-    display: flex; gap: 2rem; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 2.5rem;
-    opacity: 0; animation: fadeUp 0.6s ease 0.55s forwards;
+    display: flex; gap: 2rem; flex-wrap: wrap;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.55s forwards;
   }
   .hero-meta span { display: flex; align-items: center; gap: 0.4rem; }
   .hero-desc {
-    font-size: 1.05rem; color: var(--text-muted); max-width: 640px; line-height: 1.9;
-    opacity: 0; animation: fadeUp 0.6s ease 0.65s forwards; margin-bottom: 3rem;
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 640px;
+    line-height: 1.9;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.65s forwards;
+    margin-bottom: 3rem;
   }
   .scroll-hint {
-    font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim);
-    letter-spacing: 0.15em; display: flex; align-items: center; gap: 0.5rem;
-    opacity: 0; animation: fadeUp 0.6s ease 0.8s forwards;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    display: flex; align-items: center; gap: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.8s forwards;
   }
   .scroll-hint::after {
-    content: ''; display: block; width: 40px; height: 1px; background: var(--text-dim);
+    content: '';
+    display: block; width: 40px; height: 1px;
+    background: var(--text-dim);
     animation: expandLine 1.5s ease infinite;
   }
 
+  /* ── Section layout ── */
   section { padding: 5rem 0; border-top: 1px solid var(--border); }
-  .section-label { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.25em; color: var(--accent); margin-bottom: 0.6rem; opacity: 0.8; }
-  h2 { font-family: var(--font-serif); font-size: 1.9rem; font-weight: 700; margin-bottom: 2rem; line-height: 1.3; }
-  h3 { font-family: var(--font-serif); font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; color: var(--text); }
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+    opacity: 0.8;
+  }
+  h2 {
+    font-family: var(--font-serif);
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    line-height: 1.3;
+  }
+  h3 {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
   p { margin-bottom: 1.2rem; color: var(--text-muted); }
 
+  /* ── Card ── */
   .card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 2px;
-    padding: 2rem; margin-bottom: 1.5rem; position: relative; overflow: hidden; transition: border-color 0.3s;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
   }
-  .card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--accent); opacity: 0; transition: opacity 0.3s; }
-  .card:hover { border-color: rgba(0,136,170,0.35); }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .card:hover { border-color: rgba(0,136,170,0.4); }
   .card:hover::before { opacity: 1; }
 
+  /* ── Abstract ── */
   .abstract-box {
-    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
-    padding: 2.5rem; margin-bottom: 2rem; position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    position: relative;
   }
   .abstract-box::before {
-    content: '"'; position: absolute; top: 1rem; left: 2rem;
-    font-family: var(--font-serif); font-size: 5rem; color: var(--accent); opacity: 0.08; line-height: 1;
+    content: '"';
+    position: absolute; top: 1rem; left: 2rem;
+    font-family: var(--font-serif);
+    font-size: 5rem;
+    color: var(--accent);
+    opacity: 0.08;
+    line-height: 1;
   }
 
-  .concept-flow { display: flex; align-items: center; gap: 0; margin: 2rem 0; flex-wrap: wrap; }
+  /* ── Concept flow ── */
+  .concept-flow {
+    display: flex; align-items: center; gap: 0;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+  }
   .concept-node {
-    background: var(--surface2); border: 1px solid var(--border); padding: 0.9rem 1.4rem;
-    font-size: 0.82rem; font-family: var(--font-mono); color: var(--text); white-space: nowrap; transition: all 0.2s;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.9rem 1.4rem;
+    font-size: 0.82rem;
+    font-family: var(--font-mono);
+    color: var(--text);
+    position: relative;
+    white-space: nowrap;
+    transition: all 0.2s;
+    cursor: default;
   }
-  .concept-node:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 20px var(--glow); }
-  .concept-arrow { color: var(--accent); font-size: 1.2rem; padding: 0 0.5rem; opacity: 0.6; }
+  .concept-node:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 20px var(--glow);
+  }
+  .concept-arrow {
+    color: var(--accent);
+    font-size: 1.2rem;
+    padding: 0 0.5rem;
+    opacity: 0.6;
+  }
 
-  .freq-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); margin: 2rem 0; }
-  .freq-cell { background: var(--surface); padding: 1.8rem 1.5rem; text-align: center; transition: background 0.2s; }
+  /* ── Triple grid ── */
+  .freq-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+    margin: 2rem 0;
+  }
+  .freq-cell {
+    background: var(--surface);
+    padding: 1.8rem 1.5rem;
+    text-align: center;
+    transition: background 0.2s;
+  }
   .freq-cell:hover { background: var(--surface2); }
-  .freq-icon { font-family: var(--font-mono); font-size: 1.6rem; margin-bottom: 0.8rem; display: block; }
-  .freq-label { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .freq-icon {
+    font-family: var(--font-mono);
+    font-size: 1.6rem;
+    margin-bottom: 0.8rem;
+    display: block;
+  }
+  .freq-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
   .freq-cell:nth-child(1) .freq-label { color: var(--accent); }
   .freq-cell:nth-child(2) .freq-label { color: var(--accent3); }
   .freq-cell:nth-child(3) .freq-label { color: var(--accent2); }
   .freq-desc { font-size: 0.8rem; color: var(--text-muted); }
 
-  .math-box {
-    background: #0d1829; border: 1px solid var(--border); border-radius: 1px;
-    padding: 1.8rem 2rem; margin: 1.5rem 0; font-family: var(--font-mono); font-size: 0.85rem; overflow-x: auto; position: relative;
+  /* ── Two-column split ── */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem 0; }
+  .split-cell {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 1.6rem 1.5rem;
   }
-  .math-box .math-label { position: absolute; top: 0.6rem; right: 1rem; font-size: 0.62rem; color: #5a7a9a; letter-spacing: 0.1em; }
+  .split-cell.hot { border-color: rgba(0,136,170,0.45); }
+  .split-cell h4 {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 0.7rem;
+  }
+  .split-cell.cool h4 { color: var(--accent2); }
+  .split-cell p { font-size: 0.82rem; margin: 0; }
+
+  /* ── Math box ── */
+  .math-box {
+    background: #0d1829;
+    border: 1px solid var(--border);
+    border-radius: 1px;
+    padding: 1.8rem 2rem;
+    margin: 1.5rem 0;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    overflow-x: auto;
+    position: relative;
+  }
+  .math-box .math-label {
+    position: absolute; top: 0.6rem; right: 1rem;
+    font-size: 0.62rem;
+    color: #5a7a9a;
+    letter-spacing: 0.1em;
+  }
   .math-box mjx-container,
-  .math-box mjx-container * { color: #e2e8f0 !important; }
+  .math-box mjx-container * {
+    color: #e2e8f0 !important;
+  }
 
+  /* ── Table ── */
   .energy-table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
-  .energy-table th { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em; color: var(--accent); text-align: left; padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); }
-  .energy-table td { padding: 0.8rem 1rem; font-size: 0.85rem; border-bottom: 1px solid rgba(180,200,220,0.6); color: var(--text-muted); }
+  .energy-table th {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-align: left;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .energy-table td {
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+    border-bottom: 1px solid rgba(180,200,220,0.6);
+    color: var(--text-muted);
+    vertical-align: top;
+  }
   .energy-table tr:hover td { background: var(--surface); }
-  .energy-bar-wrap { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; min-width: 120px; }
-  .energy-bar { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent2), var(--accent)); }
   .energy-highlight td { color: var(--accent) !important; font-weight: 500; }
+  .table-scroll { overflow-x: auto; }
 
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    padding: 0.15em 0.55em;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .badge.thm { border-color: var(--accent); color: var(--accent); }
+  .badge.emp { border-color: var(--accent3); color: var(--accent3); }
+  .badge.open { border-color: var(--text-dim); color: var(--text-dim); }
+
+  /* ── Metric cards ── */
+  .metric-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: var(--border);
+    margin: 2rem 0;
+  }
+  .metric { background: var(--surface); padding: 1.5rem 1.1rem; text-align: center; }
+  .metric-label {
+    font-family: var(--font-mono); font-size: 0.6rem;
+    letter-spacing: 0.1em; color: var(--text-dim);
+    margin-bottom: 0.6rem; min-height: 2.2em;
+  }
+  .metric-val {
+    font-family: var(--font-mono); font-size: 1.9rem; font-weight: 700;
+    color: var(--accent); line-height: 1;
+  }
+  .metric-base { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.55rem; }
+  .metric.neg .metric-val { color: var(--accent3); }
+
+  /* ── 3-pillars ── */
   .pillars { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin: 2rem 0; }
-  .pillar { border: 1px solid var(--border); padding: 1.8rem 1.4rem; background: var(--surface); transition: all 0.3s; }
-  .pillar:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,136,170,0.1); }
-  .pillar-num { font-family: var(--font-mono); font-size: 2.5rem; font-weight: 700; color: var(--border); line-height: 1; margin-bottom: 0.8rem; transition: color 0.3s; }
+  .pillar {
+    border: 1px solid var(--border);
+    padding: 1.8rem 1.4rem;
+    position: relative;
+    background: var(--surface);
+    transition: all 0.3s;
+  }
+  .pillar:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,136,170,0.1);
+  }
+  .pillar-num {
+    font-family: var(--font-mono);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 0.8rem;
+    transition: color 0.3s;
+  }
   .pillar:hover .pillar-num { color: var(--accent); opacity: 0.4; }
-  .pillar h4 { font-family: var(--font-serif); font-size: 0.95rem; font-weight: 600; margin-bottom: 0.6rem; color: var(--text); }
+  .pillar h4 {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    color: var(--text);
+  }
   .pillar p { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
 
-  .arch-flow { margin: 2rem 0; display: flex; flex-direction: column; }
-  .arch-step { display: flex; align-items: stretch; }
-  .arch-step-num { font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent); width: 36px; min-width: 36px; display: flex; align-items: center; justify-content: center; position: relative; }
-  .arch-step-num::after { content: ''; position: absolute; left: 50%; width: 1px; height: 100%; background: var(--border); top: 50%; }
+  /* ── Architecture ── */
+  .arch-flow {
+    margin: 2rem 0;
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .arch-step {
+    display: flex; align-items: stretch;
+    gap: 0;
+  }
+  .arch-step-num {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--accent);
+    width: 36px; min-width: 36px;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    position: relative;
+  }
+  .arch-step-num::after {
+    content: '';
+    position: absolute; bottom: 0; left: 50%;
+    width: 1px; height: 100%;
+    background: var(--border);
+    top: 50%;
+  }
   .arch-step:last-child .arch-step-num::after { display: none; }
-  .arch-step-body { flex: 1; background: var(--surface); border: 1px solid var(--border); padding: 1.2rem 1.5rem; margin: 4px 0 4px 1rem; transition: border-color 0.2s; }
+  .arch-step-body {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1.2rem 1.5rem;
+    margin: 4px 0;
+    margin-left: 1rem;
+    transition: border-color 0.2s;
+  }
   .arch-step-body:hover { border-color: rgba(0,136,170,0.35); }
-  .arch-step-title { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); letter-spacing: 0.1em; margin-bottom: 0.4rem; }
+  .arch-step-title {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.4rem;
+  }
   .arch-step-desc { font-size: 0.82rem; color: var(--text-muted); }
 
-  .ref-card { border: 1px solid var(--border); padding: 1.5rem; background: var(--surface); margin-bottom: 1rem; display: grid; grid-template-columns: auto 1fr; gap: 1.2rem; align-items: start; transition: border-color 0.2s; }
+  /* ── Risk terms ── */
+  .term-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-top: 1rem; }
+  .term { padding-left: 0.8rem; }
+  .term-name { font-size: 0.75rem; font-family: var(--font-mono); }
+  .term-desc { font-size: 0.78rem; color: var(--text-muted); }
+
+  /* ── Related work ── */
+  .ref-card {
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    background: var(--surface);
+    margin-bottom: 1rem;
+    display: grid; grid-template-columns: auto 1fr;
+    gap: 1.2rem;
+    align-items: start;
+    transition: border-color 0.2s;
+  }
   .ref-card:hover { border-color: rgba(0,136,170,0.35); }
-  .ref-tag { font-family: var(--font-mono); font-size: 0.65rem; padding: 0.2em 0.6em; border: 1px solid; white-space: nowrap; align-self: start; }
-  .ref-tag.sim { border-color: var(--accent); color: var(--accent); }
-  .ref-tag.diff { border-color: var(--accent2); color: var(--accent2); }
+  .ref-tag {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 0.2em 0.6em;
+    border: 1px solid;
+    white-space: nowrap;
+    align-self: start;
+    margin-top: 0.1rem;
+  }
+  .ref-tag.sim { border-color: var(--accent2); color: var(--accent2); }
+  .ref-tag.diff { border-color: var(--accent); color: var(--accent); }
+  .ref-tag.warn { border-color: var(--accent3); color: var(--accent3); }
   .ref-name { font-weight: 500; font-size: 0.88rem; margin-bottom: 0.4rem; }
   .ref-desc { font-size: 0.78rem; color: var(--text-muted); }
 
-  .conclusion-box {
-    background: linear-gradient(135deg, rgba(0,136,170,0.05), rgba(109,40,217,0.07));
-    border: 1px solid rgba(0,136,170,0.2); padding: 3rem; text-align: center; position: relative; overflow: hidden;
+  /* ── Caution list ── */
+  .caution {
+    border: 1px dashed var(--accent3);
+    background: rgba(217,119,6,0.04);
+    padding: 1.5rem 1.8rem;
+    margin: 1.5rem 0;
   }
-  .conclusion-box::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 50%, rgba(0,136,170,0.06), transparent 70%); }
+  .caution-title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--accent3);
+    margin-bottom: 0.8rem;
+  }
+  .caution ul { margin: 0; padding-left: 1.2rem; }
+  .caution li { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+
+  /* ── Conclusion highlight ── */
+  .conclusion-box {
+    background: linear-gradient(135deg, rgba(0,136,170,0.06), rgba(0,136,170,0.07));
+    border: 1px solid rgba(0,136,170,0.2);
+    padding: 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .conclusion-box::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(0,136,170,0.07), transparent 70%);
+  }
   .conclusion-box h2 { font-size: 1.5rem; margin-bottom: 1rem; }
-  .conclusion-box p { max-width: 600px; margin: 0 auto; font-size: 0.92rem; }
+  .conclusion-box p { max-width: 620px; margin: 0 auto; font-size: 0.92rem; }
 
+  /* ── Tag chip ── */
   .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; }
-  .chip { font-family: var(--font-mono); font-size: 0.65rem; padding: 0.25em 0.75em; border: 1px solid var(--border); color: var(--text-dim); letter-spacing: 0.08em; }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 0.25em 0.75em;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
 
-  footer { border-top: 1px solid var(--border); padding: 3rem 0 2rem; text-align: center; font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); letter-spacing: 0.08em; position: relative; z-index: 1; }
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 0 2rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    position: relative; z-index: 1;
+  }
 
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes pulse { 0%,100% { text-shadow: 0 0 16px rgba(0,136,170,0.25); } 50% { text-shadow: 0 0 32px rgba(0,136,170,0.55); } }
-  @keyframes expandLine { 0% { width: 20px; opacity: 0.3; } 50% { width: 60px; opacity: 0.8; } 100% { width: 20px; opacity: 0.3; } }
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%,100% { text-shadow: 0 0 20px rgba(0,136,170,0.25); }
+    50% { text-shadow: 0 0 40px rgba(0,136,170,0.6); }
+  }
+  @keyframes expandLine {
+    0% { width: 20px; opacity: 0.3; }
+    50% { width: 60px; opacity: 0.8; }
+    100% { width: 20px; opacity: 0.3; }
+  }
 
-  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
-  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal {
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1; transform: translateY(0);
+  }
 
+  @media (max-width: 760px) {
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+  }
   @media (max-width: 640px) {
-    .pillars, .freq-grid { grid-template-columns: 1fr; }
+    .metric-grid { grid-template-columns: 1fr 1fr; }
+    .pillars { grid-template-columns: 1fr; }
+    .freq-grid { grid-template-columns: 1fr; }
+    .split { grid-template-columns: 1fr; }
+    .term-grid { grid-template-columns: 1fr; }
+    .concept-flow { gap: 0.3rem; }
     .concept-arrow { display: none; }
   }
 </style>
-</head>
-<body>
+</head><body>
 
 <canvas id="bg-canvas"></canvas>
 
 <nav>
-  <div class="nav-logo">WavePhaseNet // Paper Explainer</div>
+  <div class="nav-logo">WavePhaseNet // Detailed Explainer</div>
   <ul class="nav-links">
     <li><a href="#abstract">Abstract</a></li>
-    <li><a href="#method">Method</a></li>
-    <li><a href="#results">Results</a></li>
-    <li><a href="#related">Related Work</a></li>
+    <li><a href="#hallucination">Theory</a></li>
+    <li><a href="#dft">DFT</a></li>
+    <li><a href="#spectrum">Dimension</a></li>
+    <li><a href="#cohomology">Consistency</a></li>
+    <li><a href="#claims">Claims</a></li>
   </ul>
   <div class="nav-right">
-    <a href="quantumphasenet_intro_en.html" class="nav-page-tab">QuantumPhaseNet →</a>
-    <a href="wavephasenet_faq_en.html" class="nav-page-tab">FAQ →</a>
+    <a href="wavephasenet_intro_en.html" class="nav-page-tab">Plain-language →</a>
     <div class="nav-lang">
       <a href="wavephasenet_ja.html">JA</a>
       <a href="wavephasenet_en.html" class="current">EN</a>
@@ -282,194 +661,317 @@
 
 <div class="wrapper">
 
-  <!-- HERO -->
+  <!-- ── HERO ── -->
   <div class="hero">
-    <div class="hero-tag">arXiv · 2026.01.12</div>
-    <h1 class="hero-title"><span class="wave">Wave</span>PhaseNet</h1>
+    <div class="hero-tag">arXiv:2602.14419 · 2026.01.12</div>
+    <h1 class="hero-title">
+      <span class="wave">Wave</span>PhaseNet
+    </h1>
     <div class="hero-subtitle">A DFT-Based Method for Constructing Semantic Conceptual Hierarchy Structures (SCHS)</div>
     <div class="hero-meta">
       <span>👤 Kiyotaka Kasubuchi, Kazuo Fukiya</span>
       <span>📅 January 12, 2026</span>
     </div>
     <p class="hero-desc">
-      We reformulate the Transformer / Attention mechanisms in LLMs through measure theory and
-      frequency analysis, theoretically demonstrating that hallucination is a structural inevitability.
-      WavePhaseNet constructs an explicit Semantic Conceptual Hierarchy Structure (SCHS) within the
-      embedding space using the Discrete Fourier Transform, enabling rigorous reasoning while
-      suppressing hallucination.
+      Transformer / Attention is reformulated through <strong>measure theory</strong> and
+      <strong>frequency analysis</strong>, positioning hallucination not as a training deficiency but as an
+      <strong>inevitable consequence of mathematical structure</strong>.
+      A Semantic Conceptual Hierarchy Structure (SCHS) is then built explicitly inside the embedding space with the
+      discrete Fourier transform, and cohomology regularization controls inconsistency between local inferences.
     </p>
     <div class="chips">
-      <span class="chip">LLM</span><span class="chip">Transformer</span><span class="chip">DFT</span>
-      <span class="chip">Hallucination Suppression</span><span class="chip">Cohomology</span>
-      <span class="chip">Hodge Theory</span><span class="chip">Dimensionality Reduction</span>
+      <span class="chip">σ-additive family</span><span class="chip">conditional expectation</span><span class="chip">DFT</span>
+      <span class="chip">SCHS</span><span class="chip">Zipf's law</span><span class="chip">1/f spectrum</span>
+      <span class="chip">cohomology</span><span class="chip">Hodge theory</span><span class="chip">dimensionality reduction</span>
     </div>
     <div class="scroll-hint">SCROLL TO EXPLORE</div>
   </div>
 
-  <!-- ABSTRACT -->
+  <!-- ── ABSTRACT ── -->
   <section id="abstract">
     <div class="section-label">01 // ABSTRACT</div>
-    <h2>Overview</h2>
+    <h2>What this paper actually claims</h2>
+
     <div class="abstract-box reveal">
       <p>
-        This paper reformulates the Transformer / Attention mechanism from the perspectives of
-        <strong>measure theory</strong> and <strong>frequency analysis</strong>, theoretically clarifying
-        why hallucination is structurally inevitable. The embedding space functions as a conditional
-        expectation over a σ-additive family; its failure to be isomorphic to the semantic truth set
-        is the fundamental cause of the breakdown of logical consistency.
+        This paper reformulates the Transformer / Attention mechanism from the perspectives of measure theory and
+        frequency analysis, and theoretically clarifies why hallucination is structurally inevitable.
+        The central observation is that the embedding space functions as a
+        <strong>conditional expectation over a σ-additive family</strong>, and that its failure to be isomorphic to the
+        semantic truth set is the fundamental cause of the breakdown in logical consistency.
       </p>
       <p>
-        Based on this observation, we propose <em>WavePhaseNet</em> — a method that explicitly constructs
-        a <strong>Semantic Conceptual Hierarchy Structure (SCHS)</strong> within the embedding space using
-        the Discrete Fourier Transform. Low-frequency components correspond to global meaning and intent;
-        high-frequency components to local syntax and expression, enabling precise semantic manipulation
-        in a diagonalized space.
+        On that basis it proposes <em>WavePhaseNet</em>, a method for explicitly constructing a Semantic Conceptual
+        Hierarchy Structure (SCHS) inside the embedding space using the DFT. Low-frequency components correspond to
+        global meaning and intent, high-frequency components to local syntax and expression, enabling precise semantic
+        manipulation in a diagonalized space. A graph structure over overlapping local windows then defines a cochain
+        complex, quantifying inconsistency between local inferences as a coboundary-based loss.
+      </p>
+      <p>
+        <strong>This paper presents a theoretical framework and contains no experimental validation.</strong>
+        What it offers is the mathematical formulation, the derivations, and the metrics that should be evaluated.
+        The claims map below marks that distinction explicitly.
       </p>
     </div>
+
     <div class="pillars reveal">
       <div class="pillar">
         <div class="pillar-num">01</div>
-        <h4>Mathematical Definition of Hallucination</h4>
-        <p>Output that is optimal (high-probability) over a σ-additive family yet does not belong to the real-world truth set</p>
+        <h4>A mathematical definition of hallucination</h4>
+        <p>An output that is optimal (high-probability) over a σ-additive family yet does not belong to the real-world truth set</p>
       </div>
       <div class="pillar">
         <div class="pillar-num">02</div>
-        <h4>DFT-Based SCHS Construction</h4>
-        <p>DFT applied to token sequences decomposes semantic information into frequency bands, explicitly embedding a hierarchical semantic structure in the embedding space</p>
+        <h4>SCHS built by the DFT</h4>
+        <p>A DFT over the token sequence decomposes meaning into frequency bands, embedding a hierarchy explicitly in the space</p>
       </div>
       <div class="pillar">
         <div class="pillar-num">03</div>
-        <h4>Cohomological Consistency</h4>
-        <p>Harmonic projection via Hodge theory quantifies local inference inconsistencies as coboundary losses, extracting maximally globally consistent representations</p>
+        <h4>Consistency through cohomology</h4>
+        <p>Harmonic projection from Hodge theory quantifies inconsistency between local inferences as a coboundary loss</p>
       </div>
     </div>
   </section>
 
-  <!-- THEORY -->
+  <!-- ── MEASURE ── -->
+  <section id="measure">
+    <div class="section-label">02 // MEASURE THEORY</div>
+    <h2>Rewriting autoregression in measure-theoretic terms</h2>
+
+    <div class="card reveal">
+      <h3>Context as a σ-additive family</h3>
+      <p>
+        An autoregressive model factors the joint distribution into conditional probabilities.
+        The information set generated by the past tokens \(X_{&lt;t}\) — a Borel set — forms a σ-additive family.
+      </p>
+      <div class="math-box">
+        <span class="math-label">factorization and σ-additive family</span>
+        \[ P(X_1,\ldots,X_N) = \prod_{t=1}^{N} P(X_t \mid X_{&lt;t}),
+           \qquad \mathcal{F}_t = \sigma(x_1,\ldots,x_t) \]
+      </div>
+      <p style="margin-bottom:0;">
+        An embedding vector defined on the measurable space \((\Omega,\mathcal{F}_t,P)\) is therefore a
+        <strong>random variable</strong> over that family, and the model as a whole is a sequential approximator of the
+        conditional expectation \(E[\phi(X_{t+1})\mid\mathcal{F}_t]\).
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>\(L^p\) spaces and norm structure</h3>
+      <p>
+        The embedding space is treated as a normed (possibly incomplete) space via an inner product space.
+        The model resides in \(L^p(\Omega,\mathcal{F},P)\), whose norm is the Lebesgue integral representing the
+        expectation of the probability distribution.
+      </p>
+      <div class="math-box">
+        <span class="math-label">\(L^p\) norm</span>
+        \[ \|f\|_p = \left(\int_\Omega |f(\omega)|^p \, dP(\omega)\right)^{1/p} \]
+      </div>
+      <p>
+        A decisive consequence follows: the output is <strong>not a pointwise truth value but average optimality over a
+        probability distribution</strong>. The model maximizes average plausibility, not the truth of any individual claim.
+      </p>
+      <div class="math-box">
+        <span class="math-label">Minkowski inequality</span>
+        \[ \|f+g\|_p \le \|f\|_p + \|g\|_p \]
+      </div>
+      <p style="margin-bottom:0;">
+        This inequality lets distinct hypotheses \(f_1, f_2\) be linearly combined as \(f = \alpha f_1 + (1-\alpha) f_2\).
+        Because of incompleteness, however, such a combination may denote a
+        <strong>proposition that does not exist</strong>. The next section starts here.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── HALLUCINATION ── -->
   <section id="hallucination">
-    <div class="section-label">02 // THEORY</div>
-    <h2>The Structural Inevitability of Hallucination</h2>
+    <div class="section-label">03 // THEORY</div>
+    <h2>The structural inevitability of hallucination</h2>
+
     <div class="card reveal">
-      <h3>Measure-Theoretic Formulation of Autoregressive Models</h3>
+      <h3>Definition</h3>
       <p>
-        An autoregressive model decomposes the joint distribution as a product of conditionals.
-        The past token sequence \(X_{&lt;t}\) generates a Borel σ-field
-        \(\mathcal{F}_t = \sigma(x_1,\ldots,x_t)\), and the embedding vector on the measurable
-        space is interpretable as a random variable over this σ-additive family.
+        The paper defines hallucination as
+        <strong>"an output that is optimal (high-probability) over a σ-additive family, but does not belong to the
+        real-world truth set."</strong>
       </p>
       <div class="math-box">
-        <span class="math-label">Conditional Expectation</span>
-        \[ \mathcal{L}^P(\Omega, \mathcal{F}, P) \ni f, \quad \|f\|_p = \left(\int_\Omega |f(\omega)|^p \, dP(\omega)\right)^{1/p} \]
+        <span class="math-label">definition of hallucination</span>
+        \[ \text{truth set}\ T \subset V^{*},
+           \qquad \text{model-optimized set}\ \arg\min_f E\big[\ell(f(X),Y)\big],
+           \qquad T \neq \arg\min L^p \]
       </div>
-      <p>
-        The entire LLM is a sequential approximator of conditional expectations over σ-additive families.
-        Its output is not a pointwise truth value but <strong>average optimality over a probability distribution</strong>
-        (Lebesgue measure: expectation E).
+      <p style="margin-bottom:0;">
+        The point of this definition is that hallucination becomes
+        <strong>a gap between two sets rather than a failure of the model</strong>.
+        On its own objective the model behaves correctly. It is the objective that is misaligned.
       </p>
     </div>
+
     <div class="card reveal">
-      <h3>Definition and Structural Inevitability of Hallucination</h3>
+      <h3>Why it is unavoidable: non-convex truth vs convex representation</h3>
       <p>
-        By the Minkowski inequality \(\|f+g\|_p \leq \|f\|_p + \|g\|_p\), different hypotheses can be
-        linearly combined — a source of generative flexibility, but also of non-existent propositions
-        arising from incompleteness.
+        Truth sets are generally <strong>non-convex</strong> and not closed under linear combination,
+        while \(L^p\) spaces are <strong>linear and convex</strong>. That structural mismatch is the essential cause.
       </p>
-      <div class="math-box">
-        <span class="math-label">Definition of Hallucination</span>
-        \[ \text{Truth set } T \subset V^*, \quad \text{Model-optimal set} \neq T \]
+
+      <div class="split">
+        <div class="split-cell hot">
+          <h4>TRUTH SET \(T\)</h4>
+          <p>
+            Non-convex, with disconnected islands; the midpoint between two true claims need not be true.
+            It demands Čech-type consistency — truth glued together across local patches.
+          </p>
+        </div>
+        <div class="split-cell cool">
+          <h4>EMBEDDING SPACE \(L^p\)</h4>
+          <p>
+            Linear and convex; an interpolant between any two points always exists.
+            Statistical averaging under the law of large numbers yields only "distributions that are plausible on average".
+          </p>
+        </div>
       </div>
-      <p>
-        The truth set is generally <strong>non-convex and non-linear</strong>, while the embedding space
-        has a <strong>linear and convex</strong> structure. This mismatch between a nonlinear truth set
-        and a linear, convex representation space is the essential cause of hallucination — making LLMs
-        fundamentally unsuited for inference requiring strict logical rigor.
+
+      <p style="margin-bottom:0;">
+        The paper therefore concludes that while LLMs suit diverse, flexible text generation, they are
+        <strong>fundamentally unsuited to inference demanding strict logical rigor</strong> —
+        and it names AI agents and edge computing as the domains where this becomes fatal.
       </p>
+    </div>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ The reach of this claim</div>
+      <ul>
+        <li>"Inevitable" means <strong>under this formulation</strong>. It does not rule out rebuilding the embedding space with non-convex structure — which is precisely what the paper goes on to propose.</li>
+        <li>Also, that hallucination arises structurally says nothing about its frequency or severity. This paper addresses the former and does not quantify the latter.</li>
+      </ul>
     </div>
   </section>
 
-  <!-- METHOD -->
-  <section id="method">
-    <div class="section-label">03 // METHOD</div>
-    <h2>WavePhaseNet</h2>
+  <!-- ── SCHS ── -->
+  <section id="schs">
+    <div class="section-label">04 // SCHS</div>
+    <h2>Why a semantic conceptual hierarchy is needed</h2>
 
-    <h3>Frequency Bands and Semantic Interpretation</h3>
-    <p class="reveal">Applying DFT along the token sequence direction decomposes semantic information into frequency bands.</p>
+    <p class="reveal">
+      The remedy is to build a semantic hierarchy into the representation space. So why are existing means insufficient?
+    </p>
+
+    <div class="table-scroll reveal">
+    <table class="energy-table">
+      <thead>
+        <tr><th>existing approach</th><th>limitation</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Thesauri, ontologies, knowledge networks</td>
+          <td><strong>Cannot be embedded directly</strong> into the embedding (σ-additive family) space; they remain bolted on from outside</td>
+        </tr>
+        <tr>
+          <td>RAG</td>
+          <td><strong>Strong external dependency</strong> and poor extensibility. Retrieval quality caps output quality</td>
+        </tr>
+        <tr class="energy-highlight">
+          <td>Sophisticated prompt design</td>
+          <td>The harder the reasoning task, the more it <strong>depends on the user's skill</strong> — person-dependent and unfit for organizational deployment</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p class="reveal">
+      The SCHS must therefore be constructed <strong>inside the embedding space itself</strong>.
+      If it can be, the need for users to possess advanced prompt-expression skills drops significantly.
+    </p>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">Frequency bands and their semantic roles</h3>
+    <p class="reveal">Applying the DFT along the token sequence decomposes semantic information into frequency bands.</p>
     <div class="freq-grid reveal">
       <div class="freq-cell">
         <span class="freq-icon">〰️</span>
-        <div class="freq-label">Low Frequency</div>
-        <div class="freq-desc">Global topic, summary &amp; intent. The DC component (k=0) contributes uniformly to all positions — mathematically guaranteed to encode sentence-level meaning</div>
+        <div class="freq-label">Low frequency</div>
+        <div class="freq-desc">Global topic, summary and intent. The DC component (k=0) contributes uniformly across all positions</div>
       </div>
       <div class="freq-cell">
         <span class="freq-icon">〜〜〜</span>
-        <div class="freq-label">Mid Frequency</div>
-        <div class="freq-desc">Discourse structure and semantic transitions. Multi-stage components bridging global intent and local expression</div>
+        <div class="freq-label">Mid frequency</div>
+        <div class="freq-desc">Discourse structure and semantic transitions — multi-stage structure at the sentence level</div>
       </div>
       <div class="freq-cell">
         <span class="freq-icon">∿∿∿∿∿</span>
-        <div class="freq-label">High Frequency</div>
-        <div class="freq-desc">Syntactic variations, word order, pragmatic differences. Phase encodes positional relationships between tokens</div>
+        <div class="freq-label">High frequency</div>
+        <div class="freq-desc">Local word order, pragmatics and phrasing. Phase determines positional difference</div>
       </div>
+    </div>
+  </section>
+
+  <!-- ── DFT ── -->
+  <section id="dft">
+    <div class="section-label">05 // DFT</div>
+    <h2>Sequence-direction DFT and exact reconstruction</h2>
+
+    <div class="card reveal">
+      <h3>Definition</h3>
+      <p>
+        Let the token sequence length be \(N\), the embedding dimension \(d\), and the embedding matrix
+        \(X\in\mathbb{R}^{N\times d}\). Applying the DFT along the sequence direction gives, per embedding dimension:
+      </p>
+      <div class="math-box">
+        <span class="math-label">sequence-direction DFT</span>
+        \[ \hat{X}_k = \sum_{n=0}^{N-1} X_n \, e^{-2\pi i k n / N}, \qquad k = 0,\ldots,N-1 \]
+      </div>
+      <div class="math-box">
+        <span class="math-label">amplitude–phase decomposition</span>
+        \[ \hat{X}_k = A_k \odot e^{i\Phi_k},
+           \qquad A_k = |\hat{X}_k| \in \mathbb{R}^d,
+           \qquad \Phi_k = \angle\hat{X}_k \in \mathbb{R}^d \]
+      </div>
+      <p style="margin-bottom:0;">
+        Amplitude \(A_k\) says how strongly a band contributes; phase \(\Phi_k\) says where along the sequence it lands.
+        <strong>Discard the phase and you discard position</strong> — the decisive difference from FNet.
+      </p>
     </div>
 
-    <h3 class="reveal" style="margin-top:2.5rem;">Core DFT Formulation</h3>
-    <div class="math-box reveal">
-      <span class="math-label">Sequence-Direction DFT</span>
-      \[ \hat{X}_k = \sum_{n=0}^{N-1} x_n \, e^{-2\pi i k n / N}, \quad \hat{X} = X F_N^T \in \mathbb{C}^{d \times N} \]
-    </div>
-    <div class="math-box reveal">
-      <span class="math-label">Amplitude–Phase Decomposition</span>
-      \[ \hat{X}_k = A_k \odot e^{i\Phi_k}, \quad A_k = |\hat{X}_k| \in \mathbb{R}^d, \quad \Phi_k = \angle\hat{X}_k \in \mathbb{R}^d \]
-    </div>
-
-    <h3 class="reveal" style="margin-top:2.5rem;">Model Architecture</h3>
-    <div class="arch-flow reveal">
-      <div class="arch-step">
-        <div class="arch-step-num">1</div>
-        <div class="arch-step-body">
-          <div class="arch-step-title">EMBEDDING LAYER</div>
-          <div class="arch-step-desc">Token sequence → embedding matrix \(X \in \mathbb{R}^{N \times d}\) (sequence length N × embedding dimension d)</div>
-        </div>
+    <div class="card reveal">
+      <h3>Exact reconstruction and conjugate symmetry</h3>
+      <p>
+        The DFT is invertible: the inverse transform reconstructs the embedding matrix exactly.
+        The paper walks through actual numbers on a minimal \(d=4, N=3\) example to confirm this.
+      </p>
+      <div class="math-box">
+        <span class="math-label">conjugate symmetry</span>
+        \[ \hat{X}_{N-k} = \overline{\hat{X}_k}
+           \quad\Longrightarrow\quad
+           \text{real-valued reconstruction is guaranteed} \]
       </div>
-      <div class="arch-step">
-        <div class="arch-step-num">2</div>
-        <div class="arch-step-body">
-          <div class="arch-step-title">DFT LAYER (FFT)</div>
-          <div class="arch-step-desc">FFT applied along the sequence direction → \(\hat{X} \in \mathbb{C}^{N \times d}\), computed in \(O(N \log N)\)</div>
-        </div>
-      </div>
-      <div class="arch-step">
-        <div class="arch-step-num">3</div>
-        <div class="arch-step-body">
-          <div class="arch-step-title">BAND SEPARATION</div>
-          <div class="arch-step-desc">Multi-stage split: low-frequency set \(L = \{k : |k| \leq K_\text{low}\}\) separated from high-frequency components</div>
-        </div>
-      </div>
-      <div class="arch-step">
-        <div class="arch-step-num">4</div>
-        <div class="arch-step-body">
-          <div class="arch-step-title">LOW-FREQ MODULE (Intent)</div>
-          <div class="arch-step-desc">Phase Φ and amplitude A encoded, frequency pooling yields global intent vector \(S \in \mathbb{R}^m\). Preserves positional sequence and mutual synchronization.</div>
-        </div>
-      </div>
-      <div class="arch-step">
-        <div class="arch-step-num">5</div>
-        <div class="arch-step-body">
-          <div class="arch-step-title">HIGH-FREQ MODULE (Generation)</div>
-          <div class="arch-step-desc">Conditional generator \(G\) outputs \(\hat{X}'_H \sim p(\hat{X}_H | S)\). Options include normalizing flows, conditional AR models, or VAE / diffusion models.</div>
-        </div>
-      </div>
-      <div class="arch-step">
-        <div class="arch-step-num">6</div>
-        <div class="arch-step-body">
-          <div class="arch-step-title">INVERSE DFT</div>
-          <div class="arch-step-desc">\(\hat{X}_L + \hat{X}'_H\) reconstructed via iDFT. Lightweight implementation via PyTorch <code style="font-family:var(--font-mono);font-size:0.85em;">torch.fft.fft / ifft</code>.</div>
-        </div>
-      </div>
+      <p style="margin-bottom:0;">
+        This symmetry has a practical payoff: <strong>only half the high-frequency components must be learned</strong>.
+        The rest follow by conjugation, effectively halving the parameters to fit.
+      </p>
     </div>
 
-    <h3 class="reveal" style="margin-top:2.5rem;">Frequency Masks as Semantic Operators</h3>
-    <p class="reveal">The essential value of DFT lies in inserting frequency-dependent semantic operators:</p>
+    <div class="card reveal">
+      <h3>Correspondence with the proposed model</h3>
+      <p style="margin-bottom:0;">
+        The minimal example demonstrates that (i) fixing low frequencies as summary vectors,
+        (ii) conditionally generating high-frequency phases and amplitudes, and (iii) reconstructing via the inverse DFT
+        is <strong>mathematically consistent and permits perfect reconstruction</strong>.
+        With the soundness of the DFT established, the paper proceeds to proofs using simultaneous matrix
+        representations over low (global meaning), mid (multi-stage intermediate semantics) and high (local meaning) bands.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── OPERATOR ── -->
+  <section id="operator">
+    <div class="section-label">06 // OPERATOR</div>
+    <h2>Frequency masks as semantic operators</h2>
+
+    <p class="reveal">
+      The essential value of the DFT is not the invertible transform itself but
+      <strong>the operation you sandwich between the two directions</strong>. What happens in the middle is the method.
+    </p>
+
     <div class="concept-flow reveal">
       <div class="concept-node">X (input)</div>
       <span class="concept-arrow">→</span>
@@ -481,150 +983,489 @@
       <span class="concept-arrow">→</span>
       <div class="concept-node">X̃ (transformed)</div>
     </div>
+
     <div class="math-box reveal">
-      <span class="math-label">Semantic Operator</span>
+      <span class="math-label">semantic operator</span>
       \[ \tilde{X} = F^{-1} M(\omega) F X \]
-      \[ M(k) = \begin{cases} 1.0 & k=0 \;\text{(preserve global topic)} \\ 0.5 & k=1,3 \;\text{(attenuate expression)} \\ 0.0 & k=2 \;\text{(remove sharp syntactic structure)} \end{cases} \]
+      \[ M(k) = \begin{cases}
+         1.0 & k=0 \quad \text{(global topic: keep)} \\
+         0.5 & k=1,3 \quad \text{(expression, tone: attenuate)} \\
+         0.0 & k=2 \quad \text{(negation, contrast structure: remove)}
+         \end{cases} \]
+    </div>
+
+    <p class="reveal">
+      The paper traces this operation through concrete numbers. Rewriting the coefficients and transforming back
+      leaves the <strong>theme intact while the contrastive structure disappears</strong>.
+      Being able to state "what was semantically transformed" rigorously, as linear algebra, is the core of the claim.
+    </p>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ The band-to-meaning mapping is an assumption</div>
+      <ul>
+        <li>Assigning "k=2 corresponds to negation and contrast" is an interpretation within this numerical example, not a law proved to hold generally.</li>
+        <li>The correspondence between bands and semantic roles is an empirical hypothesis requiring validation on real data. The paper itself frames it as an assumption "supported by the numerical example and the proof of perfect reconstructability."</li>
+      </ul>
     </div>
   </section>
 
-  <!-- RESULTS -->
-  <section id="results">
-    <div class="section-label">04 // RESULTS</div>
-    <h2>Theoretical Results</h2>
+  <!-- ── ARCHITECTURE ── -->
+  <section id="architecture">
+    <div class="section-label">07 // ARCHITECTURE</div>
+    <h2>Model architecture</h2>
 
-    <div class="card reveal">
-      <h3>1/f Spectral Structure of GPT-4 (24,576 Dimensions)</h3>
-      <p>Natural language follows Zipf's law and exhibits self-similar structure. The energy spectrum of embedding amplitudes shows a 1/f-type decay:</p>
-      <div class="math-box">
-        \[ E(f) \propto \frac{1}{f^\alpha}, \quad \alpha \approx 1.1 \sim 1.4 \]
+    <div class="arch-flow reveal">
+      <div class="arch-step">
+        <div class="arch-step-num">1</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">EMBEDDING LAYER</div>
+          <div class="arch-step-desc">Tokens → embedding matrix \(X \in \mathbb{R}^{N \times d}\) (length N × dimension d)</div>
+        </div>
       </div>
-      <p>The exponent α &gt; 1 arises because syntactic constraints are more local than semantics, and LayerNorm / Attention regularize high frequencies. If α &lt; 1 grammar dominates but attention disperses; if α &gt; 2 generation becomes semantically shallow.</p>
+      <div class="arch-step">
+        <div class="arch-step-num">2</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">DFT LAYER (FFT)</div>
+          <div class="arch-step-desc">FFT along the sequence axis → \(\hat{X} \in \mathbb{C}^{N \times d}\). Cheap at \(O(N \log N)\)</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">3</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">BAND SEPARATION</div>
+          <div class="arch-step-desc">Multi-stage separation into low through high bands; low set \(L = \{k : |k| \leq K_\text{low}\}\)</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">4</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">LOW-FREQ MODULE (Intent)</div>
+          <div class="arch-step-desc">Phase Φ and amplitude A produce an intent vector \(S \in \mathbb{R}^m\), preserving positional sequence information</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">5</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">HIGH-FREQ MODULE (Generation)</div>
+          <div class="arch-step-desc">A conditional generator \(G\) outputs \(\hat{X}'_H \sim p(\hat{X}_H \mid S)\); normalizing flows or a VAE are options</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">6</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">INVERSE DFT</div>
+          <div class="arch-step-desc">Transform \(\hat{X}_L + \hat{X}'_H\) back to recover the embedding matrix. Light to implement in PyTorch</div>
+        </div>
+      </div>
     </div>
 
-    <h3 class="reveal" style="margin-top:2rem;">Cumulative Energy Analysis: Justifying 24,576 → 3,000 Dimensions</h3>
-    <table class="energy-table reveal">
+    <div class="card reveal">
+      <h3>Integration into a Transformer</h3>
+      <p>
+        This is injection, not replacement. For each layer \(l\) and head \(h\), a short window of length \(w\) slides
+        along the token axis and the DFT is applied. The window's low-frequency reconstruction \(g^{(l)}_t\) is added to
+        the self-attention input <strong>as a residual</strong>.
+      </p>
+      <div class="math-box">
+        <span class="math-label">intent injected as a residual</span>
+        \[ \tilde{x}^{(l)}_t = x^{(l)}_t + \alpha^{(l)} g^{(l)}_t \]
+      </div>
+      <p style="margin-bottom:0;">
+        Here \(\alpha^{(l)}\) is a learnable scalar (or a channel-wise scaling vector),
+        and the corrected representation feeds Query / Key / Value.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── SPECTRUM ── -->
+  <section id="spectrum">
+    <div class="section-label">08 // DIMENSIONALITY</div>
+    <h2>The case for 24,576 → 3,000 dimensions</h2>
+
+    <div class="card reveal">
+      <h3>Zipf's law and the 1/f spectrum</h3>
+      <p>
+        Natural language follows Zipf's law and exhibits self-similar structure, so the energy spectrum of embedding
+        amplitudes shows 1/f-type decay.
+      </p>
+      <div class="math-box">
+        <span class="math-label">energy spectrum</span>
+        \[ E(f) \propto \frac{1}{f^{\alpha}}, \qquad \alpha \approx 1.1 \sim 1.4 \]
+      </div>
+      <p style="margin-bottom:0;">
+        \(\alpha > 1\) is attributed to syntactic constraints (grammar is more local than semantics) and to LayerNorm and
+        attention regularizing the high band.
+      </p>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">Cumulative energy analysis</h3>
+    <p class="reveal">
+      Accumulating energy from the low frequencies up to dimension \(K\) gives:
+    </p>
+
+    <div class="table-scroll reveal">
+    <table class="energy-table">
       <thead>
-        <tr><th>Dimensions (K)</th><th>Cumulative Energy</th><th>Energy Bar</th><th>Assessment</th></tr>
+        <tr><th>dimensions K</th><th>cumulative energy</th><th>energy bar</th><th>assessment</th></tr>
       </thead>
       <tbody>
         <tr>
-          <td>1,024</td><td>55–60%</td>
+          <td>1,024</td>
+          <td>55–60%</td>
           <td><div class="energy-bar-wrap"><div class="energy-bar" style="width:57%"></div></div></td>
-          <td style="color:var(--text-dim)">Insufficient</td>
+          <td style="color:var(--text-dim)">insufficient</td>
         </tr>
         <tr>
-          <td>2,048</td><td>70–75%</td>
+          <td>2,048</td>
+          <td>70–75%</td>
           <td><div class="energy-bar-wrap"><div class="energy-bar" style="width:72%"></div></div></td>
-          <td style="color:var(--accent3)">Partial</td>
+          <td style="color:var(--accent3)">partial</td>
         </tr>
         <tr class="energy-highlight">
-          <td><strong>~3,000</strong></td><td><strong>82–88%</strong></td>
+          <td><strong>3,072 ≈ 3,000</strong></td>
+          <td><strong>82–88%</strong></td>
           <td><div class="energy-bar-wrap"><div class="energy-bar" style="width:85%"></div></div></td>
-          <td style="color:var(--accent)">✓ Lower bound for complete representation</td>
+          <td style="color:var(--accent)">✓ lower bound for meaning + intent</td>
         </tr>
         <tr>
-          <td>4,096</td><td>90–93%</td>
+          <td>4,096</td>
+          <td>90–93%</td>
           <td><div class="energy-bar-wrap"><div class="energy-bar" style="width:91%"></div></div></td>
-          <td style="color:var(--text-muted)">Redundant</td>
+          <td style="color:var(--text-muted)">redundant</td>
         </tr>
       </tbody>
     </table>
-
-    <div class="card reveal">
-      <h3>Why 3,000 Dimensions is the Lower Bound</h3>
-      <p>From an NLP perspective, the intrinsic dimensionality of GPT-4 embeddings breaks down as:</p>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin:1rem 0;">
-        <div style="border:1px solid var(--border); padding:1rem; background:var(--surface);">
-          <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--accent); margin-bottom:0.4rem;">Word Semantic Space</div>
-          <div style="font-size:1.4rem; font-weight:700; font-family:var(--font-mono); color:var(--text);">300–800</div>
-          <div style="font-size:0.75rem; color:var(--text-muted);">dimensions</div>
-        </div>
-        <div style="border:1px solid var(--border); padding:1rem; background:var(--surface);">
-          <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--accent); margin-bottom:0.4rem;">Sentence Semantics</div>
-          <div style="font-size:1.4rem; font-weight:700; font-family:var(--font-mono); color:var(--text);">1,000–2,000</div>
-          <div style="font-size:0.75rem; color:var(--text-muted);">dimensions</div>
-        </div>
-        <div style="border:1px solid rgba(0,136,170,0.4); padding:1rem; grid-column:span 2; background:var(--surface);">
-          <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--accent); margin-bottom:0.4rem;">Sentence Intent + Discourse Structure</div>
-          <div style="font-size:1.4rem; font-weight:700; font-family:var(--font-mono); color:var(--accent);">2,000–3,000</div>
-          <div style="font-size:0.75rem; color:var(--text-muted);">dimensions → <strong>3,000 is the lower bound for preserving meaning and intent</strong></div>
-        </div>
-      </div>
-      <p style="margin:0;">Below 3,000 dimensions, it becomes impossible to distinguish sentences that are semantically similar from those that are merely syntactically similar.</p>
     </div>
 
     <div class="card reveal">
-      <h3>Unified Optimization Objective and Cohomology Regularization</h3>
-      <p>A graph structure is introduced over overlapping local windows, and a cochain complex is defined to quantify inconsistencies.</p>
-      <div class="math-box">
-        <span class="math-label">Unified Loss</span>
-        \[ \mathcal{L} = \sum_i L_i^{\text{loc}}(s_i) + \lambda \, s^\top (L \otimes I_r) s + \mu \, D_{KL}(p \| p^{(\Omega)}) + \eta \sum_i \| s_i - P_i(g) \|_2^2 \]
+      <h3>Why 3,000 is the floor</h3>
+      <p>Decomposing the intrinsic dimensionality of GPT-4 embeddings from an NLP standpoint stacks up as follows.</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin:1rem 0;">
+        <div style="border:1px solid var(--border); padding:1rem;">
+          <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--accent); margin-bottom:0.4rem;">lexical semantic space</div>
+          <div style="font-size:1.4rem; font-weight:700; font-family:var(--font-mono);">300–800</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">dimensions</div>
+        </div>
+        <div style="border:1px solid var(--border); padding:1rem;">
+          <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--accent); margin-bottom:0.4rem;">sentence-level semantics</div>
+          <div style="font-size:1.4rem; font-weight:700; font-family:var(--font-mono);">1,000–2,000</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">dimensions</div>
+        </div>
+        <div style="border:1px solid var(--border); padding:1rem; grid-column:span 2; border-color:rgba(0,136,170,0.35);">
+          <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--accent); margin-bottom:0.4rem;">sentence intent + discourse structure</div>
+          <div style="font-size:1.4rem; font-weight:700; font-family:var(--font-mono); color:var(--accent);">2,000–3,000</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">dimensions → <strong>3,000 is the floor preserving meaning and intent</strong></div>
+        </div>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin-top:1rem;">
-        <div style="border-left:2px solid var(--accent); padding-left:0.8rem;">
-          <div style="font-size:0.75rem; color:var(--accent); font-family:var(--font-mono);">L^loc_i</div>
-          <div style="font-size:0.78rem; color:var(--text-muted);">Task-specific loss per window (cross-entropy etc.)</div>
+      <p style="margin:0;">
+        Below 3,000, the claim goes, <strong>semantically similar sentences become indistinguishable from merely
+        syntactically similar ones</strong>. Reducing 24,576 → 3,000 is therefore justified on both
+        information-theoretic and linguistic-statistical grounds.
+      </p>
+    </div>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ These numbers are derived, not measured</div>
+      <ul>
+        <li>The 82–88% cumulative energy is <strong>derived from the 1/f model</strong>, not measured from actual GPT-4 embeddings.</li>
+        <li>The exponent \(\alpha \approx 1.1\sim1.4\) is likewise an estimated range implied by Zipf's law.</li>
+        <li>The intrinsic-dimension breakdown (300–800 / 1,000–2,000 / 2,000–3,000) is an estimate from NLP literature.</li>
+        <li>This claim <strong>is directly measurable</strong> — analyzing the embedding spectrum of an existing model suffices. It is the most testable part of the paper.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── COHOMOLOGY ── -->
+  <section id="cohomology">
+    <div class="section-label">09 // COHOMOLOGY</div>
+    <h2>How to measure consistency between local inferences</h2>
+
+    <p class="reveal">
+      The tools for extracting global intent are now in place. What remains is
+      <strong>guaranteeing that local inferences do not contradict one another</strong>.
+    </p>
+
+    <div class="card reveal">
+      <h3>Spectral entropy and band selection</h3>
+      <p>
+        Where "low frequency" ends is not decided arbitrarily. An entropy functional over the spectral distribution is
+        defined, and the band \(\Omega\) minimizing information loss is selected.
+      </p>
+      <div class="math-box">
+        <span class="math-label">band-selection criterion</span>
+        \[ H(p) = -\sum_{n=1}^{T} p_n \log p_n,
+           \qquad p^{(\Omega)}_n = \frac{E_n \mathbf{1}(n\in\Omega)}{\sum_{m\in\Omega} E_m} \]
+        \[ \min_{\Omega} D_{KL}\big(p \,\|\, p^{(\Omega)}\big)
+           \quad\text{or}\quad
+           \sum_{n\in\Omega} E_n \ge \rho \sum_{n=1}^{T} E_n \]
+      </div>
+      <p style="margin-bottom:0;">
+        In other words, pick the smallest band meeting an energy-preservation ratio \(\rho\).
+        The cumulative energy analysis above is this criterion applied to GPT-4's dimensionality.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>The global intent vector \(g\)</h3>
+      <p>
+        From the selected low band, an inverse-DFT reconstruction defines a global intent embedding.
+        Assuming position-independent intent, one averages all frequency components within the band.
+      </p>
+      <div class="math-box">
+        <span class="math-label">global intent</span>
+        \[ g = \frac{1}{|\Omega|}\sum_{n\in\Omega} \Re\big(\tilde{V}_{(:,n)}\big) \in \mathbb{R}^d,
+           \qquad
+           G = \mathrm{IDFT}\big(\tilde{V}_{(:,\Omega)}\big) \in \mathbb{R}^{d\times T} \]
+      </div>
+      <p style="margin-bottom:0;">
+        When a position-dependent reconstruction is attached to each token position, \(G\) is used instead —
+        the sequence version of global intent.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>Window coverings, cochains and coboundaries</h3>
+      <p>
+        Consider a family of overlapping windows \(\mathcal{U}=\{U_i\}\) covering the token set.
+        Each window's local inference module outputs a section \(s_i \in \mathbb{R}^r\), and
+        \(s=(s_1,\ldots,s_N)\) forms a <strong>0-cochain</strong>.
+      </p>
+      <div class="math-box">
+        <span class="math-label">coboundary operator</span>
+        \[ \delta s = (B \otimes I_r)\, s,
+           \qquad U_i \cap U_j \neq \emptyset \ \Longleftrightarrow\ (i,j)\in E \]
+      </div>
+      <p style="margin-bottom:0;">
+        \(B\) is the oriented incidence matrix. The magnitude of \(\delta s\) is the
+        <strong>total disagreement between windows</strong>; driving it toward zero is what "semantic gluing" means.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>Hodge decomposition and harmonic projection</h3>
+      <p>
+        In the eigendecomposition \(L = U\Lambda U^{\top}\), the subspace for the zero eigenvalue, \(\ker L\),
+        corresponds to <strong>harmonic 0-cochains that assign consistent values across all windows</strong>.
+      </p>
+      <div class="math-box">
+        <span class="math-label">graph Hodge decomposition and harmonic projection</span>
+        \[ \mathbb{R}^{mr} = \mathrm{im}(\delta^{\dagger}) \oplus \ker(L\otimes I_r) \oplus \mathrm{im}(\delta) \]
+        \[ P_{\mathrm{harm}} = U_0 U_0^{\top},
+           \qquad s_{\mathrm{harm}} = P_{\ker(L\otimes I_r)}\, s \]
+      </div>
+      <p style="margin-bottom:0;">
+        In practice the null-space basis \(U_0\) is computed by SVD or the Lanczos method.
+        Crucially, <strong>this projection does not eliminate genuine obstructions arising from higher cohomology</strong>.
+        Those remain as unavoidable semantic inconsistencies to be reduced during learning — the paper says so explicitly.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>Unified optimization objective</h3>
+      <div class="math-box">
+        <span class="math-label">unified loss</span>
+        \[ \mathcal{L} = \sum_i L_i^{\text{loc}}(s_i)
+           + \lambda\, s^{\top}(L \otimes I_r)\, s
+           + \mu\, D_{KL}\big(p \,\|\, p^{(\Omega)}\big)
+           + \eta \sum_i \big\| s_i - P_i(g) \big\|_2^2 \]
+      </div>
+      <div class="term-grid">
+        <div class="term" style="border-left:2px solid var(--accent);">
+          <div class="term-name" style="color:var(--accent);">L^loc_i | task loss</div>
+          <div class="term-desc">Negative log-likelihood for window \(i\) (cross-entropy or regression error)</div>
         </div>
-        <div style="border-left:2px solid var(--accent3); padding-left:0.8rem;">
-          <div style="font-size:0.75rem; color:var(--accent3); font-family:var(--font-mono);">λ·s⊤(L⊗I)s</div>
-          <div style="font-size:0.78rem; color:var(--text-muted);">Local inconsistency penalty via squared coboundary norm</div>
+        <div class="term" style="border-left:2px solid var(--accent2);">
+          <div class="term-name" style="color:var(--accent2);">λ·sᵀ(L⊗I)s | consistency</div>
+          <div class="term-desc">Local inconsistency penalty from the squared coboundary</div>
         </div>
-        <div style="border-left:2px solid var(--accent2); padding-left:0.8rem;">
-          <div style="font-size:0.75rem; color:var(--accent2); font-family:var(--font-mono);">μ·D_KL</div>
-          <div style="font-size:0.78rem; color:var(--text-muted);">KL divergence suppressing deviation from Zipf's law</div>
+        <div class="term" style="border-left:2px solid var(--accent3);">
+          <div class="term-name" style="color:var(--accent3);">μ·D_KL | band selection</div>
+          <div class="term-desc">Encourages sound band choice while suppressing drastic deviation from Zipf's law</div>
         </div>
-        <div style="border-left:2px solid var(--text-dim); padding-left:0.8rem;">
-          <div style="font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono);">η·Σ‖s_i−P_i(g)‖²</div>
-          <div style="font-size:0.78rem; color:var(--text-muted);">Consistency enforcement with global intent projection</div>
+        <div class="term" style="border-left:2px solid var(--text-dim);">
+          <div class="term-name" style="color:var(--text-muted);">η·‖s_i − P_i(g)‖² | intent alignment</div>
+          <div class="term-desc">Forces each window's interpretation to agree with the restriction of global intent</div>
         </div>
+      </div>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">Computational complexity</h3>
+    <div class="table-scroll reveal">
+    <table class="energy-table">
+      <thead>
+        <tr><th>operation</th><th>complexity</th><th>how to read it</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Windowed FFT</td><td>\(O(d\,T\log T)\)</td><td>Faster still by parallelizing small per-window FFTs</td></tr>
+        <tr class="energy-highlight"><td>Laplacian operations</td><td>\(O(\#\text{nonzeros})\) per iteration</td><td>The adjacency matrix is sparse, so \(L\otimes I_r\) is too. CG handles it</td></tr>
+        <tr><td>Null-space basis</td><td>low-dimensional only</td><td>Lanczos / ARPACK / sparse SVD compute only the zero-eigenvalue vectors</td></tr>
+        <tr><td>Memory</td><td>easy to distribute if block-diagonal</td><td>Under Transformer integration, the same operations run per mini-batch</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="card reveal">
+      <h3>Metrics to evaluate</h3>
+      <p style="margin-bottom:0;">
+        The paper's evaluation plan names <strong>perplexity</strong> (standard, from cross-entropy),
+        <strong>local consistency rate</strong> (the mean of \(\mathbf{1}[\mathrm{agree}(s_i,s_j)]\) over overlapping
+        pairs), and <strong>Zipf deviation</strong> (change in Zipf\((p)\) before and after training, plus the
+        energy-preservation ratio). For ablation it specifies comparing \(\lambda=0\) (no cohomology),
+        \(\mu=0\) (no spectral constraint) and \(\eta=0\) (no global prior).
+        <strong>None of these were carried out in this paper.</strong>
+      </p>
+    </div>
+  </section>
+
+  <!-- ── CLAIMS MAP ── -->
+  <section id="claims">
+    <div class="section-label">10 // CLAIMS MAP</div>
+    <h2>Derived, hypothesized, untested</h2>
+
+    <p class="reveal">
+      The paper's claims re-read and color-coded by strength.
+      <span class="badge thm">derived</span> holds inside the defined mathematics,
+      <span class="badge emp">hypothesis</span> is a correspondence real data can falsify, and
+      <span class="badge open">untested</span> requires experiments.
+    </p>
+
+    <div class="table-scroll reveal">
+    <table class="energy-table">
+      <thead>
+        <tr><th>class</th><th>result</th><th>content</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="badge thm">derived</span></td><td>Invertibility of the DFT</td><td>The inverse transform reconstructs the embedding matrix exactly (verified numerically on a minimal example)</td></tr>
+        <tr><td><span class="badge thm">derived</span></td><td>Conjugate symmetry</td><td>\(\hat{X}_{N-k}=\overline{\hat{X}_k}\) guarantees real reconstruction; only half the high band needs learning</td></tr>
+        <tr><td><span class="badge thm">derived</span></td><td>Structural inevitability of hallucination</td><td>Follows from the mismatch between a non-convex truth set and a convex \(L^p\) space</td></tr>
+        <tr><td><span class="badge thm">derived</span></td><td>Hodge decomposition</td><td>\(\ker L\) corresponds to the gluable, contradiction-free harmonic component</td></tr>
+        <tr><td><span class="badge thm">derived</span></td><td>Complexity</td><td>Scales via FFT, sparse linear algebra and iterative solvers</td></tr>
+        <tr><td><span class="badge emp">hypothesis</span></td><td>Low frequency = global intent</td><td>The band-to-role correspondence; to be tested via summary alignment and topic retention</td></tr>
+        <tr><td><span class="badge emp">hypothesis</span></td><td>1/f spectrum (α≈1.1–1.4)</td><td>Estimated from Zipf's law. <strong>Directly testable</strong> by analyzing a real embedding spectrum</td></tr>
+        <tr class="energy-highlight"><td><span class="badge emp">hypothesis</span></td><td>3,000 dims = the preservation floor</td><td>The 82–88% cumulative energy is derived from the 1/f model. <strong>Not a measurement</strong></td></tr>
+        <tr><td><span class="badge emp">hypothesis</span></td><td>Semantic operator band assignment</td><td>"k=2 = contrast structure" is an interpretation of one example, not a general law</td></tr>
+        <tr><td><span class="badge open">untested</span></td><td>Hallucination suppression</td><td>No evaluation or benchmark comparison was run</td></tr>
+        <tr><td><span class="badge open">untested</span></td><td>Contribution of λ, μ, η</td><td>No ablation study was run</td></tr>
+        <tr><td><span class="badge open">untested</span></td><td>Performance after reduction</td><td>Whether accuracy survives the cut to 3,000 dimensions is untested</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="card reveal">
+      <h3>Ordered by ease of testing</h3>
+      <p>
+        Among these claims, <strong>the spectral ones can be tested without touching the model</strong>.
+        Pull the embeddings out of an existing model, run an FFT, accumulate the energy — that is the whole experiment.
+      </p>
+      <div class="concept-flow" style="margin-bottom:0;">
+        <div class="concept-node">① Measure spectrum</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">② Cumulative energy</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">③ Reduce dimensions</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">④ Inject intent</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">⑤ Cohomology loss</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">⑥ Ablation</div>
       </div>
     </div>
   </section>
 
-  <!-- RELATED -->
+  <!-- ── RELATED ── -->
   <section id="related">
-    <div class="section-label">05 // RELATED WORK</div>
-    <h2>Comparison with Related Work</h2>
+    <div class="section-label">11 // RELATED WORK</div>
+    <h2>Distance from related work</h2>
+
     <div class="ref-card reveal">
-      <span class="ref-tag sim">Similarity</span>
+      <span class="ref-tag sim">shared ground</span>
       <div>
         <div class="ref-name">FNet (Google Research)</div>
-        <div class="ref-desc">Achieves acceleration and semantic analysis by replacing Attention with the Fourier Transform. Demonstrates the efficacy of DFT-based token mixing for semantic hierarchization — a key motivating prior work for SCHS construction.</div>
+        <div class="ref-desc">Replaces attention with the Fourier transform for speed and semantic analysis, demonstrating that a DFT over token sequences can structure meaning — one of the motivations for building an SCHS here.</div>
       </div>
     </div>
     <div class="ref-card reveal">
-      <span class="ref-tag diff">Key Difference</span>
+      <span class="ref-tag diff">what differs</span>
       <div>
-        <div class="ref-name">WavePhaseNet vs. FNet</div>
-        <div class="ref-desc">FNet discards the imaginary part of the complex representation, weakening handling of coreference and contextual dependency. WavePhaseNet <strong>retains phase information</strong> and introduces explicit semantic hierarchy operations on frequency bands — a fundamentally distinct contribution.</div>
+        <div class="ref-name">WavePhaseNet vs FNet</div>
+        <div class="ref-desc">FNet <strong>discards the imaginary part</strong> of the complex representation, weakening coreference and context dependency. This proposal <strong>preserves phase</strong> and introduces explicit operations on the semantic hierarchy. The goal is semantic manipulation, not speed.</div>
       </div>
     </div>
     <div class="ref-card reveal">
-      <span class="ref-tag diff">Beyond RAG</span>
+      <span class="ref-tag diff">what it goes past</span>
       <div>
-        <div class="ref-name">Comparison with RAG-Based Approaches</div>
-        <div class="ref-desc">RAG introduces strong external dependencies and poor extensibility. WavePhaseNet constructs SCHS directly within the embedding space — no external knowledge store required — significantly reducing the need for advanced prompt engineering.</div>
+        <div class="ref-name">Compared with RAG-based approaches</div>
+        <div class="ref-desc">RAG carries strong external dependency and poor extensibility. WavePhaseNet aims to build the SCHS directly inside the embedding space, substantially reducing the need for users to master advanced prompt expression.</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <span class="ref-tag warn">successor</span>
+      <div>
+        <div class="ref-name">QuantumPhaseNet (2026.07.30)</div>
+        <div class="ref-desc">The successor paper, which <strong>rewrites this idea in a gauge-covariant framework</strong>, taking the frame-independent covariant phase rate rather than the phase angle itself as the observable. It also carries prototype experiments, supplying the measurements this paper lacks. <a href="quantumphasenet_en.html" style="color:var(--accent);">→ detailed explainer</a></div>
       </div>
     </div>
   </section>
 
-  <!-- CONCLUSION -->
+  <!-- ── LIMITS ── -->
+  <section id="limits">
+    <div class="section-label">12 // LIMITS</div>
+    <h2>Limitations</h2>
+
+    <div class="card reveal">
+      <h3>There is no experimental validation</h3>
+      <p style="margin-bottom:0;">
+        The paper contains no evaluation, no benchmark comparison and no ablation study.
+        It presents a mathematical formulation and a list of metrics to evaluate.
+        The question "by how much does hallucination decrease" cannot be answered today.
+        <strong>This is the paper's design rather than a defect</strong> — formalize the cause first, leave the
+        demonstration of the remedy to follow-up work.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>Obstructions survive the projection</h3>
+      <p style="margin-bottom:0;">
+        As the paper states, harmonic projection
+        <strong>does not remove genuine obstructions arising from higher cohomology</strong>.
+        They remain as unavoidable semantic inconsistencies to be reduced during training.
+        The framework measures and reduces contradiction; it does not zero it.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>Low frequency does not guarantee correctness</h3>
+      <p style="margin-bottom:0;">
+        The low-frequency component is what appears consistently across a document — not what is true.
+        Misinformation repeated at length also becomes low frequency.
+        Global intent extraction must be evaluated <strong>independently</strong> of factual verification.
+        The successor paper treats this explicitly as a caveat.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── CONCLUSION ── -->
   <section id="conclusion">
     <div class="conclusion-box reveal">
-      <div class="section-label" style="text-align:center;">06 // CONCLUSION</div>
+      <div class="section-label" style="text-align:center;">13 // CONCLUSION</div>
       <h2>Conclusion</h2>
       <p>
-        This paper formalizes hallucination in large language models as a mathematically inevitable
-        phenomenon arising from structural mismatch, and presents a theoretical framework to suppress it
-        by introducing a DFT-based SCHS into the embedding space. The demonstration that reduction from
-        24,576 to ~3,000 dimensions is justified by cumulative energy analysis grounded in Zipf's law
-        and the 1/f spectrum constitutes the core contribution.
+        This paper formulates LLM hallucination not as a training deficiency or data defect but as a phenomenon
+        <strong>arising inevitably from the model's own mathematical structure</strong>, and presents a theoretical
+        framework for suppressing it by introducing a DFT-based SCHS into the embedding space.
       </p>
       <p style="margin-top:1rem;">
-        WavePhaseNet enables semantic flow — <em>intent space → expression space → sentence generation</em>
-        — to be described rigorously in linear algebraic form, opening a path toward next-generation
-        reasoning-oriented language models.
+        The demonstration that reducing 24,576 to 3,000 dimensions is justified by cumulative energy analysis based on
+        Zipf's law and the 1/f spectrum constitutes the core contribution.
+        WavePhaseNet lets semantic flow be described rigorously within linear algebra, opening a path toward
+        next-generation reasoning-oriented language models.
+      </p>
+      <p style="margin-top:1rem;">
+        What remains is (i) confirming the spectral structure on real data, (ii) evaluating performance after
+        dimensionality reduction, (iii) separating the contributions of λ, μ and η by ablation, and
+        (iv) measuring the local consistency rate. Some of this is taken up in the successor,
+        <a href="quantumphasenet_en.html" style="color:var(--accent);">QuantumPhaseNet</a>.
       </p>
     </div>
   </section>
@@ -633,26 +1474,34 @@
 
 <footer>
   <div class="wrapper" style="padding-top:0; padding-bottom:0;">
-    <a href="index.html" style="color:inherit;">Index</a> &nbsp;|&nbsp; WavePhaseNet Paper Explainer &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp; Created for explanatory purposes
+    <a href="index.html" style="color:inherit;">Index</a> &nbsp;|&nbsp; WavePhaseNet Paper Explainer (Detailed) &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp;
+    <a href="wavephasenet_intro_en.html" style="color:inherit;">Plain-language</a> &nbsp;|&nbsp;
+    <a href="wavephasenet_faq_en.html" style="color:inherit;">FAQ</a> &nbsp;|&nbsp;
+    <a href="quantumphasenet_en.html" style="color:inherit;">QuantumPhaseNet</a>
   </div>
 </footer>
-
 <script>
+// ── Wave canvas animation ──
 const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d');
 let W, H, frame = 0;
 
-function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
 resize();
 window.addEventListener('resize', resize);
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function drawWaves() {
   ctx.clearRect(0, 0, W, H);
   const waves = [
-    { amp: 60, freq: 0.008, speed: 0.015, y: H*0.3, color: '#0088aa', alpha: 0.45 },
-    { amp: 35, freq: 0.014, speed: 0.022, y: H*0.5, color: '#6d28d9', alpha: 0.35 },
-    { amp: 20, freq: 0.025, speed: 0.035, y: H*0.7, color: '#0088aa', alpha: 0.2 },
-    { amp: 45, freq: 0.006, speed: 0.010, y: H*0.2, color: '#d97706', alpha: 0.18 },
+    { amp: 60, freq: 0.008, speed: 0.015, y: H * 0.30, color: '#0088aa', alpha: 0.45 },
+    { amp: 35, freq: 0.014, speed: 0.022, y: H * 0.50, color: '#6d28d9', alpha: 0.35 },
+    { amp: 20, freq: 0.025, speed: 0.035, y: H * 0.70, color: '#0088aa', alpha: 0.20 },
+    { amp: 45, freq: 0.006, speed: 0.010, y: H * 0.20, color: '#d97706', alpha: 0.18 },
   ];
   waves.forEach(w => {
     ctx.beginPath();
@@ -669,17 +1518,22 @@ function drawWaves() {
   ctx.fillStyle = '#0088aa';
   for (let x = 0; x < W; x += 80) {
     for (let y = 0; y < H; y += 80) {
-      ctx.beginPath(); ctx.arc(x, y, 1, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x, y, 1, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
   ctx.globalAlpha = 1;
   frame++;
-  requestAnimationFrame(drawWaves);
+  if (!reduceMotion) requestAnimationFrame(drawWaves);
 }
 drawWaves();
 
-const obs = new IntersectionObserver(entries => {
-  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+// ── Scroll reveal ──
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+  });
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 </script>

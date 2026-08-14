@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WavePhaseNet — かんたん解説</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f3f7fc;
+    --surface2: #e8eef8;
+    --border: #c8d8ec;
+    --accent: #0088aa;
+    --accent2: #6d28d9;
+    --accent3: #d97706;
+    --text: #0d1829;
+    --text-muted: #3d5166;
+    --text-dim: #7d8fa3;
+    --glow: rgba(0,136,170,0.12);
+    --font-serif: 'Noto Serif JP', serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-sans: 'Noto Sans JP', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    line-height: 1.9;
+    overflow-x: hidden;
+  }
+
+  #bg-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; opacity: 0.4;
+    pointer-events: none;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex; align-items: center;
+  }
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+  .nav-links { display: flex; gap: 1.6rem; list-style: none; margin-left: 2rem; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none;
+    font-size: 0.78rem; letter-spacing: 0.08em; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-right { display: flex; align-items: center; gap: 1.4rem; margin-left: auto; }
+  .nav-lang {
+    display: flex; align-items: center;
+    border: 1px solid var(--border); border-radius: 20px;
+    overflow: hidden; flex-shrink: 0;
+  }
+  .nav-lang a {
+    font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em;
+    padding: 0.28em 0.75em; color: var(--text-dim);
+    text-decoration: none; transition: all 0.2s; line-height: 1;
+  }
+  .nav-lang a.current { background: var(--accent); color: #fff; }
+  .nav-lang a:not(.current):hover { color: var(--accent); }
+  .nav-page-tab {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em;
+    color: var(--text-muted); text-decoration: none;
+    padding-bottom: 2px; border-bottom: 2px solid transparent;
+    transition: all 0.2s; flex-shrink: 0; white-space: nowrap;
+  }
+  .nav-page-tab:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 860px; margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    min-height: 92vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding-top: 80px;
+  }
+  .hero-tag {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.2em;
+    color: var(--accent); border: 1px solid var(--accent);
+    padding: 0.3em 0.9em; display: inline-block; margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.2s forwards;
+  }
+  .hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.9rem, 4.6vw, 3.1rem);
+    font-weight: 700; line-height: 1.35; letter-spacing: -0.01em;
+    margin-bottom: 1.4rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.35s forwards;
+  }
+  .hero-title em { font-style: normal; color: var(--accent); }
+  .hero-desc {
+    font-size: 1.05rem; color: var(--text-muted);
+    max-width: 640px; line-height: 2;
+    opacity: 0; animation: fadeUp 0.6s ease 0.55s forwards;
+    margin-bottom: 2rem;
+  }
+  .hero-meta {
+    font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--text-dim); letter-spacing: 0.06em;
+    margin-bottom: 2.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.65s forwards;
+  }
+  .scroll-hint {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--text-dim); letter-spacing: 0.15em;
+    display: flex; align-items: center; gap: 0.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.8s forwards;
+  }
+  .scroll-hint::after {
+    content: ''; display: block; width: 40px; height: 1px;
+    background: var(--text-dim); animation: expandLine 1.5s ease infinite;
+  }
+
+  /* ── Sections ── */
+  section { padding: 4.5rem 0; border-top: 1px solid var(--border); }
+  .section-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.25em;
+    color: var(--accent); margin-bottom: 0.6rem; opacity: 0.8;
+  }
+  h2 {
+    font-family: var(--font-serif); font-size: 1.75rem;
+    font-weight: 700; margin-bottom: 1.6rem; line-height: 1.4;
+  }
+  h3 {
+    font-family: var(--font-serif); font-size: 1.15rem;
+    font-weight: 600; margin-bottom: 0.9rem;
+  }
+  p { margin-bottom: 1.2rem; color: var(--text-muted); }
+  .lead { font-size: 1.02rem; }
+
+  /* ── Problem cards ── */
+  .problems { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin: 2rem 0; }
+  .problem {
+    border: 1px solid var(--border); background: var(--surface);
+    padding: 1.6rem 1.4rem; transition: all 0.3s;
+  }
+  .problem:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .problem-icon { font-size: 1.6rem; margin-bottom: 0.7rem; display: block; }
+  .problem h4 { font-family: var(--font-serif); font-size: 0.98rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .problem p { font-size: 0.83rem; margin: 0; }
+
+  /* ── Analogy ── */
+  .analogy {
+    border: 1px solid var(--border); background: var(--surface);
+    padding: 2rem; margin-bottom: 1.2rem;
+    display: grid; grid-template-columns: 64px 1fr; gap: 1.6rem;
+    align-items: start; transition: border-color 0.3s;
+  }
+  .analogy:hover { border-color: rgba(0,136,170,0.4); }
+  .analogy-num {
+    font-family: var(--font-mono); font-size: 2rem; font-weight: 700;
+    color: var(--border); line-height: 1;
+  }
+  .analogy:hover .analogy-num { color: var(--accent); opacity: 0.45; }
+  .analogy h3 { margin-bottom: 0.5rem; }
+  .analogy .kicker {
+    font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.12em;
+    color: var(--accent2); margin-bottom: 0.5rem; display: block;
+  }
+  .analogy p { font-size: 0.9rem; margin-bottom: 0.8rem; }
+  .analogy p:last-child { margin-bottom: 0; }
+  .like {
+    border-left: 2px solid var(--accent3);
+    padding: 0.2rem 0 0.2rem 0.9rem;
+    font-size: 0.86rem; color: var(--text-muted);
+    background: rgba(217,119,6,0.035);
+  }
+
+  /* ── Flow ── */
+  .flow { display: flex; flex-direction: column; gap: 0; margin: 2rem 0; }
+  .flow-step { display: flex; align-items: stretch; }
+  .flow-num {
+    font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent);
+    width: 36px; min-width: 36px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .flow-num::after {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    width: 1px; height: 100%; background: var(--border);
+  }
+  .flow-step:last-child .flow-num::after { display: none; }
+  .flow-body {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    padding: 1.1rem 1.4rem; margin: 4px 0 4px 1rem;
+  }
+  .flow-title { font-weight: 500; font-size: 0.92rem; margin-bottom: 0.3rem; }
+  .flow-desc { font-size: 0.83rem; color: var(--text-muted); }
+
+  /* ── Results ── */
+  .metric-grid {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 1px; background: var(--border); margin: 2rem 0;
+  }
+  .metric { background: var(--surface); padding: 1.6rem 1.1rem; text-align: center; }
+  .metric-label {
+    font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.1em;
+    color: var(--text-dim); margin-bottom: 0.6rem; min-height: 2.2em;
+  }
+  .metric-val {
+    font-family: var(--font-mono); font-size: 1.9rem; font-weight: 700;
+    color: var(--accent); line-height: 1;
+  }
+  .metric-base { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.55rem; }
+  .metric.neg .metric-val { color: var(--accent3); }
+
+  .table-scroll { overflow-x: auto; }
+  table.plain { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+  table.plain th {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em;
+    color: var(--accent); text-align: left; padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  table.plain td {
+    padding: 0.8rem 1rem; font-size: 0.86rem;
+    border-bottom: 1px solid rgba(200,190,230,0.6); color: var(--text-muted);
+    vertical-align: top;
+  }
+  table.plain tr:hover td { background: var(--surface); }
+
+  /* ── Use cases ── */
+  .cases { display: grid; grid-template-columns: repeat(2,1fr); gap: 1rem; margin: 2rem 0; }
+  .case {
+    border: 1px solid var(--border); background: var(--surface);
+    padding: 1.5rem; transition: all 0.3s;
+  }
+  .case:hover { border-color: var(--accent); box-shadow: 0 8px 26px rgba(0,136,170,0.08); }
+  .case h4 {
+    font-family: var(--font-serif); font-size: 0.98rem;
+    font-weight: 600; margin-bottom: 0.5rem;
+  }
+  .case p { font-size: 0.83rem; margin-bottom: 0.6rem; }
+  .case .why {
+    font-size: 0.78rem; color: var(--accent2);
+    font-family: var(--font-mono); letter-spacing: 0.03em;
+  }
+
+  /* ── Two-column honest ── */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem 0; }
+  .split-cell { border: 1px solid var(--border); background: var(--surface); padding: 1.7rem 1.5rem; }
+  .split-cell h4 {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em;
+    margin-bottom: 0.9rem;
+  }
+  .split-cell.yes { border-left: 3px solid var(--accent); }
+  .split-cell.yes h4 { color: var(--accent); }
+  .split-cell.not { border-left: 3px solid var(--accent3); }
+  .split-cell.not h4 { color: var(--accent3); }
+  .split-cell ul { margin: 0; padding-left: 1.1rem; }
+  .split-cell li { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+
+  /* ── Caution ── */
+  .caution {
+    border: 1px dashed var(--accent3); background: rgba(217,119,6,0.04);
+    padding: 1.6rem 1.8rem; margin: 1.8rem 0;
+  }
+  .caution-title {
+    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em;
+    color: var(--accent3); margin-bottom: 0.8rem;
+  }
+  .caution ul { margin: 0; padding-left: 1.2rem; }
+  .caution li { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+
+  /* ── FAQ ── */
+  .faq { border-bottom: 1px solid var(--border); padding: 1.4rem 0; }
+  .faq:first-of-type { border-top: 1px solid var(--border); }
+  .faq-q {
+    font-family: var(--font-serif); font-size: 1rem; font-weight: 600;
+    margin-bottom: 0.6rem; display: flex; gap: 0.7rem; align-items: baseline;
+  }
+  .faq-q::before {
+    content: 'Q'; font-family: var(--font-mono); font-size: 0.75rem;
+    color: var(--accent); flex-shrink: 0;
+  }
+  .faq-a { font-size: 0.88rem; color: var(--text-muted); padding-left: 1.6rem; margin: 0; }
+
+  /* ── CTA ── */
+  .cta {
+    background: linear-gradient(135deg, rgba(0,136,170,0.06), rgba(109,40,217,0.06));
+    border: 1px solid rgba(0,136,170,0.2);
+    padding: 3rem; text-align: center; margin-top: 1rem;
+  }
+  .cta h2 { font-size: 1.4rem; margin-bottom: 0.8rem; }
+  .cta p { max-width: 560px; margin: 0 auto 1.8rem; font-size: 0.92rem; }
+  .cta-btn {
+    display: inline-block; font-family: var(--font-mono); font-size: 0.78rem;
+    letter-spacing: 0.1em; padding: 0.85em 2em;
+    border: 1px solid var(--accent); color: var(--accent);
+    text-decoration: none; transition: all 0.25s;
+  }
+  .cta-btn:hover { background: var(--accent); color: #fff; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 0 2rem; text-align: center;
+    font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--text-dim); letter-spacing: 0.08em;
+    position: relative; z-index: 1;
+  }
+  footer a { color: inherit; }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px);} to {opacity:1; transform:translateY(0);} }
+  @keyframes expandLine { 0%{width:20px;opacity:0.3;} 50%{width:60px;opacity:0.8;} 100%{width:20px;opacity:0.3;} }
+
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 760px) {
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 640px) {
+    .problems, .cases, .split { grid-template-columns: 1fr; }
+    .metric-grid { grid-template-columns: 1fr 1fr; }
+    .analogy { grid-template-columns: 1fr; gap: 0.6rem; }
+  }
+</style>
+</head><body>
+
+<canvas id="bg-canvas"></canvas>
+
+<nav>
+  <div class="nav-logo">WavePhaseNet // かんたん解説</div>
+  <ul class="nav-links">
+    <li><a href="#problem">課題</a></li>
+    <li><a href="#idea">考え方</a></li>
+    <li><a href="#evidence">根拠</a></li>
+    <li><a href="#value">使いどころ</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="wavephasenet_ja.html" class="nav-page-tab">詳細解説 →</a>
+    <div class="nav-lang">
+      <a href="wavephasenet_intro_ja.html" class="current">JA</a>
+      <a href="wavephasenet_intro_en.html">EN</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrapper">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-tag">3分でわかる WavePhaseNet</div>
+    <h1 class="hero-title">
+      AIの幻覚は、学習不足ではなく<br>
+      <em>数学の構造から必ず起きる</em>。
+    </h1>
+    <p class="hero-desc">
+      WavePhaseNet は、LLM のハルシネーションを「データを増やせば直る問題」ではなく
+      <strong>表現空間の形が原因で必ず起きる現象</strong>として定式化し、
+      フーリエ変換によって埋め込み空間に<strong>意味の階層構造</strong>を直接埋め込むことで抑制を図る枠組みです。
+    </p>
+    <div class="hero-meta">
+      Kiyotaka Kasubuchi &amp; Kazuo Fukiya ／ 2026年1月12日 ／ arXiv:2602.14419
+    </div>
+    <div class="scroll-hint">SCROLL</div>
+  </div>
+
+  <!-- ── PROBLEM ── -->
+  <section id="problem">
+    <div class="section-label">01 // ISSUE</div>
+    <h2>なぜ、データを増やしても幻覚が消えないのか</h2>
+
+    <p class="lead reveal">
+      多くの現場では「学習データが足りない」「プロンプトが悪い」と考えます。
+      この論文の出発点は、<strong>それでは説明がつかない</strong>という指摘です。
+    </p>
+
+    <div class="problems reveal">
+      <div class="problem">
+        <span class="problem-icon">📊</span>
+        <h4>平均的にもっともらしい</h4>
+        <p>LLM が最適化しているのは「確率分布の上での平均的な良さ」であって、一つ一つの主張の正しさではありません。</p>
+      </div>
+      <div class="problem">
+        <span class="problem-icon">🧩</span>
+        <h4>局所は正しいのに全体が矛盾</h4>
+        <p>各段落は筋が通っているのに、文書全体では前半と後半が食い違う。局所推論の整合性を保つ仕組みがありません。</p>
+      </div>
+      <div class="problem">
+        <span class="problem-icon">🎚️</span>
+        <h4>プロンプト職人芸への依存</h4>
+        <p>複雑な推論をさせるには利用者側に高度なプロンプト設計スキルが要る。属人化して組織で使えません。</p>
+      </div>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">根本原因：形が合っていない</h3>
+    <p class="reveal">
+      論文の核心はここです。<strong>「本当に正しいことの集合」と「AIが扱える表現空間」は、そもそも形が違う</strong>。
+    </p>
+
+    <div class="split reveal">
+      <div class="split-cell not">
+        <h4>真実の集合</h4>
+        <ul>
+          <li>でこぼこしていて、飛び地がある（非凸）</li>
+          <li>2つの正しい主張を混ぜても、正しい主張にはならない</li>
+          <li>例：「A社は黒字」と「B社は赤字」を平均しても意味を成さない</li>
+        </ul>
+      </div>
+      <div class="split-cell yes">
+        <h4>AIの表現空間</h4>
+        <ul>
+          <li>なめらかで、隙間なく詰まっている（線形・凸）</li>
+          <li>2点を混ぜた中間点が必ず存在してしまう</li>
+          <li>その中間点が「実在しない主張」になる</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="reveal">
+      でこぼこな正解集合を、なめらかな空間で近似する。この<strong>形のミスマッチ</strong>がある限り、
+      学習量をいくら増やしても「存在しない主張」は生まれ続けます。
+      だからこの論文は、データではなく<strong>空間の作り直し</strong>を提案します。
+    </p>
+  </section>
+
+  <!-- ── IDEA ── -->
+  <section id="idea">
+    <div class="section-label">02 // IDEA</div>
+    <h2>文章を「波」として分解する</h2>
+
+    <p class="lead reveal">
+      WavePhaseNet の道具は3つです。いずれも信号処理では枯れた技術で、新しいのは
+      <strong>それを意味に対して使う</strong>という点にあります。
+    </p>
+
+    <div class="analogy reveal">
+      <div class="analogy-num">01</div>
+      <div>
+        <span class="kicker">DISCRETE FOURIER TRANSFORM</span>
+        <h3>周波数分解 ＝ 意味のイコライザー</h3>
+        <p>
+          文章を単語の並びとしてではなく、<strong>波の重ね合わせ</strong>として見ます。
+          ゆっくり変化する成分（低周波）には文書全体のテーマや意図が、
+          速く変化する成分（高周波）には語順や言い回しの違いが乗ります。
+        </p>
+        <div class="like">
+          <strong>たとえるなら音楽のイコライザーです。</strong>
+          同じ曲でも低音を上げれば土台が、高音を上げれば細部が際立ちます。
+          文章にも同じ帯域構造があり、DFT はそのつまみを与えます。
+        </div>
+      </div>
+    </div>
+
+    <div class="analogy reveal">
+      <div class="analogy-num">02</div>
+      <div>
+        <span class="kicker">SEMANTIC CONCEPTUAL HIERARCHY STRUCTURE</span>
+        <h3>SCHS ＝ 意味の階層を空間そのものに刻む</h3>
+        <p>
+          シソーラスやオントロジーのような「外付けの辞書」は、埋め込み空間の中に直接は入りません。
+          RAG も外部依存が強く拡張性に乏しい。そこで
+          <strong>周波数帯域そのものを階層として使い</strong>、意味の上下関係を空間の内側に作ります。
+        </p>
+        <div class="like">
+          <strong>効果として狙うのは、プロンプト職人芸からの脱却です。</strong>
+          階層が空間側にあれば、利用者が高度な指示文を書かなくても、
+          モデルが自分で「いまどの粒度の話をしているか」を扱えます。
+        </div>
+      </div>
+    </div>
+
+    <div class="analogy reveal">
+      <div class="analogy-num">03</div>
+      <div>
+        <span class="kicker">COHOMOLOGY REGULARIZATION</span>
+        <h3>コホモロジー正則化 ＝ 証言の突き合わせ</h3>
+        <p>
+          文書を重なり合う小窓に分け、各窓が出した解釈を持ち寄ります。
+          重なった部分で解釈が食い違っていれば、その食い違いの総量を<strong>損失として測り</strong>、
+          学習で減らします。矛盾のない解釈だけが残る成分を、数学的に取り出せます。
+        </p>
+        <div class="like">
+          <strong>たとえるなら複数の目撃証言の突き合わせです。</strong>
+          証言が重なる場面で食い違いがあれば、そこが怪しい。
+          全員の証言が矛盾なく重なる部分（調和成分）を抽出するのが Hodge 理論の役割です。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HOW ── -->
+  <section id="how">
+    <div class="section-label">03 // HOW</div>
+    <h2>1つの文章が処理される流れ</h2>
+
+    <div class="flow reveal">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <div class="flow-title">埋め込み</div>
+          <div class="flow-desc">トークン列を埋め込み行列に変換（系列長 N × 次元 d）</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <div class="flow-title">FFT で周波数に変換</div>
+          <div class="flow-desc">系列方向に高速フーリエ変換。計算コストは軽く、系列長に対してほぼ線形</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <div class="flow-title">帯域を分ける</div>
+          <div class="flow-desc">低周波（意図）・中周波（談話構造）・高周波（表現）に多段分離</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-body">
+          <div class="flow-title">低周波を意図ベクトルとして固定</div>
+          <div class="flow-desc">文書全体が向かう方向を取り出し、生成中ずっと参照し続ける</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-body">
+          <div class="flow-title">高周波を意図に条件づけて生成</div>
+          <div class="flow-desc">言い回しや語順は、固定された意図と矛盾しない範囲で生成する</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">6</div>
+        <div class="flow-body">
+          <div class="flow-title">逆変換して文章に戻す</div>
+          <div class="flow-desc">逆DFTで元の形式に復元。数学的に完全復元でき、情報は失われない</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">7</div>
+        <div class="flow-body">
+          <div class="flow-title">窓ごとの解釈の食い違いを罰する</div>
+          <div class="flow-desc">重なり合う窓の間の矛盾を損失に加え、学習で整合性を高める</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="reveal">
+      重要なのは、これが<strong>既存のTransformerを置き換えるものではない</strong>ことです。
+      各層・各ヘッドにスペクトルモジュールと正則化項を差し込む形で実装でき、
+      低周波の意図は残差としてAttentionの入力に足されます。
+    </p>
+  </section>
+
+  <!-- ── EVIDENCE ── -->
+  <section id="evidence">
+    <div class="section-label">04 // EVIDENCE</div>
+    <h2>根拠は理論的導出であり、実験ではない</h2>
+
+    <p class="lead reveal">
+      ここは正直にお伝えすべき点です。この論文には<strong>実験結果がありません</strong>。
+      示されているのは、言語の統計法則から導かれる理論的な数値です。
+    </p>
+
+    <div class="metric-grid reveal">
+      <div class="metric">
+        <div class="metric-label">GPT-4の<br>埋め込み次元</div>
+        <div class="metric-val">24,576</div>
+        <div class="metric-base">GPT-3 は 12,288</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">スペクトル<br>減衰の指数 α</div>
+        <div class="metric-val">1.1〜1.4</div>
+        <div class="metric-base">Zipf則による 1/f 構造</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">3,000次元での<br>累積エネルギー</div>
+        <div class="metric-val">82〜88%</div>
+        <div class="metric-base">意味と意図が保存される水準</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">削減後の<br>必要次元</div>
+        <div class="metric-val">3,000</div>
+        <div class="metric-base">24,576 の約 1/8</div>
+      </div>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">主張の中身</h3>
+    <p class="reveal">
+      自然言語は Zipf 則に従い、自己相似的な構造を持ちます。そのため埋め込みのエネルギーは
+      低周波に偏って分布し、高周波側では 1/f 型に減衰します。
+      低い方から順に足し上げていくと、<strong>約3,000次元で全体の82〜88%に達する</strong>。
+      これが「意味と意図を保存する下限」だ、というのが論文の中心的な主張です。
+    </p>
+    <p class="reveal">
+      これを下回ると、<strong>意味的に似た文と、単に構文的に似ているだけの文を区別できなくなる</strong>とされます。
+      裏を返せば、24,576次元のうち大半は冗長であり、8分の1に落としても厳密な推論は可能だという主張になります。
+    </p>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ この数値の位置づけを誤解しないでください</div>
+      <ul>
+        <li>82〜88% という値は<strong>実測ではなく、1/fモデルからの理論的導出</strong>です。実際の GPT-4 埋め込みを解析した結果ではありません。</li>
+        <li>この論文には評価実験、ベンチマーク比較、アブレーション研究のいずれも含まれていません。提案されているのは<strong>枠組みと検証方法</strong>です。</li>
+        <li>したがって「導入すれば幻覚が○%減る」と言える段階ではありません。実データでの検証が次の課題として明示されています。</li>
+        <li>後続の <a href="quantumphasenet_intro_ja.html" style="color:var(--accent);">QuantumPhaseNet</a> では、同じ着想を書き直したうえで試作機による実測が行われています。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── WHY FOURIER ── -->
+  <section id="why">
+    <div class="section-label">05 // WHY FOURIER</div>
+    <h2>「フーリエ変換を使う」だけでは足りない</h2>
+
+    <p class="lead reveal">
+      Attention をフーリエ変換に置き換える研究は既にあります（FNet）。
+      では何が違うのか。ここが本提案の分かれ目です。
+    </p>
+
+    <div class="split reveal">
+      <div class="split-cell not">
+        <h4>FNet のやりかた</h4>
+        <ul>
+          <li>Attention をフーリエ変換で置き換えて<strong>高速化</strong>する</li>
+          <li>複素数の<strong>虚部を捨てる</strong>（実部だけ使う）</li>
+          <li>結果として、共参照関係や文脈依存の処理が弱くなる</li>
+        </ul>
+      </div>
+      <div class="split-cell yes">
+        <h4>WavePhaseNet のやりかた</h4>
+        <ul>
+          <li>速度ではなく<strong>意味操作</strong>のために変換する</li>
+          <li><strong>位相を保持する</strong>（名前の Phase はここから）</li>
+          <li>帯域ごとに意味演算子を差し込み、階層を明示的に操作する</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="reveal">
+      可逆な変換それ自体には価値がありません。<strong>変換した先で何を操作するか</strong>に価値があります。
+      周波数側に移してから帯域ごとの重みを変え、また戻す。この往復の間に挟む操作が本体です。
+      たとえば「全体テーマは保持」「言い回しは減衰」「特定の対比構造は除去」といった操作を、
+      線形代数の演算として厳密に書けるようになります。
+    </p>
+  </section>
+
+  <!-- ── USE CASES ── -->
+  <section id="value">
+    <div class="section-label">06 // USE CASES</div>
+    <h2>どんな業務に効くか</h2>
+
+    <p class="lead reveal">
+      <strong>長い文書を、筋を通したまま扱う</strong>必要がある業務ほど効果が見込めます。
+    </p>
+
+    <div class="cases reveal">
+      <div class="case">
+        <h4>長文レポートの生成</h4>
+        <p>調査報告書や技術報告書。低周波の意図を固定することで、後半で当初の目的から逸れる問題に対処します。</p>
+        <div class="why">→ 低周波＝意図を生成中ずっと参照</div>
+      </div>
+      <div class="case">
+        <h4>複数文書の突き合わせ</h4>
+        <p>仕様書と実装、契約書と運用実態など、重なり合う情報源の間の矛盾を検出したい場面。</p>
+        <div class="why">→ コホモロジー正則化が食い違いを定量化</div>
+      </div>
+      <div class="case">
+        <h4>推論コストの削減</h4>
+        <p>次元を 24,576 から 3,000 に落とせるなら、メモリと計算コストが大幅に下がります。</p>
+        <div class="why">→ 累積エネルギー解析による理論的裏づけ</div>
+      </div>
+      <div class="case">
+        <h4>エッジ・組込みでの推論</h4>
+        <p>論文が「致命的」と指摘するのがこの領域。厳密さが要求され、かつ計算資源が限られます。</p>
+        <div class="why">→ 低次元化と厳密性を両立させる設計</div>
+      </div>
+      <div class="case">
+        <h4>要約・意図抽出</h4>
+        <p>文書全体のテーマを1本のベクトルとして取り出せるため、要約や分類の前処理に使えます。</p>
+        <div class="why">→ 大域意図ベクトル g として直接取得</div>
+      </div>
+      <div class="case">
+        <h4>プロンプト依存からの脱却</h4>
+        <p>意味階層を空間側に持たせることで、利用者側の指示文設計スキルへの依存を下げます。</p>
+        <div class="why">→ SCHS を埋め込み空間の内側に構築</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SCOPE ── -->
+  <section id="honest">
+    <div class="section-label">07 // SCOPE</div>
+    <h2>できること／できないこと</h2>
+
+    <div class="split reveal">
+      <div class="split-cell yes">
+        <h4>数学的に示されていること</h4>
+        <ul>
+          <li>DFT は可逆であり、逆変換で元の埋め込みを完全に復元できる</li>
+          <li>共役対称性により、実数値での復元が保証される（高周波は半分だけ学習すればよい）</li>
+          <li>Laplacian の零空間が「矛盾なく貼り合わせられる成分」に対応する</li>
+          <li>FFT・疎行列・反復解法により、計算量の面でスケールする</li>
+        </ul>
+      </div>
+      <div class="split-cell not">
+        <h4>まだ確かめられていないこと</h4>
+        <ul>
+          <li>実データでの有効性（ベンチマーク評価が未実施）</li>
+          <li>3,000次元という下限が、実際の GPT-4 埋め込みでも成り立つか</li>
+          <li>「低周波＝正しい意図」が、あらゆる文書で成り立つか</li>
+          <li>λ・μ・η 各項の寄与（アブレーション研究が未実施）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ 幻覚はゼロになりません</div>
+      <ul>
+        <li>論文自身が、より高次のコホモロジーに由来する<strong>本質的な障害は残る</strong>と明記しています。射影で消せるのは一部です。</li>
+        <li>低周波が「正しい意図」を表す保証はありません。長く反復された誤情報も低周波成分になり得ます。</li>
+        <li>そもそも真値集合が非凸である以上、線形な表現空間で完全に一致させることは原理的にできません。狙いは<strong>抑制</strong>であって撲滅ではありません。</li>
+        <li>高リスク業務では、AIの出力を単独の判断根拠にせず、人の確認と出典提示を組み込んでください。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── ADOPTION ── -->
+  <section id="steps">
+    <div class="section-label">08 // ADOPTION</div>
+    <h2>導入するなら、この順番で</h2>
+
+    <p class="lead reveal">
+      論文は実装を Transformer への差し込みとして設計しています。
+      検証しやすい順に並べると次のようになります。
+    </p>
+
+    <div class="table-scroll reveal">
+    <table class="plain">
+      <thead>
+        <tr><th>段階</th><th>やること</th><th>この段階で分かること</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>1</strong></td><td>埋め込みのスペクトルを実測</td><td>自社データで本当に 1/f 構造が出るか</td></tr>
+        <tr><td><strong>2</strong></td><td>累積エネルギーを計算</td><td>何次元で何%になるか（3,000は妥当か）</td></tr>
+        <tr><td><strong>3</strong></td><td>次元削減して精度を比較</td><td>削っても性能が落ちないか</td></tr>
+        <tr><td><strong>4</strong></td><td>スペクトルモジュールを差し込む</td><td>低周波の意図注入が長文生成に効くか</td></tr>
+        <tr style="background:rgba(0,136,170,0.05);"><td><strong>5</strong></td><td><strong>コホモロジー正則化を追加</strong></td><td><strong>局所の矛盾が実際に減るか（最重要）</strong></td></tr>
+        <tr><td><strong>6</strong></td><td>λ・μ・η のアブレーション</td><td>どの項が効いているかの切り分け</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p class="reveal">
+      段階1〜2 は既存モデルの埋め込みを解析するだけで、モデルの改造は不要です。
+      <strong>論文の中心的主張が自社データで成り立つかを、最小コストで確認できます。</strong>
+      ここが崩れるようなら先に進む意味はありません。
+    </p>
+  </section>
+
+  <!-- ── FAQ ── -->
+  <section id="faq">
+    <div class="section-label">09 // FAQ</div>
+    <h2>よくある質問</h2>
+
+    <div class="faq reveal">
+      <div class="faq-q">既存のLLMを置き換えることになりますか？</div>
+      <p class="faq-a">置き換えではありません。各層・各ヘッドにスペクトルモジュールと正則化項を差し込む設計です。低周波の意図は残差としてAttentionの入力に加算されます。</p>
+    </div>
+    <div class="faq reveal">
+      <div class="faq-q">RAGを導入済みですが、不要になりますか？</div>
+      <p class="faq-a">論文はRAGについて「外部依存が強く拡張性に乏しい」と指摘し、意味階層を埋め込み空間の内側に持たせる方向を提案しています。ただしRAGを置き換えるという主張ではなく、外部知識の参照とは別の層の話です。</p>
+    </div>
+    <div class="faq reveal">
+      <div class="faq-q">計算コストは増えますか？</div>
+      <p class="faq-a">FFT は系列長に対してほぼ線形で軽量です。Laplacian も疎行列なので反復解法で扱えます。むしろ次元削減が効けば全体としては下がる可能性があります。</p>
+    </div>
+    <div class="faq reveal">
+      <div class="faq-q">幻覚はどれくらい減りますか？</div>
+      <p class="faq-a">この論文には実験結果がないため、定量的にはお答えできません。示されているのは理論的枠組みと、評価すべき指標（perplexity、局所整合率、Zipf偏差）です。まずは自社データでの検証が必要です。</p>
+    </div>
+    <div class="faq reveal">
+      <div class="faq-q">QuantumPhaseNet とはどういう関係ですか？</div>
+      <p class="faq-a">WavePhaseNet が前稿、QuantumPhaseNet が後継です。後継では同じ着想を「ゲージ共変」な枠組みへ書き直し、位相を座標に依存しない量として定義し直しています。また試作機による実測が加わっています。</p>
+    </div>
+    <div class="faq reveal">
+      <div class="faq-q">実験がないのに提案する意味はありますか？</div>
+      <p class="faq-a">この論文の主眼は「幻覚がなぜ構造的に不可避なのか」を数学的に定式化することにあります。原因の定式化が先にあり、対策の実証は後続研究に委ねられる、という構成です。実際に後継論文で実測が行われています。</p>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section id="cta" style="border-top:none; padding-top:2rem;">
+    <div class="cta reveal">
+      <div class="section-label" style="text-align:center;">NEXT</div>
+      <h2>数式まで確認したい方へ</h2>
+      <p>
+        測度論による定式化、DFTの定義と完全再構成の証明、意味演算子、
+        コホモロジー正則化と統一損失関数までを扱った詳細版を用意しています。
+      </p>
+      <a href="wavephasenet_ja.html" class="cta-btn">詳細解説を読む →</a>
+      <div style="margin-top:1.2rem;">
+        <a href="wavephasenet_faq.html" style="font-family:var(--font-mono); font-size:0.74rem; color:var(--text-muted); text-decoration:none; border-bottom:1px solid var(--border);">査読コメントをもとにしたFAQもあります →</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrapper" style="padding-top:0; padding-bottom:0;">
+    <a href="index.html">目次</a> &nbsp;|&nbsp; WavePhaseNet かんたん解説 &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp;
+    <a href="wavephasenet_ja.html">詳細解説</a> &nbsp;|&nbsp;
+    <a href="quantumphasenet_intro_ja.html">QuantumPhaseNet</a>
+  </div>
+</footer>
+<script>
+// ── Wave canvas animation ──
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, frame = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function drawWaves() {
+  ctx.clearRect(0, 0, W, H);
+  const waves = [
+    { amp: 60, freq: 0.008, speed: 0.015, y: H * 0.30, color: '#0088aa', alpha: 0.45 },
+    { amp: 35, freq: 0.014, speed: 0.022, y: H * 0.50, color: '#6d28d9', alpha: 0.35 },
+    { amp: 20, freq: 0.025, speed: 0.035, y: H * 0.70, color: '#0088aa', alpha: 0.20 },
+    { amp: 45, freq: 0.006, speed: 0.010, y: H * 0.20, color: '#d97706', alpha: 0.18 },
+  ];
+  waves.forEach(w => {
+    ctx.beginPath();
+    ctx.strokeStyle = w.color;
+    ctx.globalAlpha = w.alpha;
+    ctx.lineWidth = 1.5;
+    for (let x = 0; x <= W; x += 2) {
+      const y = w.y + Math.sin(x * w.freq + frame * w.speed) * w.amp;
+      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  });
+  ctx.globalAlpha = 0.07;
+  ctx.fillStyle = '#0088aa';
+  for (let x = 0; x < W; x += 80) {
+    for (let y = 0; y < H; y += 80) {
+      ctx.beginPath();
+      ctx.arc(x, y, 1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+  frame++;
+  if (!reduceMotion) requestAnimationFrame(drawWaves);
+}
+drawWaves();
+
+// ── Scroll reveal ──
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WavePhaseNet — Plain-language Explainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f3f7fc;
+    --surface2: #e8eef8;
+    --border: #c8d8ec;
+    --accent: #0088aa;
+    --accent2: #6d28d9;
+    --accent3: #d97706;
+    --text: #0d1829;
+    --text-muted: #3d5166;
+    --text-dim: #7d8fa3;
+    --glow: rgba(0,136,170,0.12);
+    --font-serif: 'Noto Serif JP', serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-sans: 'Noto Sans JP', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    line-height: 1.9;
+    overflow-x: hidden;
+  }
+
+  #bg-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; opacity: 0.4;
+    pointer-events: none;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex; align-items: center;
+  }
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+  .nav-links { display: flex; gap: 1.6rem; list-style: none; margin-left: 2rem; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none;
+    font-size: 0.78rem; letter-spacing: 0.08em; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-right { display: flex; align-items: center; gap: 1.4rem; margin-left: auto; }
+  .nav-lang {
+    display: flex; align-items: center;
+    border: 1px solid var(--border); border-radius: 20px;
+    overflow: hidden; flex-shrink: 0;
+  }
+  .nav-lang a {
+    font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em;
+    padding: 0.28em 0.75em; color: var(--text-dim);
+    text-decoration: none; transition: all 0.2s; line-height: 1;
+  }
+  .nav-lang a.current { background: var(--accent); color: #fff; }
+  .nav-lang a:not(.current):hover { color: var(--accent); }
+  .nav-page-tab {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em;
+    color: var(--text-muted); text-decoration: none;
+    padding-bottom: 2px; border-bottom: 2px solid transparent;
+    transition: all 0.2s; flex-shrink: 0; white-space: nowrap;
+  }
+  .nav-page-tab:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 860px; margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    min-height: 92vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding-top: 80px;
+  }
+  .hero-tag {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.2em;
+    color: var(--accent); border: 1px solid var(--accent);
+    padding: 0.3em 0.9em; display: inline-block; margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.2s forwards;
+  }
+  .hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.9rem, 4.6vw, 3.1rem);
+    font-weight: 700; line-height: 1.35; letter-spacing: -0.01em;
+    margin-bottom: 1.4rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.35s forwards;
+  }
+  .hero-title em { font-style: normal; color: var(--accent); }
+  .hero-desc {
+    font-size: 1.05rem; color: var(--text-muted);
+    max-width: 640px; line-height: 2;
+    opacity: 0; animation: fadeUp 0.6s ease 0.55s forwards;
+    margin-bottom: 2rem;
+  }
+  .hero-meta {
+    font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--text-dim); letter-spacing: 0.06em;
+    margin-bottom: 2.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.65s forwards;
+  }
+  .scroll-hint {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--text-dim); letter-spacing: 0.15em;
+    display: flex; align-items: center; gap: 0.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.8s forwards;
+  }
+  .scroll-hint::after {
+    content: ''; display: block; width: 40px; height: 1px;
+    background: var(--text-dim); animation: expandLine 1.5s ease infinite;
+  }
+
+  /* ── Sections ── */
+  section { padding: 4.5rem 0; border-top: 1px solid var(--border); }
+  .section-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.25em;
+    color: var(--accent); margin-bottom: 0.6rem; opacity: 0.8;
+  }
+  h2 {
+    font-family: var(--font-serif); font-size: 1.75rem;
+    font-weight: 700; margin-bottom: 1.6rem; line-height: 1.4;
+  }
+  h3 {
+    font-family: var(--font-serif); font-size: 1.15rem;
+    font-weight: 600; margin-bottom: 0.9rem;
+  }
+  p { margin-bottom: 1.2rem; color: var(--text-muted); }
+  .lead { font-size: 1.02rem; }
+
+  /* ── Problem cards ── */
+  .problems { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin: 2rem 0; }
+  .problem {
+    border: 1px solid var(--border); background: var(--surface);
+    padding: 1.6rem 1.4rem; transition: all 0.3s;
+  }
+  .problem:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .problem-icon { font-size: 1.6rem; margin-bottom: 0.7rem; display: block; }
+  .problem h4 { font-family: var(--font-serif); font-size: 0.98rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .problem p { font-size: 0.83rem; margin: 0; }
+
+  /* ── Analogy ── */
+  .analogy {
+    border: 1px solid var(--border); background: var(--surface);
+    padding: 2rem; margin-bottom: 1.2rem;
+    display: grid; grid-template-columns: 64px 1fr; gap: 1.6rem;
+    align-items: start; transition: border-color 0.3s;
+  }
+  .analogy:hover { border-color: rgba(0,136,170,0.4); }
+  .analogy-num {
+    font-family: var(--font-mono); font-size: 2rem; font-weight: 700;
+    color: var(--border); line-height: 1;
+  }
+  .analogy:hover .analogy-num { color: var(--accent); opacity: 0.45; }
+  .analogy h3 { margin-bottom: 0.5rem; }
+  .analogy .kicker {
+    font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.12em;
+    color: var(--accent2); margin-bottom: 0.5rem; display: block;
+  }
+  .analogy p { font-size: 0.9rem; margin-bottom: 0.8rem; }
+  .analogy p:last-child { margin-bottom: 0; }
+  .like {
+    border-left: 2px solid var(--accent3);
+    padding: 0.2rem 0 0.2rem 0.9rem;
+    font-size: 0.86rem; color: var(--text-muted);
+    background: rgba(217,119,6,0.035);
+  }
+
+  /* ── Flow ── */
+  .flow { display: flex; flex-direction: column; gap: 0; margin: 2rem 0; }
+  .flow-step { display: flex; align-items: stretch; }
+  .flow-num {
+    font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent);
+    width: 36px; min-width: 36px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .flow-num::after {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    width: 1px; height: 100%; background: var(--border);
+  }
+  .flow-step:last-child .flow-num::after { display: none; }
+  .flow-body {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    padding: 1.1rem 1.4rem; margin: 4px 0 4px 1rem;
+  }
+  .flow-title { font-weight: 500; font-size: 0.92rem; margin-bottom: 0.3rem; }
+  .flow-desc { font-size: 0.83rem; color: var(--text-muted); }
+
+  /* ── Results ── */
+  .metric-grid {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 1px; background: var(--border); margin: 2rem 0;
+  }
+  .metric { background: var(--surface); padding: 1.6rem 1.1rem; text-align: center; }
+  .metric-label {
+    font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.1em;
+    color: var(--text-dim); margin-bottom: 0.6rem; min-height: 2.2em;
+  }
+  .metric-val {
+    font-family: var(--font-mono); font-size: 1.9rem; font-weight: 700;
+    color: var(--accent); line-height: 1;
+  }
+  .metric-base { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.55rem; }
+  .metric.neg .metric-val { color: var(--accent3); }
+
+  .table-scroll { overflow-x: auto; }
+  table.plain { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+  table.plain th {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em;
+    color: var(--accent); text-align: left; padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  table.plain td {
+    padding: 0.8rem 1rem; font-size: 0.86rem;
+    border-bottom: 1px solid rgba(200,190,230,0.6); color: var(--text-muted);
+    vertical-align: top;
+  }
+  table.plain tr:hover td { background: var(--surface); }
+
+  /* ── Use cases ── */
+  .cases { display: grid; grid-template-columns: repeat(2,1fr); gap: 1rem; margin: 2rem 0; }
+  .case {
+    border: 1px solid var(--border); background: var(--surface);
+    padding: 1.5rem; transition: all 0.3s;
+  }
+  .case:hover { border-color: var(--accent); box-shadow: 0 8px 26px rgba(0,136,170,0.08); }
+  .case h4 {
+    font-family: var(--font-serif); font-size: 0.98rem;
+    font-weight: 600; margin-bottom: 0.5rem;
+  }
+  .case p { font-size: 0.83rem; margin-bottom: 0.6rem; }
+  .case .why {
+    font-size: 0.78rem; color: var(--accent2);
+    font-family: var(--font-mono); letter-spacing: 0.03em;
+  }
+
+  /* ── Two-column honest ── */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem 0; }
+  .split-cell { border: 1px solid var(--border); background: var(--surface); padding: 1.7rem 1.5rem; }
+  .split-cell h4 {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em;
+    margin-bottom: 0.9rem;
+  }
+  .split-cell.yes { border-left: 3px solid var(--accent); }
+  .split-cell.yes h4 { color: var(--accent); }
+  .split-cell.not { border-left: 3px solid var(--accent3); }
+  .split-cell.not h4 { color: var(--accent3); }
+  .split-cell ul { margin: 0; padding-left: 1.1rem; }
+  .split-cell li { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+
+  /* ── Caution ── */
+  .caution {
+    border: 1px dashed var(--accent3); background: rgba(217,119,6,0.04);
+    padding: 1.6rem 1.8rem; margin: 1.8rem 0;
+  }
+  .caution-title {
+    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em;
+    color: var(--accent3); margin-bottom: 0.8rem;
+  }
+  .caution ul { margin: 0; padding-left: 1.2rem; }
+  .caution li { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+
+  /* ── FAQ ── */
+  .faq { border-bottom: 1px solid var(--border); padding: 1.4rem 0; }
+  .faq:first-of-type { border-top: 1px solid var(--border); }
+  .faq-q {
+    font-family: var(--font-serif); font-size: 1rem; font-weight: 600;
+    margin-bottom: 0.6rem; display: flex; gap: 0.7rem; align-items: baseline;
+  }
+  .faq-q::before {
+    content: 'Q'; font-family: var(--font-mono); font-size: 0.75rem;
+    color: var(--accent); flex-shrink: 0;
+  }
+  .faq-a { font-size: 0.88rem; color: var(--text-muted); padding-left: 1.6rem; margin: 0; }
+
+  /* ── CTA ── */
+  .cta {
+    background: linear-gradient(135deg, rgba(0,136,170,0.06), rgba(109,40,217,0.06));
+    border: 1px solid rgba(0,136,170,0.2);
+    padding: 3rem; text-align: center; margin-top: 1rem;
+  }
+  .cta h2 { font-size: 1.4rem; margin-bottom: 0.8rem; }
+  .cta p { max-width: 560px; margin: 0 auto 1.8rem; font-size: 0.92rem; }
+  .cta-btn {
+    display: inline-block; font-family: var(--font-mono); font-size: 0.78rem;
+    letter-spacing: 0.1em; padding: 0.85em 2em;
+    border: 1px solid var(--accent); color: var(--accent);
+    text-decoration: none; transition: all 0.25s;
+  }
+  .cta-btn:hover { background: var(--accent); color: #fff; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 0 2rem; text-align: center;
+    font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--text-dim); letter-spacing: 0.08em;
+    position: relative; z-index: 1;
+  }
+  footer a { color: inherit; }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px);} to {opacity:1; transform:translateY(0);} }
+  @keyframes expandLine { 0%{width:20px;opacity:0.3;} 50%{width:60px;opacity:0.8;} 100%{width:20px;opacity:0.3;} }
+
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 760px) {
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 640px) {
+    .problems, .cases, .split { grid-template-columns: 1fr; }
+    .metric-grid { grid-template-columns: 1fr 1fr; }
+    .analogy { grid-template-columns: 1fr; gap: 0.6rem; }
+  }
+</style>
+</head><body>
+
+<canvas id="bg-canvas"></canvas>
+
+<nav>
+  <div class="nav-logo">WavePhaseNet // Plain-language</div>
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#idea">Idea</a></li>
+    <li><a href="#evidence">Evidence</a></li>
+    <li><a href="#value">Use cases</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="wavephasenet_en.html" class="nav-page-tab">Detailed →</a>
+    <div class="nav-lang">
+      <a href="wavephasenet_intro_ja.html">JA</a>
+      <a href="wavephasenet_intro_en.html" class="current">EN</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrapper">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-tag">WavePhaseNet in 3 minutes</div>
+    <h1 class="hero-title">
+      Hallucination isn't a training gap.<br>
+      <em>It follows from the shape of the space.</em>
+    </h1>
+    <p class="hero-desc">
+      WavePhaseNet reframes LLM hallucination as something that
+      <strong>must happen given the geometry of the representation space</strong> — not something more data will fix —
+      and proposes suppressing it by using the Fourier transform to build a
+      <strong>semantic conceptual hierarchy</strong> directly inside the embedding space.
+    </p>
+    <div class="hero-meta">
+      Kiyotaka Kasubuchi &amp; Kazuo Fukiya / January 12, 2026 / arXiv:2602.14419
+    </div>
+    <div class="scroll-hint">SCROLL</div>
+  </div>
+
+  <!-- ── PROBLEM ── -->
+  <section id="problem">
+    <div class="section-label">01 // ISSUE</div>
+    <h2>Why more data does not remove hallucination</h2>
+
+    <p class="lead reveal">
+      The usual diagnosis is "not enough training data" or "bad prompting".
+      This paper starts from the claim that <strong>neither explains what we observe</strong>.
+    </p>
+
+    <div class="problems reveal">
+      <div class="problem">
+        <span class="problem-icon">📊</span>
+        <h4>Optimized for average plausibility</h4>
+        <p>What an LLM optimizes is average quality over a probability distribution — never the truth of any individual claim.</p>
+      </div>
+      <div class="problem">
+        <span class="problem-icon">🧩</span>
+        <h4>Locally sound, globally contradictory</h4>
+        <p>Each paragraph holds up, yet the first half contradicts the second. Nothing enforces consistency between overlapping local contexts.</p>
+      </div>
+      <div class="problem">
+        <span class="problem-icon">🎚️</span>
+        <h4>Dependence on prompt craftsmanship</h4>
+        <p>Complex reasoning demands sophisticated prompt design from the user, which makes results person-dependent and hard to scale.</p>
+      </div>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">Root cause: the shapes do not match</h3>
+    <p class="reveal">
+      Here is the core claim: <strong>the set of true statements and the space an LLM can represent have fundamentally
+      different shapes</strong>.
+    </p>
+
+    <div class="split reveal">
+      <div class="split-cell not">
+        <h4>The truth set</h4>
+        <ul>
+          <li>Jagged, with disconnected islands (non-convex)</li>
+          <li>Blending two true claims does not yield a true claim</li>
+          <li>Averaging "A is profitable" and "B is in the red" produces nothing meaningful</li>
+        </ul>
+      </div>
+      <div class="split-cell yes">
+        <h4>The representation space</h4>
+        <ul>
+          <li>Smooth and gap-free (linear and convex)</li>
+          <li>A midpoint between any two points always exists</li>
+          <li>That midpoint becomes a claim that does not exist in reality</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="reveal">
+      Approximating a jagged set of truths with a smooth space. As long as that
+      <strong>mismatch of shape</strong> persists, more training will keep producing statements that never existed.
+      So the paper proposes rebuilding the <strong>space</strong>, not enlarging the data.
+    </p>
+  </section>
+
+  <!-- ── IDEA ── -->
+  <section id="idea">
+    <div class="section-label">02 // IDEA</div>
+    <h2>Decompose text as a wave</h2>
+
+    <p class="lead reveal">
+      WavePhaseNet uses three tools. All are mature signal-processing techniques;
+      what is new is <strong>applying them to meaning</strong>.
+    </p>
+
+    <div class="analogy reveal">
+      <div class="analogy-num">01</div>
+      <div>
+        <span class="kicker">DISCRETE FOURIER TRANSFORM</span>
+        <h3>Frequency decomposition = an equalizer for meaning</h3>
+        <p>
+          Instead of a sequence of words, the text is viewed as a <strong>superposition of waves</strong>.
+          Slowly varying components (low frequency) carry the theme and intent of the whole document;
+          rapidly varying ones (high frequency) carry word order and phrasing.
+        </p>
+        <div class="like">
+          <strong>Think of an audio equalizer.</strong>
+          Raise the bass and the foundation comes forward; raise the treble and the detail does.
+          Text has the same band structure, and the DFT hands you the knobs.
+        </div>
+      </div>
+    </div>
+
+    <div class="analogy reveal">
+      <div class="analogy-num">02</div>
+      <div>
+        <span class="kicker">SEMANTIC CONCEPTUAL HIERARCHY STRUCTURE</span>
+        <h3>SCHS = carve the hierarchy into the space itself</h3>
+        <p>
+          External dictionaries — thesauri, ontologies — cannot be embedded directly into the representation space,
+          and RAG brings heavy external dependency with poor extensibility.
+          So the <strong>frequency bands themselves become the hierarchy</strong>, putting semantic levels inside the space.
+        </p>
+        <div class="like">
+          <strong>The intended payoff is escaping prompt craftsmanship.</strong>
+          If the hierarchy lives in the space, the model can track which level of abstraction it is operating at
+          without the user writing elaborate instructions.
+        </div>
+      </div>
+    </div>
+
+    <div class="analogy reveal">
+      <div class="analogy-num">03</div>
+      <div>
+        <span class="kicker">COHOMOLOGY REGULARIZATION</span>
+        <h3>Cohomology regularization = cross-checking testimony</h3>
+        <p>
+          The document is split into overlapping windows, each producing its own interpretation.
+          Where windows overlap and interpretations disagree, that disagreement is
+          <strong>measured as a loss</strong> and reduced during training. The component on which every window
+          agrees can be extracted mathematically.
+        </p>
+        <div class="like">
+          <strong>Think of cross-checking eyewitness accounts.</strong>
+          Where accounts overlap and conflict, something is wrong.
+          Extracting the part where every account agrees — the harmonic component — is what Hodge theory does.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HOW ── -->
+  <section id="how">
+    <div class="section-label">03 // HOW</div>
+    <h2>How one document flows through it</h2>
+
+    <div class="flow reveal">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <div class="flow-title">Embed</div>
+          <div class="flow-desc">Turn the token sequence into an embedding matrix (length N × dimension d)</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <div class="flow-title">FFT into the frequency domain</div>
+          <div class="flow-desc">Transform along the sequence axis — cheap, near-linear in sequence length</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <div class="flow-title">Separate the bands</div>
+          <div class="flow-desc">Split into low (intent), mid (discourse structure) and high (phrasing) frequencies</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-body">
+          <div class="flow-title">Fix the low band as the intent vector</div>
+          <div class="flow-desc">Extract the direction the document is heading and keep referring to it throughout generation</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-body">
+          <div class="flow-title">Generate the high band conditioned on that intent</div>
+          <div class="flow-desc">Phrasing and word order are produced only within what the fixed intent allows</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">6</div>
+        <div class="flow-body">
+          <div class="flow-title">Transform back</div>
+          <div class="flow-desc">The inverse DFT restores the original form — reconstruction is exact, nothing is lost</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">7</div>
+        <div class="flow-body">
+          <div class="flow-title">Penalize disagreement between windows</div>
+          <div class="flow-desc">Add the contradiction between overlapping windows to the loss and train it down</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="reveal">
+      Importantly, this <strong>does not replace your Transformer</strong>.
+      It is implemented as a spectral module and a regularizer injected per layer and per head,
+      with the low-frequency intent added to the attention input as a residual.
+    </p>
+  </section>
+
+  <!-- ── EVIDENCE ── -->
+  <section id="evidence">
+    <div class="section-label">04 // EVIDENCE</div>
+    <h2>The evidence is a derivation, not an experiment</h2>
+
+    <p class="lead reveal">
+      This needs saying plainly: the paper contains <strong>no experimental results</strong>.
+      What it presents are numbers derived from the statistical laws of language.
+    </p>
+
+    <div class="metric-grid reveal">
+      <div class="metric">
+        <div class="metric-label">GPT-4 embedding<br>dimension</div>
+        <div class="metric-val">24,576</div>
+        <div class="metric-base">GPT-3 uses 12,288</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">spectral decay<br>exponent α</div>
+        <div class="metric-val">1.1–1.4</div>
+        <div class="metric-base">1/f structure from Zipf's law</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">cumulative energy<br>at 3,000 dims</div>
+        <div class="metric-val">82–88%</div>
+        <div class="metric-base">the level preserving meaning and intent</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">dimensions<br>actually needed</div>
+        <div class="metric-val">3,000</div>
+        <div class="metric-base">about 1/8 of 24,576</div>
+      </div>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">What is being claimed</h3>
+    <p class="reveal">
+      Natural language follows Zipf's law and is self-similar, so embedding energy concentrates at low frequencies
+      and decays as 1/f. Accumulating from the bottom up,
+      <strong>roughly 3,000 dimensions capture 82–88% of the total</strong>.
+      That, the paper argues, is the lower bound at which meaning and intent survive.
+    </p>
+    <p class="reveal">
+      Below it, the claim goes, <strong>semantically similar sentences become indistinguishable from merely
+      syntactically similar ones</strong>. Turned around: most of the 24,576 dimensions are redundant, and rigorous
+      reasoning remains possible at one eighth the size.
+    </p>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ Do not misread the status of these numbers</div>
+      <ul>
+        <li>82–88% is <strong>derived from the 1/f model, not measured</strong>. It is not the result of analyzing actual GPT-4 embeddings.</li>
+        <li>The paper contains no evaluation, no benchmark comparison and no ablation study. What it offers is a <strong>framework and a validation plan</strong>.</li>
+        <li>So nobody can yet say "deploy this and hallucination drops by X%". Validation on real data is named as the next step.</li>
+        <li>The successor work, <a href="quantumphasenet_intro_en.html" style="color:var(--accent);">QuantumPhaseNet</a>, rewrites the same idea and does carry prototype measurements.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── WHY FOURIER ── -->
+  <section id="why">
+    <div class="section-label">05 // WHY FOURIER</div>
+    <h2>"Just use a Fourier transform" is not the point</h2>
+
+    <p class="lead reveal">
+      Replacing attention with a Fourier transform has been done before (FNet).
+      So what is different here? This is the dividing line.
+    </p>
+
+    <div class="split reveal">
+      <div class="split-cell not">
+        <h4>What FNet does</h4>
+        <ul>
+          <li>Replaces attention with a Fourier transform for <strong>speed</strong></li>
+          <li><strong>Discards the imaginary part</strong> of the complex representation</li>
+          <li>Consequently handles coreference and context dependency poorly</li>
+        </ul>
+      </div>
+      <div class="split-cell yes">
+        <h4>What WavePhaseNet does</h4>
+        <ul>
+          <li>Transforms for <strong>semantic manipulation</strong>, not speed</li>
+          <li><strong>Preserves phase</strong> — hence "Phase" in the name</li>
+          <li>Inserts semantic operators per band to manipulate the hierarchy explicitly</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="reveal">
+      An invertible transform has no value by itself. The value is in
+      <strong>what you do once you are on the other side</strong>.
+      Move to the frequency domain, reweight the bands, move back — the operation sandwiched in the middle is the method.
+      "Keep the global topic, attenuate phrasing, remove this contrastive structure" becomes something you can write
+      down rigorously in linear algebra.
+    </p>
+  </section>
+
+  <!-- ── USE CASES ── -->
+  <section id="value">
+    <div class="section-label">06 // USE CASES</div>
+    <h2>Where it earns its keep</h2>
+
+    <p class="lead reveal">
+      The payoff concentrates where you must <strong>hold a long document to a single thread</strong>.
+    </p>
+
+    <div class="cases reveal">
+      <div class="case">
+        <h4>Long-form report generation</h4>
+        <p>Investigation and technical reports. Fixing the low-frequency intent addresses drift away from the original brief.</p>
+        <div class="why">→ low frequency = intent, referenced throughout</div>
+      </div>
+      <div class="case">
+        <h4>Cross-checking multiple documents</h4>
+        <p>Spec versus implementation, contract versus actual practice — detecting contradictions between overlapping sources.</p>
+        <div class="why">→ cohomology regularization quantifies disagreement</div>
+      </div>
+      <div class="case">
+        <h4>Reducing inference cost</h4>
+        <p>If dimensions really can drop from 24,576 to 3,000, memory and compute fall substantially.</p>
+        <div class="why">→ justified by cumulative energy analysis</div>
+      </div>
+      <div class="case">
+        <h4>Edge and embedded inference</h4>
+        <p>The domain the paper calls fatal: rigor is required and compute is scarce at the same time.</p>
+        <div class="why">→ designed to combine low dimension with rigor</div>
+      </div>
+      <div class="case">
+        <h4>Summarization and intent extraction</h4>
+        <p>The theme of a whole document is available as a single vector, usable as a front end for summarization or classification.</p>
+        <div class="why">→ obtained directly as the global intent vector g</div>
+      </div>
+      <div class="case">
+        <h4>Escaping prompt dependency</h4>
+        <p>Putting the semantic hierarchy in the space lowers reliance on the user's prompt-design skill.</p>
+        <div class="why">→ SCHS built inside the embedding space</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SCOPE ── -->
+  <section id="honest">
+    <div class="section-label">07 // SCOPE</div>
+    <h2>What is settled, and what is not</h2>
+
+    <div class="split reveal">
+      <div class="split-cell yes">
+        <h4>Mathematically established</h4>
+        <ul>
+          <li>The DFT is invertible: the inverse transform reconstructs the embedding exactly</li>
+          <li>Conjugate symmetry guarantees real-valued reconstruction (only half the high band must be learned)</li>
+          <li>The null space of the Laplacian corresponds to the gluable, contradiction-free component</li>
+          <li>FFT, sparse linear algebra and iterative solvers make the computation scale</li>
+        </ul>
+      </div>
+      <div class="split-cell not">
+        <h4>Not yet established</h4>
+        <ul>
+          <li>Effectiveness on real data (no benchmark evaluation was run)</li>
+          <li>Whether the 3,000-dimension bound holds for actual GPT-4 embeddings</li>
+          <li>Whether "low frequency = correct intent" holds across all documents</li>
+          <li>The contribution of each of λ, μ and η (no ablation study was run)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ Hallucination will not go to zero</div>
+      <ul>
+        <li>The paper states outright that <strong>genuine obstructions from higher cohomology remain</strong>. Projection removes only part of the problem.</li>
+        <li>Nothing guarantees that low frequency means correct intent. Misinformation repeated at length also becomes a low-frequency component.</li>
+        <li>Since the truth set is non-convex, no linear representation space can match it exactly. The goal is <strong>suppression</strong>, not elimination.</li>
+        <li>In high-stakes work, never let the output be the sole basis for a decision: build in human review and source attribution.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── ADOPTION ── -->
+  <section id="steps">
+    <div class="section-label">08 // ADOPTION</div>
+    <h2>If you adopt it, adopt it in this order</h2>
+
+    <p class="lead reveal">
+      The paper designs the implementation as an injection into a Transformer.
+      Ordered by how cheaply each step can be tested:
+    </p>
+
+    <div class="table-scroll reveal">
+    <table class="plain">
+      <thead>
+        <tr><th>stage</th><th>what you do</th><th>what you learn</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>1</strong></td><td>Measure the embedding spectrum</td><td>Whether your data really shows 1/f structure</td></tr>
+        <tr><td><strong>2</strong></td><td>Compute cumulative energy</td><td>How many dimensions give what percentage (is 3,000 right?)</td></tr>
+        <tr><td><strong>3</strong></td><td>Reduce dimensions and compare accuracy</td><td>Whether performance survives the cut</td></tr>
+        <tr><td><strong>4</strong></td><td>Inject the spectral module</td><td>Whether low-frequency intent injection helps long-form generation</td></tr>
+        <tr style="background:rgba(0,136,170,0.05);"><td><strong>5</strong></td><td><strong>Add cohomology regularization</strong></td><td><strong>Whether local contradictions actually decrease (the key test)</strong></td></tr>
+        <tr><td><strong>6</strong></td><td>Ablate λ, μ and η</td><td>Which term is doing the work</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p class="reveal">
+      Stages 1–2 only analyze an existing model's embeddings — no model surgery required.
+      <strong>They test the paper's central claim against your own data at minimal cost.</strong>
+      If that fails, there is no point going further.
+    </p>
+  </section>
+
+  <!-- ── FAQ ── -->
+  <section id="faq">
+    <div class="section-label">09 // FAQ</div>
+    <h2>Frequently asked</h2>
+
+    <div class="faq reveal">
+      <div class="faq-q">Does this replace the LLM we already use?</div>
+      <p class="faq-a">No. It is designed as a spectral module and a regularizer injected per layer and per head, with the low-frequency intent added to the attention input as a residual.</p>
+    </div>
+    <div class="faq reveal">
+      <div class="faq-q">We already run RAG. Does this make it unnecessary?</div>
+      <p class="faq-a">The paper criticizes RAG for heavy external dependency and poor extensibility, and argues for putting the semantic hierarchy inside the embedding space. That is not a claim to replace RAG — external knowledge retrieval operates at a different layer.</p>
+    </div>
+    <div class="faq reveal">
+      <div class="faq-q">Does it increase compute cost?</div>
+      <p class="faq-a">The FFT is near-linear in sequence length and cheap. The Laplacian is sparse and handled by iterative solvers. If the dimensionality reduction holds up, total cost may actually fall.</p>
+    </div>
+    <div class="faq reveal">
+      <div class="faq-q">By how much does hallucination decrease?</div>
+      <p class="faq-a">The paper has no experiments, so there is no quantitative answer. What it provides is the framework and the metrics to evaluate (perplexity, local consistency rate, Zipf deviation). Validation on your own data comes first.</p>
+    </div>
+    <div class="faq reveal">
+      <div class="faq-q">How does this relate to QuantumPhaseNet?</div>
+      <p class="faq-a">WavePhaseNet is the earlier paper and QuantumPhaseNet the successor. The successor rewrites the same idea in a gauge-covariant framework, redefining phase as a frame-independent quantity, and adds prototype measurements.</p>
+    </div>
+    <div class="faq reveal">
+      <div class="faq-q">Is a proposal without experiments worth anything?</div>
+      <p class="faq-a">The paper's main object is to formalize <em>why</em> hallucination is structurally unavoidable. Formalizing the cause comes first; demonstrating the remedy is left to follow-up work — which the successor paper does carry out.</p>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section id="cta" style="border-top:none; padding-top:2rem;">
+    <div class="cta reveal">
+      <div class="section-label" style="text-align:center;">NEXT</div>
+      <h2>If you want the mathematics</h2>
+      <p>
+        A detailed companion page covers the measure-theoretic formulation, the DFT definition and the
+        exact-reconstruction proof, semantic operators, and cohomology regularization with the unified loss.
+      </p>
+      <a href="wavephasenet_en.html" class="cta-btn">Read the detailed version →</a>
+      <div style="margin-top:1.2rem;">
+        <a href="wavephasenet_faq_en.html" style="font-family:var(--font-mono); font-size:0.74rem; color:var(--text-muted); text-decoration:none; border-bottom:1px solid var(--border);">There is also an FAQ built from peer-review comments →</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrapper" style="padding-top:0; padding-bottom:0;">
+    <a href="index.html">Index</a> &nbsp;|&nbsp; WavePhaseNet Plain-language Explainer &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp;
+    <a href="wavephasenet_en.html">Detailed version</a> &nbsp;|&nbsp;
+    <a href="quantumphasenet_intro_en.html">QuantumPhaseNet</a>
+  </div>
+</footer>
+<script>
+// ── Wave canvas animation ──
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, frame = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function drawWaves() {
+  ctx.clearRect(0, 0, W, H);
+  const waves = [
+    { amp: 60, freq: 0.008, speed: 0.015, y: H * 0.30, color: '#0088aa', alpha: 0.45 },
+    { amp: 35, freq: 0.014, speed: 0.022, y: H * 0.50, color: '#6d28d9', alpha: 0.35 },
+    { amp: 20, freq: 0.025, speed: 0.035, y: H * 0.70, color: '#0088aa', alpha: 0.20 },
+    { amp: 45, freq: 0.006, speed: 0.010, y: H * 0.20, color: '#d97706', alpha: 0.18 },
+  ];
+  waves.forEach(w => {
+    ctx.beginPath();
+    ctx.strokeStyle = w.color;
+    ctx.globalAlpha = w.alpha;
+    ctx.lineWidth = 1.5;
+    for (let x = 0; x <= W; x += 2) {
+      const y = w.y + Math.sin(x * w.freq + frame * w.speed) * w.amp;
+      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  });
+  ctx.globalAlpha = 0.07;
+  ctx.fillStyle = '#0088aa';
+  for (let x = 0; x < W; x += 80) {
+    for (let y = 0; y < H; y += 80) {
+      ctx.beginPath();
+      ctx.arc(x, y, 1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+  frame++;
+  if (!reduceMotion) requestAnimationFrame(drawWaves);
+}
+drawWaves();
+
+// ── Scroll reveal ──
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
