@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paper Explainers — WavePhaseNet / QuantumPhaseNet</title>
+<title>論文解説ページ — WavePhaseNet / QuantumPhaseNet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -191,13 +191,14 @@
     .lang-bar { top: 1rem; right: 1rem; }
   }
 </style>
-</head><body>
+</head>
+<body>
 
 <canvas id="bg-canvas"></canvas>
 
 <div class="lang-bar">
-  <a href="index_ja.html">JA</a>
-  <a href="index.html" class="current">EN</a>
+  <a href="index_ja.html" class="current">JA</a>
+  <a href="index.html">EN</a>
 </div>
 
 <div class="wrapper">
@@ -205,14 +206,13 @@
   <header>
     <div class="eyebrow">KASUBUCHI &amp; FUKIYA — PAPER EXPLAINERS</div>
     <h1>
-      <span class="w">WavePhaseNet</span> and
+      <span class="w">WavePhaseNet</span> と
       <span class="q">QuantumPhaseNet</span><br>
-      Paper Explainers
+      論文解説ページ
     </h1>
     <p class="lede">
-      A line of work treating hallucination in large language models through the frequency structure
-      and geometry of meaning. Each paper has explainers written for two audiences,
-      in English and Japanese.
+      大規模言語モデルの幻覚（ハルシネーション）を、意味の周波数構造と幾何学から扱う一連の研究です。
+      読者層に応じた解説ページを、日本語・英語で用意しています。
     </p>
     <div class="byline">Kiyotaka Kasubuchi &amp; Kazuo Fukiya</div>
   </header>
@@ -228,35 +228,34 @@
       with Prototype Validation of a Classical Quantum-Inspired Model
     </div>
     <p class="project-desc">
-      Meaning is modeled as a section of a complex vector bundle. A gauge-invariant phase rate yields a
-      "semantic wavelength", and low-frequency graph modes give the discourse direction of a document.
-      Hallucination becomes a calibratable geometric risk rather than a probability. In the Validation Studio,
-      RQ1–RQ4 were supported while RQ5 (quantum advantage) became a falsification candidate.
+      意味を複素ベクトル束の切断として表し、ゲージ不変な位相速度から「意味波長」を、グラフ低周波モードから
+      文章の論旨方向を取り出します。幻覚は確率ではなく校正可能な幾何リスクとして扱われ、
+      検証スタジオによる実測では RQ1〜RQ4 が支持、RQ5（量子優位性）は反証候補という結果が報告されています。
     </p>
 
     <div class="cards">
       <div class="card">
         <div class="card-kicker">FOR DECISION MAKERS</div>
-        <h3>Plain-language</h3>
+        <h3>かんたん解説</h3>
         <p>
-          No mathematics. What the problem is, how it is solved, and what it can and cannot do — in three minutes.
-          Includes use cases, an adoption path and an FAQ.
+          数式なし。何が課題で、どう解くのか、何ができて何ができないのかを3分で。
+          業務での使いどころ、導入の進め方、FAQ まで。
         </p>
         <div class="card-links">
-          <a href="quantumphasenet_intro_en.html">English</a>
           <a href="quantumphasenet_intro_ja.html">日本語</a>
+          <a href="quantumphasenet_intro_en.html">English</a>
         </div>
       </div>
       <div class="card">
         <div class="card-kicker">FOR ENGINEERS &amp; RESEARCHERS</div>
-        <h3>Detailed</h3>
+        <h3>詳細解説</h3>
         <p>
-          Theorems and proof sketches, the definition of gauge invariance, the QFT / phase-estimation /
-          amplitude-amplification operator sequence, falsification criteria and measured results — twelve sections.
+          定理と証明の骨子、ゲージ不変性の定義、QFT・位相推定・振幅増幅の作用素列、
+          反証条件と実測結果まで全12節。
         </p>
         <div class="card-links">
-          <a href="quantumphasenet_en.html">English</a>
           <a href="quantumphasenet_ja.html">日本語</a>
+          <a href="quantumphasenet_en.html">English</a>
         </div>
       </div>
     </div>
@@ -272,51 +271,49 @@
       A DFT-Based Method for Constructing Semantic Conceptual Hierarchy Structures (SCHS)
     </div>
     <p class="project-desc">
-      The earlier paper. It frames hallucination not as something more data will fix but as a phenomenon that
-      <strong>must occur</strong>, given the mismatch between a non-convex truth set and a convex representation
-      space, and builds a semantic conceptual hierarchy into the embedding space with the discrete Fourier
-      transform. It presents a theoretical framework and contains no experiments.
-      QuantumPhaseNet rewrites the same idea in a gauge-covariant framework.
+      前稿にあたる論文です。ハルシネーションを「データを増やせば直る問題」ではなく、
+      非凸な真値集合と凸な表現空間のミスマッチから<strong>必ず起きる現象</strong>として定式化し、
+      離散フーリエ変換によって埋め込み空間に意味的概念階層構造を構築します。
+      理論的枠組みの提示であり実験は含みません。QuantumPhaseNet はこの着想をゲージ共変な枠組みへ書き直したものです。
     </p>
 
     <div class="cards">
       <div class="card">
         <div class="card-kicker">FOR DECISION MAKERS</div>
-        <h3>Plain-language</h3>
+        <h3>かんたん解説</h3>
         <p>
-          No mathematics. Why hallucination is structurally unavoidable, how the method addresses it,
-          and what is settled versus still open — in three minutes.
+          数式なし。なぜ幻覚が構造的に避けられないのか、どう解くのか、
+          何が確かめられていて何がまだなのかを3分で。
         </p>
         <div class="card-links">
-          <a href="wavephasenet_intro_en.html">English</a>
           <a href="wavephasenet_intro_ja.html">日本語</a>
+          <a href="wavephasenet_intro_en.html">English</a>
         </div>
       </div>
       <div class="card">
         <div class="card-kicker">FOR ENGINEERS &amp; RESEARCHERS</div>
-        <h3>Detailed</h3>
+        <h3>詳細解説</h3>
         <p>
-          The measure-theoretic formulation, the DFT and exact reconstruction, semantic operators,
-          dimensionality reduction from the 1/f spectrum, and cohomology regularization — thirteen sections.
+          測度論による定式化、DFTと完全再構成、意味演算子、
+          1/fスペクトルによる次元削減、コホモロジー正則化まで全13節。
         </p>
         <div class="card-links">
-          <a href="wavephasenet_en.html">English</a>
           <a href="wavephasenet_ja.html">日本語</a>
+          <a href="wavephasenet_en.html">English</a>
         </div>
       </div>
     </div>
 
     <div class="extras">
-      <a href="wavephasenet_faq_en.html">💬 FAQ (English)</a>
       <a href="wavephasenet_faq.html">💬 FAQ（日本語）</a>
-      <a href="WavePhaseNet_en20260203.pdf">📄 Paper PDF (English, 2026.02.03)</a>
+      <a href="wavephasenet_faq_en.html">💬 FAQ (English)</a>
+      <a href="WavePhaseNet_en20260203.pdf">📄 論文PDF（英語版・2026.02.03）</a>
     </div>
   </section>
 
   <div class="note">
-    These pages were created to explain the papers. For exact definitions and proofs, consult the papers themselves.
-    The QuantumPhaseNet results come from synthetic data in the Validation Studio; external validity on public
-    benchmarks has not been established.
+    これらのページは論文の解説を目的として作成されたものです。内容の正確な定義・証明については各論文本文を参照してください。
+    QuantumPhaseNet の実験結果は検証スタジオの合成データによるもので、公開ベンチマークでの外的妥当性は確立されていません。
   </div>
 
 </div>
@@ -324,6 +321,7 @@
 <footer>
   Kasubuchi &amp; Fukiya, 2026
 </footer>
+
 <script>
 // ── Background: wave field (WavePhaseNet) meeting a phase field (QuantumPhaseNet)
 const canvas = document.getElementById('bg-canvas');
