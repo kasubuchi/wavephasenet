@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>論文解説ページ — WavePhaseNet / QuantumPhaseNet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f7f8fc;
+    --border: #d3d8ea;
+    --wave: #0088aa;
+    --quantum: #6d28d9;
+    --amber: #d97706;
+    --text: #101728;
+    --text-muted: #414a63;
+    --text-dim: #949bb2;
+    --font-serif: 'Noto Serif JP', serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-sans: 'Noto Sans JP', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    line-height: 1.85;
+    overflow-x: hidden;
+  }
+
+  #bg-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 880px; margin: 0 auto;
+    padding: 0 2rem 5rem;
+  }
+
+  /* ── Masthead ── */
+  header {
+    padding: 7rem 0 3.5rem;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.68rem; letter-spacing: 0.22em;
+    color: var(--text-dim); margin-bottom: 1.2rem;
+  }
+  h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(1.8rem, 4.2vw, 2.6rem);
+    font-weight: 700; line-height: 1.35;
+    margin-bottom: 1.2rem;
+  }
+  h1 .w { color: var(--wave); }
+  h1 .q { color: var(--quantum); }
+  .lede {
+    font-size: 1rem; color: var(--text-muted);
+    max-width: 620px; margin-bottom: 1.6rem;
+  }
+  .byline {
+    font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--text-dim); letter-spacing: 0.06em;
+  }
+
+  /* ── Project block ── */
+  .project { padding: 3.2rem 0; border-top: 1px solid var(--border); }
+  .project-head {
+    display: flex; align-items: baseline; gap: 1rem;
+    flex-wrap: wrap; margin-bottom: 0.7rem;
+  }
+  .project-name {
+    font-family: var(--font-serif);
+    font-size: 1.55rem; font-weight: 700;
+  }
+  .project.q .project-name { color: var(--quantum); }
+  .project.w .project-name { color: var(--wave); }
+  .project-date {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    letter-spacing: 0.1em; color: var(--text-dim);
+    border: 1px solid var(--border); padding: 0.2em 0.7em;
+  }
+  .project-sub {
+    font-family: var(--font-mono); font-size: 0.74rem;
+    color: var(--text-muted); margin-bottom: 0.8rem;
+    line-height: 1.6;
+  }
+  .project-desc { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.8rem; max-width: 640px; }
+
+  /* ── Page cards ── */
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .card {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 1.6rem 1.5rem;
+    display: flex; flex-direction: column;
+    transition: all 0.25s;
+  }
+  .project.q .card:hover { border-color: var(--quantum); transform: translateY(-2px); box-shadow: 0 8px 26px rgba(109,40,217,0.09); }
+  .project.w .card:hover { border-color: var(--wave); transform: translateY(-2px); box-shadow: 0 8px 26px rgba(0,136,170,0.09); }
+  .card-kicker {
+    font-family: var(--font-mono); font-size: 0.62rem;
+    letter-spacing: 0.12em; margin-bottom: 0.6rem;
+  }
+  .project.q .card-kicker { color: var(--quantum); }
+  .project.w .card-kicker { color: var(--wave); }
+  .card h3 {
+    font-family: var(--font-serif); font-size: 1.05rem;
+    font-weight: 600; margin-bottom: 0.5rem;
+  }
+  .card p {
+    font-size: 0.82rem; color: var(--text-muted);
+    margin-bottom: 1.1rem; flex: 1;
+  }
+  .card-links { display: flex; gap: 0.6rem; }
+  .card-links a {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    letter-spacing: 0.08em; text-decoration: none;
+    padding: 0.45em 1.1em; border: 1px solid var(--border);
+    color: var(--text-muted); transition: all 0.2s;
+  }
+  .project.q .card-links a:hover { background: var(--quantum); border-color: var(--quantum); color: #fff; }
+  .project.w .card-links a:hover { background: var(--wave); border-color: var(--wave); color: #fff; }
+
+  /* ── Extra links row ── */
+  .extras {
+    margin-top: 1rem; display: flex; gap: 1.4rem;
+    flex-wrap: wrap; font-size: 0.8rem;
+  }
+  .extras a {
+    color: var(--text-muted); text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1px; transition: all 0.2s;
+  }
+  .extras a:hover { color: var(--text); border-bottom-color: currentColor; }
+
+  /* ── Note ── */
+  .note {
+    border-left: 2px solid var(--amber);
+    background: rgba(217,119,6,0.04);
+    padding: 1.1rem 1.4rem; margin-top: 2.5rem;
+    font-size: 0.82rem; color: var(--text-muted);
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 0 1.5rem; text-align: center;
+    font-family: var(--font-mono); font-size: 0.66rem;
+    color: var(--text-dim); letter-spacing: 0.08em;
+    position: relative; z-index: 1;
+  }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(14px);} to {opacity:1; transform:translateY(0);} }
+  header > * { opacity: 0; animation: fadeUp 0.6s ease forwards; }
+  header .eyebrow { animation-delay: 0.1s; }
+  header h1 { animation-delay: 0.2s; }
+  header .lede { animation-delay: 0.3s; }
+  header .byline { animation-delay: 0.4s; }
+
+  @media (max-width: 640px) {
+    .cards { grid-template-columns: 1fr; }
+    header { padding-top: 4.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="wrapper">
+
+  <header>
+    <div class="eyebrow">KASUBUCHI &amp; FUKIYA — PAPER EXPLAINERS</div>
+    <h1>
+      <span class="w">WavePhaseNet</span> と
+      <span class="q">QuantumPhaseNet</span><br>
+      論文解説ページ
+    </h1>
+    <p class="lede">
+      大規模言語モデルの幻覚（ハルシネーション）を、意味の周波数構造と幾何学から扱う一連の研究です。
+      読者に応じた解説ページを日本語・英語で用意しています。
+    </p>
+    <div class="byline">Kiyotaka Kasubuchi &amp; Kazuo Fukiya</div>
+  </header>
+
+  <!-- ── QuantumPhaseNet ── -->
+  <section class="project q">
+    <div class="project-head">
+      <div class="project-name">QuantumPhaseNet</div>
+      <div class="project-date">2026.07.30</div>
+    </div>
+    <div class="project-sub">
+      A Gauge-Covariant Geometric and Quantum-Spectral Theory of Semantic Concept Hierarchies<br>
+      with Prototype Validation of a Classical Quantum-Inspired Model
+    </div>
+    <p class="project-desc">
+      意味を複素ベクトル束の切断として表し、ゲージ不変な位相速度から「意味波長」を、グラフ低周波モードから
+      文章の論旨方向を取り出します。幻覚は確率ではなく校正可能な幾何リスクとして扱われ、
+      検証スタジオによる実測では RQ1〜RQ4 が支持、RQ5（量子優位性）は反証候補という結果が報告されています。
+    </p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-kicker">FOR DECISION MAKERS</div>
+        <h3>かんたん解説</h3>
+        <p>
+          数式なし。何が課題で、どう解くのか、何ができて何ができないのかを3分で。
+          業務での使いどころ、導入の進め方、FAQ まで。
+        </p>
+        <div class="card-links">
+          <a href="quantumphasenet_intro_ja.html">日本語</a>
+          <a href="quantumphasenet_intro_en.html">English</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-kicker">FOR ENGINEERS &amp; RESEARCHERS</div>
+        <h3>詳細解説</h3>
+        <p>
+          定理と証明の骨子、ゲージ不変性の定義、QFT・位相推定・振幅増幅の作用素列、
+          反証条件と実測結果まで全12節。
+        </p>
+        <div class="card-links">
+          <a href="quantumphasenet_ja.html">日本語</a>
+          <a href="quantumphasenet_en.html">English</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── WavePhaseNet ── -->
+  <section class="project w">
+    <div class="project-head">
+      <div class="project-name">WavePhaseNet</div>
+      <div class="project-date">arXiv:2602.14419</div>
+    </div>
+    <div class="project-sub">
+      A DFT-Based Method for Constructing Semantic Conceptual Hierarchy Structures (SCHS)
+    </div>
+    <p class="project-desc">
+      前稿にあたる論文です。ハルシネーションを数学的構造の必然的帰結として定式化し、
+      離散フーリエ変換によって埋め込み空間に意味的概念階層構造を明示的に構築します。
+      QuantumPhaseNet は、この着想をゲージ共変な枠組みへ書き直したものです。
+    </p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-kicker">PAPER EXPLAINER</div>
+        <h3>論文解説</h3>
+        <p>
+          測度論による定式化、DFTによるSCHS構築、1/fスペクトルと累積エネルギー解析による次元削減の正当化。
+        </p>
+        <div class="card-links">
+          <a href="wavephasenet_ja.html">日本語</a>
+          <a href="wavephasenet_en.html">English</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-kicker">Q&amp;A</div>
+        <h3>FAQ</h3>
+        <p>
+          理論的背景から実装上の疑問まで、想定される質問への回答集。
+        </p>
+        <div class="card-links">
+          <a href="wavephasenet_faq.html">日本語</a>
+          <a href="wavephasenet_faq_en.html">English</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="extras">
+      <a href="WavePhaseNet_en20260203.pdf">📄 論文PDF（英語版・2026.02.03）</a>
+    </div>
+  </section>
+
+  <div class="note">
+    これらのページは論文の解説を目的として作成されたものです。内容の正確な定義・証明については各論文本文を参照してください。
+    QuantumPhaseNet の実験結果は検証スタジオの合成データによるもので、公開ベンチマークでの外的妥当性は確立されていません。
+  </div>
+
+</div>
+
+<footer>
+  Kasubuchi &amp; Fukiya, 2026
+</footer>
+
+<script>
+// ── Background: wave field (WavePhaseNet) meeting a phase field (QuantumPhaseNet)
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, frame = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // left half: travelling waves
+  const waves = [
+    { amp: 46, freq: 0.008, speed: 0.015, y: H * 0.30, color: '#0088aa', alpha: 0.30 },
+    { amp: 26, freq: 0.014, speed: 0.022, y: H * 0.52, color: '#0088aa', alpha: 0.20 },
+    { amp: 34, freq: 0.006, speed: 0.010, y: H * 0.74, color: '#0088aa', alpha: 0.14 },
+  ];
+  waves.forEach(w => {
+    ctx.beginPath();
+    ctx.strokeStyle = w.color;
+    ctx.globalAlpha = w.alpha;
+    ctx.lineWidth = 1.4;
+    for (let x = 0; x <= W; x += 3) {
+      const fade = Math.max(0, 1 - x / (W * 0.72));
+      const y = w.y + Math.sin(x * w.freq + frame * w.speed) * w.amp * fade;
+      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  });
+
+  // right half: rotating phase arrows
+  const step = 72, len = 11;
+  for (let x = W * 0.42; x < W; x += step) {
+    for (let y = step * 0.5; y < H; y += step) {
+      const th = Math.atan2(y - H * 0.55, x - W * 0.78) + Math.hypot(x - W * 0.78, y - H * 0.55) * 0.004 + frame * 0.012;
+      const fade = Math.min(1, (x - W * 0.42) / (W * 0.35));
+      const dx = Math.cos(th) * len, dy = Math.sin(th) * len;
+      ctx.beginPath();
+      ctx.strokeStyle = '#6d28d9';
+      ctx.globalAlpha = 0.10 * fade + 0.10 * fade * (0.5 + 0.5 * Math.cos(th));
+      ctx.lineWidth = 1.2;
+      ctx.moveTo(x - dx, y - dy);
+      ctx.lineTo(x + dx, y + dy);
+      ctx.stroke();
+    }
+  }
+
+  ctx.globalAlpha = 1;
+  frame++;
+  if (!reduceMotion) requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
