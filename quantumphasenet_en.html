@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuantumPhaseNet — Paper Explainer (Detailed)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f7f5fd;
+    --surface2: #ede9fa;
+    --border: #d5cdf0;
+    --accent: #6d28d9;
+    --accent2: #0891b2;
+    --accent3: #d97706;
+    --text: #14102b;
+    --text-muted: #46406b;
+    --text-dim: #9a92b8;
+    --glow: rgba(109,40,217,0.12);
+    --font-serif: 'Noto Serif JP', serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-sans: 'Noto Sans JP', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    line-height: 1.8;
+    overflow-x: hidden;
+  }
+
+  /* ── Canvas Background ── */
+  #bg-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex; align-items: center; gap: 0;
+  }
+  .nav-right {
+    display: flex; align-items: center; gap: 1.4rem;
+    margin-left: auto;
+  }
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+  .nav-links {
+    display: flex; gap: 1.6rem; list-style: none;
+    margin-left: 2rem;
+  }
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* ── Language toggle pill ── */
+  .nav-lang {
+    display: flex; align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .nav-lang a {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    padding: 0.28em 0.75em;
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: all 0.2s;
+    line-height: 1;
+  }
+  .nav-lang a.current {
+    background: var(--accent);
+    color: #fff;
+  }
+  .nav-lang a:not(.current):hover { color: var(--accent); }
+
+  /* ── Page tab link ── */
+  .nav-page-tab {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding-bottom: 2px;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .nav-page-tab:hover {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* ── Main wrapper ── */
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding-top: 80px;
+    position: relative;
+  }
+  .hero-tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.3em 0.9em;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.2s forwards;
+  }
+  .hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(2.2rem, 5.6vw, 4rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.35s forwards;
+  }
+  .hero-title .wave {
+    color: var(--accent);
+    display: inline-block;
+    animation: pulse 3s ease-in-out infinite;
+  }
+  .hero-subtitle {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--accent2);
+    letter-spacing: 0.05em;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.45s forwards;
+  }
+  .hero-meta {
+    display: flex; gap: 2rem; flex-wrap: wrap;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.55s forwards;
+  }
+  .hero-meta span { display: flex; align-items: center; gap: 0.4rem; }
+  .hero-desc {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 640px;
+    line-height: 1.9;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.65s forwards;
+    margin-bottom: 3rem;
+  }
+  .scroll-hint {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    display: flex; align-items: center; gap: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.8s forwards;
+  }
+  .scroll-hint::after {
+    content: '';
+    display: block; width: 40px; height: 1px;
+    background: var(--text-dim);
+    animation: expandLine 1.5s ease infinite;
+  }
+
+  /* ── Section layout ── */
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+    opacity: 0.8;
+  }
+  h2 {
+    font-family: var(--font-serif);
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    line-height: 1.3;
+  }
+  h3 {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  p { margin-bottom: 1.2rem; color: var(--text-muted); }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .card:hover { border-color: rgba(109,40,217,0.4); }
+  .card:hover::before { opacity: 1; }
+
+  /* ── Abstract ── */
+  .abstract-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+  .abstract-box::before {
+    content: '"';
+    position: absolute; top: 1rem; left: 2rem;
+    font-family: var(--font-serif);
+    font-size: 5rem;
+    color: var(--accent);
+    opacity: 0.08;
+    line-height: 1;
+  }
+
+  /* ── Concept flow ── */
+  .concept-flow {
+    display: flex; align-items: center; gap: 0;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+  }
+  .concept-node {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.9rem 1.4rem;
+    font-size: 0.82rem;
+    font-family: var(--font-mono);
+    color: var(--text);
+    position: relative;
+    white-space: nowrap;
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .concept-node:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 20px var(--glow);
+  }
+  .concept-arrow {
+    color: var(--accent);
+    font-size: 1.2rem;
+    padding: 0 0.5rem;
+    opacity: 0.6;
+  }
+
+  /* ── Triple grid ── */
+  .freq-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+    margin: 2rem 0;
+  }
+  .freq-cell {
+    background: var(--surface);
+    padding: 1.8rem 1.5rem;
+    text-align: center;
+    transition: background 0.2s;
+  }
+  .freq-cell:hover { background: var(--surface2); }
+  .freq-icon {
+    font-family: var(--font-mono);
+    font-size: 1.6rem;
+    margin-bottom: 0.8rem;
+    display: block;
+  }
+  .freq-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .freq-cell:nth-child(1) .freq-label { color: var(--accent); }
+  .freq-cell:nth-child(2) .freq-label { color: var(--accent3); }
+  .freq-cell:nth-child(3) .freq-label { color: var(--accent2); }
+  .freq-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* ── Two-column split ── */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem 0; }
+  .split-cell {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 1.6rem 1.5rem;
+  }
+  .split-cell.hot { border-color: rgba(109,40,217,0.45); }
+  .split-cell h4 {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 0.7rem;
+  }
+  .split-cell.cool h4 { color: var(--accent2); }
+  .split-cell p { font-size: 0.82rem; margin: 0; }
+
+  /* ── Math box ── */
+  .math-box {
+    background: #14102b;
+    border: 1px solid var(--border);
+    border-radius: 1px;
+    padding: 1.8rem 2rem;
+    margin: 1.5rem 0;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    overflow-x: auto;
+    position: relative;
+  }
+  .math-box .math-label {
+    position: absolute; top: 0.6rem; right: 1rem;
+    font-size: 0.62rem;
+    color: #8b7fc0;
+    letter-spacing: 0.1em;
+  }
+  .math-box mjx-container,
+  .math-box mjx-container * {
+    color: #ece9f8 !important;
+  }
+
+  /* ── Table ── */
+  .energy-table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
+  .energy-table th {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-align: left;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .energy-table td {
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+    border-bottom: 1px solid rgba(200,190,230,0.6);
+    color: var(--text-muted);
+    vertical-align: top;
+  }
+  .energy-table tr:hover td { background: var(--surface); }
+  .energy-highlight td { color: var(--accent) !important; font-weight: 500; }
+  .table-scroll { overflow-x: auto; }
+
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    padding: 0.15em 0.55em;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .badge.thm { border-color: var(--accent); color: var(--accent); }
+  .badge.emp { border-color: var(--accent3); color: var(--accent3); }
+  .badge.open { border-color: var(--text-dim); color: var(--text-dim); }
+
+  /* ── Metric cards ── */
+  .metric-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: var(--border);
+    margin: 2rem 0;
+  }
+  .metric { background: var(--surface); padding: 1.5rem 1.1rem; text-align: center; }
+  .metric-label {
+    font-family: var(--font-mono); font-size: 0.6rem;
+    letter-spacing: 0.1em; color: var(--text-dim);
+    margin-bottom: 0.6rem; min-height: 2.2em;
+  }
+  .metric-val {
+    font-family: var(--font-mono); font-size: 1.9rem; font-weight: 700;
+    color: var(--accent); line-height: 1;
+  }
+  .metric-base { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.55rem; }
+  .metric.neg .metric-val { color: var(--accent3); }
+
+  /* ── 3-pillars ── */
+  .pillars { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin: 2rem 0; }
+  .pillar {
+    border: 1px solid var(--border);
+    padding: 1.8rem 1.4rem;
+    position: relative;
+    background: var(--surface);
+    transition: all 0.3s;
+  }
+  .pillar:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(109,40,217,0.1);
+  }
+  .pillar-num {
+    font-family: var(--font-mono);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 0.8rem;
+    transition: color 0.3s;
+  }
+  .pillar:hover .pillar-num { color: var(--accent); opacity: 0.4; }
+  .pillar h4 {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    color: var(--text);
+  }
+  .pillar p { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+
+  /* ── Architecture ── */
+  .arch-flow {
+    margin: 2rem 0;
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .arch-step {
+    display: flex; align-items: stretch;
+    gap: 0;
+  }
+  .arch-step-num {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--accent);
+    width: 36px; min-width: 36px;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    position: relative;
+  }
+  .arch-step-num::after {
+    content: '';
+    position: absolute; bottom: 0; left: 50%;
+    width: 1px; height: 100%;
+    background: var(--border);
+    top: 50%;
+  }
+  .arch-step:last-child .arch-step-num::after { display: none; }
+  .arch-step-body {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1.2rem 1.5rem;
+    margin: 4px 0;
+    margin-left: 1rem;
+    transition: border-color 0.2s;
+  }
+  .arch-step-body:hover { border-color: rgba(109,40,217,0.35); }
+  .arch-step-title {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.4rem;
+  }
+  .arch-step-desc { font-size: 0.82rem; color: var(--text-muted); }
+
+  /* ── Risk terms ── */
+  .term-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-top: 1rem; }
+  .term { padding-left: 0.8rem; }
+  .term-name { font-size: 0.75rem; font-family: var(--font-mono); }
+  .term-desc { font-size: 0.78rem; color: var(--text-muted); }
+
+  /* ── Related work ── */
+  .ref-card {
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    background: var(--surface);
+    margin-bottom: 1rem;
+    display: grid; grid-template-columns: auto 1fr;
+    gap: 1.2rem;
+    align-items: start;
+    transition: border-color 0.2s;
+  }
+  .ref-card:hover { border-color: rgba(109,40,217,0.35); }
+  .ref-tag {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 0.2em 0.6em;
+    border: 1px solid;
+    white-space: nowrap;
+    align-self: start;
+    margin-top: 0.1rem;
+  }
+  .ref-tag.sim { border-color: var(--accent2); color: var(--accent2); }
+  .ref-tag.diff { border-color: var(--accent); color: var(--accent); }
+  .ref-tag.warn { border-color: var(--accent3); color: var(--accent3); }
+  .ref-name { font-weight: 500; font-size: 0.88rem; margin-bottom: 0.4rem; }
+  .ref-desc { font-size: 0.78rem; color: var(--text-muted); }
+
+  /* ── Caution list ── */
+  .caution {
+    border: 1px dashed var(--accent3);
+    background: rgba(217,119,6,0.04);
+    padding: 1.5rem 1.8rem;
+    margin: 1.5rem 0;
+  }
+  .caution-title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--accent3);
+    margin-bottom: 0.8rem;
+  }
+  .caution ul { margin: 0; padding-left: 1.2rem; }
+  .caution li { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+
+  /* ── Conclusion highlight ── */
+  .conclusion-box {
+    background: linear-gradient(135deg, rgba(109,40,217,0.06), rgba(8,145,178,0.06));
+    border: 1px solid rgba(109,40,217,0.2);
+    padding: 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .conclusion-box::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(109,40,217,0.07), transparent 70%);
+  }
+  .conclusion-box h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+  .conclusion-box p { max-width: 620px; margin: 0 auto; font-size: 0.92rem; }
+
+  /* ── Tag chip ── */
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 0.25em 0.75em;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 0 2rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    position: relative; z-index: 1;
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%,100% { text-shadow: 0 0 20px rgba(109,40,217,0.25); }
+    50% { text-shadow: 0 0 40px rgba(109,40,217,0.6); }
+  }
+  @keyframes expandLine {
+    0% { width: 20px; opacity: 0.3; }
+    50% { width: 60px; opacity: 0.8; }
+    100% { width: 20px; opacity: 0.3; }
+  }
+
+  .reveal {
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1; transform: translateY(0);
+  }
+
+  @media (max-width: 760px) {
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 640px) {
+    .metric-grid { grid-template-columns: 1fr 1fr; }
+    .pillars { grid-template-columns: 1fr; }
+    .freq-grid { grid-template-columns: 1fr; }
+    .split { grid-template-columns: 1fr; }
+    .term-grid { grid-template-columns: 1fr; }
+    .concept-flow { gap: 0.3rem; }
+    .concept-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<nav>
+  <div class="nav-logo">QuantumPhaseNet // Detailed Explainer</div>
+  <ul class="nav-links">
+    <li><a href="#abstract">Abstract</a></li>
+    <li><a href="#geometry">Geometry</a></li>
+    <li><a href="#quantum">Quantum</a></li>
+    <li><a href="#attention">Attention</a></li>
+    <li><a href="#risk">Risk</a></li>
+    <li><a href="#experiments">Evaluation</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="quantumphasenet_intro_en.html" class="nav-page-tab">Plain-language →</a>
+    <div class="nav-lang">
+      <a href="quantumphasenet_ja.html">JA</a>
+      <a href="quantumphasenet_en.html" class="current">EN</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrapper">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-tag">arXiv preprint · 2026.07.30</div>
+    <h1 class="hero-title">
+      <span class="wave">Quantum</span>PhaseNet
+    </h1>
+    <div class="hero-subtitle">A Gauge-Covariant Geometric and Quantum-Spectral Theory of Semantic Concept Hierarchies<br>with Prototype Validation of a Classical Quantum-Inspired Model</div>
+    <div class="hero-meta">
+      <span>👤 Kiyotaka Kasubuchi, Kazuo Fukiya</span>
+      <span>📅 July 30, 2026</span>
+    </div>
+    <p class="hero-desc">
+      Meaning is modeled as a section of a complex vector bundle. A <strong>gauge-invariant phase rate</strong>
+      induces a semantic wavelength; <strong>low-frequency graph modes</strong> define a document-level discourse direction;
+      and hallucination becomes not a probability but a <strong>calibratable geometric risk</strong>.
+      This version carries prototype validation: <strong>RQ1–RQ4 supported, RQ5 (quantum advantage) a falsification candidate</strong>.
+    </p>
+    <div class="chips">
+      <span class="chip">gauge connection</span><span class="chip">covariant phase</span><span class="chip">semantic wavelength</span>
+      <span class="chip">graph Fourier</span><span class="chip">QFT / QPE</span><span class="chip">amplitude amplification</span>
+      <span class="chip">WavePhase Attention</span><span class="chip">calibration</span><span class="chip">validation studio</span>
+    </div>
+    <div class="scroll-hint">SCROLL TO EXPLORE</div>
+  </div>
+
+  <!-- ── ABSTRACT ── -->
+  <section id="abstract">
+    <div class="section-label">01 // ABSTRACT</div>
+    <h2>What this paper actually claims</h2>
+
+    <div class="abstract-box reveal">
+      <p>
+        QuantumPhaseNet extends Transformer representations using
+        <strong>semantic manifolds, complex vector bundles, connections, curvature, spectral decompositions
+        and quantum amplitude amplification</strong>.
+        Context-dependent semantic states are complex amplitudes \(\psi\); the <em>covariant</em> rate of phase change
+        induces a "semantic wavelength" used as a proxy for conceptual scale. Low-frequency modes of a graph Laplacian
+        then define a document-level discourse direction, against which the generation trajectory is aligned.
+      </p>
+      <p>
+        The defining feature of the paper is that it <strong>separates what is proved from what can be falsified</strong>.
+        Gauge invariance, involutivity of the Oracle, the amplitude-amplification success probability, and the
+        boundedness and stability of attention are theorems. In contrast, "long wavelength = superordinate concept",
+        "low frequency = correct discourse" and "geometric risk predicts factual error" are stated as empirical
+        hypotheses, with falsification conditions written down in advance.
+      </p>
+      <p>
+        This version goes further: a fully offline <strong>Validation Studio</strong> implements the classical
+        quantum-inspired realization and runs RQ1–RQ5 on synthetic data. RQ1–RQ4 beat their baselines and were
+        supported, while <strong>RQ5 — the quantum-executable realization — lost to a classical Chebyshev
+        approximation on end-to-end cost and is retained in the paper as a falsification candidate.</strong>
+        No quantum speedup is claimed.
+      </p>
+    </div>
+
+    <div class="pillars reveal">
+      <div class="pillar">
+        <div class="pillar-num">01</div>
+        <h4>Phase as a gauge invariant</h4>
+        <p>A naive phase difference \(\phi_i-\phi_j\) depends on the local frame. Inserting parallel transport makes phase coherence and wavelength frame-independent observables</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">02</div>
+        <h4>Two distinct Fourier transforms</h4>
+        <p>The external QFT over token coordinates and the inverse QFT internal to phase estimation act on different registers and play different roles. The paper writes the operator sequence out explicitly</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">03</div>
+        <h4>Risk is not a probability</h4>
+        <p>Hallucination is a non-negative score built from geometric deviation, evidence deficiency and semantic uncertainty. A probabilistic reading exists only after calibration, and abstention is kept separate</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── GEOMETRY ── -->
+  <section id="geometry">
+    <div class="section-label">02 // GEOMETRY</div>
+    <h2>The geometry of meaning: manifold, bundle, connection</h2>
+
+    <div class="card reveal">
+      <h3>Semantic manifold and complex semantic bundle</h3>
+      <p>
+        The paper does not require the whole embedding space to be one smooth manifold.
+        The semantic manifold \((\mathcal{M},g)\) is an <strong>atlas of local charts</strong> valid only near observed data,
+        with token meanings as points \(x_t\in\mathcal{M}\). The metric is a learnable positive-definite form.
+      </p>
+      <div class="math-box">
+        <span class="math-label">learnable metric</span>
+        \[ g_\theta(x) = A_\theta(x)^\top A_\theta(x) + \varepsilon I \succ 0, \qquad
+           d_g(x,y) = \inf_{\gamma} \int_0^1 \sqrt{g_{\gamma(s)}(\dot\gamma,\dot\gamma)}\, ds \]
+      </div>
+      <p>
+        Internal semantic degrees of freedom live in sections \(\psi:\mathcal{M}\to E\) of a rank-\(r\) Hermitian bundle.
+        A unitary connection \(\nabla\) supplies <strong>the rule for comparing semantic states across contexts</strong>.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>Covariant phase velocity and semantic wavelength</h3>
+      <p>
+        Along a curve \(\gamma(t)\) traced by reading or generation, with normalized state \(\hat\psi\),
+        the covariant derivative \(D_t\hat\psi=\nabla_{\dot\gamma}\hat\psi\) defines the rate of phase change.
+      </p>
+      <div class="math-box">
+        <span class="math-label">covariant phase velocity · semantic wavelength</span>
+        \[ \Omega_\gamma(t) \;=\; \operatorname{Im}\big\langle \hat\psi(t),\, D_t\hat\psi(t)\big\rangle,
+           \qquad
+           \lambda_\gamma(t) \;=\; \frac{2\pi c_s(\gamma(t),t)}{\big|\Omega_\gamma(t)\big| + \varepsilon_\omega} \]
+      </div>
+      <p>
+        The <strong>slower</strong> the phase turns, the longer the wavelength. The paper treats long wavelengths as
+        candidates for superordinate, abstract concepts — but this is a hypothesis to be tested, not a theorem.
+        The stabilizer \(\varepsilon\) is mandatory: without it, very low frequencies blow up.
+      </p>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">Three things the word "phase" can mean</h3>
+    <p class="reveal">The paper's first move is to split everyday "phase" into three distinct mathematical objects.</p>
+    <div class="freq-grid reveal">
+      <div class="freq-cell">
+        <span class="freq-icon">∠</span>
+        <div class="freq-label">phase angle φ</div>
+        <div class="freq-desc">A local coordinate on the circle. Frame-dependent — it must never be read as a semantic entity in itself</div>
+      </div>
+      <div class="freq-cell">
+        <span class="freq-icon">∫</span>
+        <div class="freq-label">accumulated phase Θ</div>
+        <div class="freq-desc">Phase path length \(\int|\omega|dt\) over an interval: the total change accrued while following a context</div>
+      </div>
+      <div class="freq-cell">
+        <span class="freq-icon">λ</span>
+        <div class="freq-label">semantic wavelength λ</div>
+        <div class="freq-desc">The inverse scale of covariant phase velocity, used as the proxy for conceptual scale in the hierarchy</div>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h3>Theorem: local gauge invariance</h3>
+      <p>
+        Under a local U(1) transformation \(\hat\psi\mapsto e^{i\chi}\hat\psi,\ A_t\mapsto A_t-\dot\chi(t)\),
+        the transformation law of the connection plus unitary invariance of the Hermitian inner product give:
+      </p>
+      <div class="math-box">
+        <span class="math-label">Theorem 5</span>
+        \[ \Omega'_\gamma(t) = \Omega_\gamma(t), \qquad \lambda'_\gamma(t) = \lambda_\gamma(t) \]
+      </div>
+      <p>
+        Two-point coherence also becomes gauge invariant once parallel transport \(\Gamma_{j\to i}\) along a path \(\gamma\)
+        is inserted. This removes the <strong>global common frame</strong> that a naive phase difference silently assumes.
+      </p>
+      <div class="math-box">
+        <span class="math-label">covariant phase &amp; wavelength coherence</span>
+        \[ C^{\nabla}_{ij} = \operatorname{Re}\big\langle \hat\psi_i,\ P^{\nabla}_{j\to i}\hat\psi_j \big\rangle \in[-1,1],
+           \qquad
+           C^{\lambda}_{ij}=\exp\!\left[-\frac{\big(\log\lambda_i-\log\lambda_j\big)^2}{2\sigma_\lambda^2}\right] \in(0,1] \]
+      </div>
+    </div>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ The price: path dependence</div>
+      <ul>
+        <li>Parallel transport depends on the path. One must fix a convention — shortest geodesic, the path along token order, or a learned reference path.</li>
+        <li>The mismatch after going around a closed loop (holonomy) shows up as curvature, and curvature by itself is not error. Metaphor, shifts of viewpoint and legitimate topic changes all raise it.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── HIERARCHY ── -->
+  <section id="hierarchy">
+    <div class="section-label">03 // HIERARCHY</div>
+    <h2>Building a concept hierarchy out of wavelengths</h2>
+
+    <div class="card reveal">
+      <h3>Total preorder → total order on a quotient → distributive lattice</h3>
+      <p>
+        Defining \(x\preceq y \iff \lambda(x)\le\lambda(y)\) from a single wavelength field gives a relation that is
+        reflexive, transitive and total, but <strong>not antisymmetric</strong> — distinct points can share a wavelength.
+        It is only a total preorder. The fix is to quotient by wavelength equivalence.
+      </p>
+      <div class="math-box">
+        <span class="math-label">Theorem 10</span>
+        \[ x\sim y \iff \lambda(x)=\lambda(y), \qquad
+           (\mathcal{M}/\!\sim,\ \preceq)\ \text{is a total order},\quad
+           a\vee b=\max,\ a\wedge b=\min \]
+      </div>
+      <p>
+        A totally ordered set forms a distributive lattice under \(\vee,\wedge\).
+        This is <em>not</em> a complete lattice in which every subset has a supremum, and
+        <strong>it is no theorem that the wavelength order matches actual lexical entailment</strong>.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>One axis is not enough: multi-axis wavelengths</h3>
+      <p>
+        Polysemy, attribute hierarchies, part–whole relations and causal abstraction cannot be compressed into
+        a single real number. The paper introduces \(m\) gauge-invariant scales \(\lambda^{(1)},\dots,\lambda^{(m)}\)
+        and orders the quotient componentwise.
+      </p>
+      <div class="math-box">
+        <span class="math-label">Proposition 11</span>
+        \[ [x]\preceq_m [y] \iff \lambda^{(k)}(x)\le\lambda^{(k)}(y)\ \ (\forall k),
+           \qquad \text{a distributive lattice if the image is closed under componentwise}\ \min,\max \]
+      </div>
+      <p style="margin-bottom:0;">
+        In practice one <strong>fixes a sign convention across the whole dataset</strong> — "the subordinate concept's
+        scale must not exceed the superordinate's in any component" — and combines it with an Order-Embedding-style
+        asymmetric loss. The direction of the wavelength ordering is not free to choose per example.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── DISCOURSE ── -->
+  <section id="discourse">
+    <div class="section-label">04 // DISCOURSE</div>
+    <h2>Discourse as a low-frequency mode</h2>
+
+    <p class="reveal">
+      A weighted graph is built over the semantic points of a document, and the low-eigenvalue modes of its
+      normalized Laplacian are extracted. This formalizes the intuition that what is smooth over the graph
+      is the global thread of the argument.
+    </p>
+
+    <div class="math-box reveal">
+      <span class="math-label">semantic graph and Laplacian</span>
+      \[ W_{ij} = \mathbb{1}\big[(i,j)\in E\big]\,
+         \exp\!\left(-\frac{d_g(z_i,z_j)^2}{2\sigma_g^2}\right)
+         \exp\!\left(-\frac{|i-j|^2}{2\sigma_p^2}\right),
+         \qquad L = I - D^{-1/2} W D^{-1/2},
+         \qquad 0=\nu_0\le\nu_1\le\cdots \]
+    </div>
+
+    <div class="arch-flow reveal">
+      <div class="arch-step">
+        <div class="arch-step-num">1</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">FRÉCHET MEAN</div>
+          <div class="arch-step-desc">Compute the document's base point \(z^{*}=\arg\min_z\sum_i \rho_i\, d_g(z,z_i)^2\), restricted to a locally convex region to avoid the cut locus</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">2</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">LOG MAP</div>
+          <div class="arch-step-desc">Lift each semantic point into the base tangent space, \(v_i=\log_{z^{*}}(z_i)\in T_{z^{*}}\mathcal{M}\), yielding a vector signal</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">3</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">LOW-PASS FILTER</div>
+          <div class="arch-step-desc">Project onto the \(K\) lowest modes, \(V_{\mathrm{low}}=h_{\mathrm{low}}(L)V,\ h_{\mathrm{low}}(\nu)=e^{-\tau\nu}\), discarding local high-frequency variation</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">4</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">DISCOURSE DIRECTION</div>
+          <div class="arch-step-desc">Take a sentence-importance weighted sum \(\beta_i\) and normalize. The result \(\Theta_S\in T_{z^*}\mathcal{M}\) is the document direction vector</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">5</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">PARALLEL TRANSPORT</div>
+          <div class="arch-step-desc">Transport \(\Theta_S\) to the generation point \(x_t\) and take inner products with candidate directions to obtain the alignment \(A^{\mathrm{dir}}\)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h3>Generalizing to the connection Laplacian</h3>
+      <p>
+        Lifting everything to a single base point distorts distant points the most. The connection Laplacian instead
+        keeps each vector in its own tangent space and measures smoothness through edgewise transports \(O_{ij}\).
+      </p>
+      <div class="math-box">
+        <span class="math-label">connection Laplacian (discrete form)</span>
+        \[ (\mathcal{L}_\nabla v)_i = \sum_{j\sim i} w_{ij}\left(v_i - O_{ij} v_j\right) \]
+      </div>
+      <p style="margin-bottom:0;">
+        The recommended path is to start with the ordinary Laplacian and a single base tangent space,
+        then move to the connection Laplacian only in the extended implementation.
+      </p>
+    </div>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ Low-frequency bias</div>
+      <ul>
+        <li>Misinformation repeated at length becomes a low-frequency component. Low frequency does not mean true.</li>
+        <li>Redundant quotation and topic fixation also read as low frequency. Discourse direction must be evaluated <strong>independently</strong> of evidence verification.</li>
+        <li>Weighting the direction term too strongly suppresses legitimate topic shifts — one of the falsification conditions the paper itself lists.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── QUANTUM ── -->
+  <section id="quantum">
+    <div class="section-label">05 // QUANTUM</div>
+    <h2>The operator sequence of quantum spectral selection</h2>
+
+    <p class="reveal">
+      A semantic Hamiltonian \(H=H^\dagger\) is constructed, and only the spectral components that are
+      "on-direction, in-band, evidence-supported and not prohibited" get amplified.
+      The key is that the <strong>external QFT and the inverse QFT inside phase estimation are different objects</strong>.
+    </p>
+
+    <div class="concept-flow reveal">
+      <div class="concept-node">external F<sub>N</sub></div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">QPE(U)</div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">Oracle O<sub>G</sub></div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">amplify Q<sup>k</sup></div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">uncompute</div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">external F<sub>N</sub><sup>†</sup></div>
+    </div>
+
+    <div class="card reveal">
+      <h3>The scaling that prevents phase aliasing</h3>
+      <p>
+        Phase estimation writes eigenphases into an ancilla register, but without an explicit scaling
+        distinct eigenenergies fold onto the same phase. The paper imposes:
+      </p>
+      <div class="math-box">
+        <span class="math-label">unitarization and eigenphase</span>
+        \[ U_H = \exp\!\left(2\pi i\,\frac{H_{\mathrm{sem}} - E_{\min} I}{\Delta E}\right),
+           \quad \Delta E > E_{\max}-E_{\min},
+           \qquad \phi_a = \frac{E_a - E_{\min}}{\Delta E} \in [0,1) \]
+      </div>
+      <p style="margin-bottom:0;">
+        At finite precision, leakage occurs near the band boundary. The Oracle therefore uses a margin
+        or a smooth window (raised cosine) rather than a hard threshold.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>Theorem: the Oracle is self-adjoint and involutive</h3>
+      <p>
+        A reversible predicate over direction bins, wavelength bins, evidence flags and prohibition conditions
+        determines a projector \(\Pi_G\) onto the marked subspace. The Oracle is the <strong>reflection</strong> about it.
+      </p>
+      <div class="math-box">
+        <span class="math-label">Theorem 15</span>
+        \[ O_G = I - 2\Pi_G, \qquad O_G^\dagger = O_G, \qquad O_G^2 = I \]
+      </div>
+      <p style="margin-bottom:0;">
+        This follows immediately from \(\Pi_G^2=\Pi_G=\Pi_G^\dagger\). It is the Grover move — "flip the sign of
+        marked states" — carried over into a semantic subspace.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>Theorem: amplitude amplification from an arbitrary initial state</h3>
+      <p>
+        Even when the marked mass \(a=\|\Pi_G|\psi_0\rangle\|^2\) is arbitrary, the state stays in the two-dimensional plane
+        spanned by the marked and unmarked components, and \(Q=S_\psi O_G\) acts as a rotation in that plane.
+      </p>
+      <div class="math-box">
+        <span class="math-label">Theorem 16</span>
+        \[ P_k = \big\|\Pi_G Q^k|\psi_0\rangle\big\|^2 = \sin^2\!\big((2k+1)\theta\big),
+           \quad \theta = \arcsin\sqrt{a},
+           \qquad k^\star=\mathrm{round}\!\left(\frac{\pi}{4\theta}-\frac12\right) \Rightarrow P_{k^\star}\ge 1-a \]
+      </div>
+      <div class="caution" style="margin-bottom:0;">
+        <div class="caution-title">⚠ Overshoot: the practical trap</div>
+        <ul>
+          <li>With \(a\) unknown, a fixed iteration count over-rotates and the success probability falls again.</li>
+          <li>Remedies: estimate the iteration count, randomize it, use fixed-point amplitude amplification, or replace the whole step with a smooth spectral filter.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">Quantum-executable vs. quantum-inspired classical</h3>
+    <p class="reveal">The paper separates the two computational modes the word "quantum" can denote. Keeping them apart is where its intellectual honesty lives.</p>
+    <div class="split reveal">
+      <div class="split-cell hot">
+        <h4>QUANTUM-EXECUTABLE</h4>
+        <p>
+          State preparation, external QFT, QPE, a reversible Oracle, amplitude amplification, uncomputation and
+          measurement run as an actual circuit. Reading out all amplitudes may require \(O(N)\) measurements,
+          so this version assumes a few observables only, or composition with a further quantum stage.
+        </p>
+      </div>
+      <div class="split-cell cool">
+        <h4>QUANTUM-INSPIRED CLASSICAL</h4>
+        <p>
+          The same spectral transform, phase mask, reflection and amplitude re-weighting implemented in classical
+          linear algebra: Lanczos for low modes, Chebyshev polynomial filters, low-rank approximations of \(\Pi_G\).
+          No Grover-style quadratic speedup is claimed, but the marked subspace is explicitly up-weighted.
+        </p>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h3>Theorem 17: unitarity of the block — and what it does not mean</h3>
+      <p>
+        If every component is unitary, the whole selection block, being a product of unitaries and adjoints, is unitary.
+        The proof is one line. What matters is the caveat: <strong>this theorem implies nothing whatsoever about
+        computational advantage.</strong>
+      </p>
+      <p style="margin-bottom:0;">
+        Moreover, if measurement or post-selection is inserted midway, the process is no longer unitary and should be
+        described as a <strong>quantum channel</strong>. Using complex numbers and unitary matrices does not by itself
+        produce any physical speedup.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── ATTENTION ── -->
+  <section id="attention">
+    <div class="section-label">06 // ATTENTION</div>
+    <h2>WavePhase Attention</h2>
+
+    <p class="reveal">
+      Five geometric and phase-derived correction terms plus a causal mask are added to the standard dot-product logit.
+      The design integrates them as <strong>corrections and residuals</strong>, not as a replacement for attention.
+    </p>
+
+    <div class="math-box reveal">
+      <span class="math-label">WavePhase logit (WP)</span>
+      \[ \ell^{\mathrm{WP}}_{ij} = \frac{q_i^\top k_j}{\sqrt{d_k}}
+        + \alpha_\varphi\, C^{\nabla}_{ij}
+        + \alpha_\lambda\, C^{\lambda}_{ij}
+        + \alpha_d\, A^{\mathrm{dir}}_{ij}
+        - \alpha_g\, D^{g}_{ij}
+        + \alpha_e\, E^{\mathrm{evid}}_{ij}
+        + M_{ij} \]
+    </div>
+
+    <div class="table-scroll reveal">
+    <table class="energy-table">
+      <thead>
+        <tr><th>term</th><th>what it measures</th><th>design caveat</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>\(C^{\nabla}\)</strong> phase coherence</td>
+          <td>Argument of the transported complex inner product: do the two states interfere constructively?</td>
+          <td>A naive phase difference would silently demand a global common frame</td>
+        </tr>
+        <tr>
+          <td><strong>\(C^{\lambda}\)</strong> wavelength compatibility</td>
+          <td>Whether the conceptual scales match, linking terms of comparable abstraction</td>
+          <td>Measured on a log scale; extreme scale ratios must be clipped</td>
+        </tr>
+        <tr>
+          <td><strong>\(A^{\mathrm{dir}}\)</strong> direction alignment</td>
+          <td>Whether the key lies along the discourse direction as seen from the query</td>
+          <td><strong>May be asymmetric</strong> — forward and backward reference are not equivalent</td>
+        </tr>
+        <tr>
+          <td><strong>\(d_g\)</strong> geodesic proximity</td>
+          <td>Distance on the semantic manifold; closer pairs get a higher logit</td>
+          <td>All-pairs computation is expensive — approximate with local tangent distance, Nyström or landmarks</td>
+        </tr>
+        <tr>
+          <td><strong>\(E^{\mathrm{evid}}\)</strong> evidence support</td>
+          <td>Whether retrieved evidence supports the reference</td>
+          <td>The one external term wiring RAG scores directly into the logit</td>
+        </tr>
+        <tr class="energy-highlight">
+          <td><strong>\(M\)</strong> mask</td>
+          <td>Blocks attention to future tokens with \(-\infty\)</td>
+          <td>Without it the model is not a generative model at all</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="card reveal">
+      <h3>Theorems 20–21: invariance and boundedness</h3>
+      <p>
+        Because all five features are built from gauge invariants, both the logit and the output are invariant under
+        local unitary gauge transformations. And since softmax weights are non-negative and sum to one, the output
+        is a <strong>convex combination</strong> of value vectors.
+      </p>
+      <div class="math-box">
+        <span class="math-label">row-norm boundedness</span>
+        \[ \|Y_i\|_2 = \Big\|\sum_j A^{\mathrm{WP}}_{ij} v_j\Big\|_2 \le B_V,
+           \qquad A^{\mathrm{WP}}_{ij}\ge 0,\ \sum_j A^{\mathrm{WP}}_{ij}=1 \]
+      </div>
+      <p style="margin-bottom:0;">
+        If each feature is Lipschitz on a compact region, the whole map is Lipschitz (Theorem 23), leaning on the fact
+        that the softmax Jacobian has operator norm at most \(1/2\).
+        <strong>This is not a guarantee of adversarial robustness</strong>: the assumptions break when geodesics
+        bifurcate or when a hard Oracle boundary is back-propagated directly.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>Degeneracy conditions as a sanity check</h3>
+      <p style="margin-bottom:0;">
+        The appendix lists unit tests. The most important is the requirement that
+        <strong>setting \(\alpha_\varphi=\alpha_\lambda=\alpha_d=\alpha_g=\alpha_e=0\) recovers standard attention exactly</strong>.
+        Adding a random local phase must leave the output unchanged; changing eigenvector signs or the basis inside a
+        degenerate subspace must leave the spectral projection unchanged; changing the padding length must leave the
+        non-padded outputs unchanged. Correctness is reduced to mechanically checkable invariants.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── RISK ── -->
+  <section id="risk">
+    <div class="section-label">07 // RISK</div>
+    <h2>Refusing to call hallucination a "probability"</h2>
+
+    <p class="reveal">
+      Generated text is decomposed into atomic claims \(c_1,\dots,c_M\), each paired with an evidence set.
+      Five deviations are then bundled into a non-negative score — which becomes a probability
+      <strong>only after calibration</strong>.
+    </p>
+
+    <div class="math-box reveal">
+      <span class="math-label">step risk and calibration</span>
+      \[ \mathcal{R}_t = \beta_d R^{\mathrm{dir}}_t + \beta_p R^{\mathrm{path}}_t + \beta_c R^{\mathrm{curv}}_t
+              + \beta_e R^{\mathrm{evid}}_t + \beta_u R^{\mathrm{unc}}_t \;\ge 0,
+         \qquad \hat{p}_t = \sigma\!\left(a \mathcal{R}_t + b\right) \]
+    </div>
+
+    <div class="card reveal">
+      <h3>The five deviations</h3>
+      <div class="term-grid">
+        <div class="term" style="border-left:2px solid var(--accent);">
+          <div class="term-name" style="color:var(--accent);">δ_dir｜direction</div>
+          <div class="term-desc">How far the generation heading has drifted from the discourse direction \(\Theta_S\)</div>
+        </div>
+        <div class="term" style="border-left:2px solid var(--accent);">
+          <div class="term-name" style="color:var(--accent);">δ_path｜path</div>
+          <div class="term-desc">Geodesic distance from the reference path satisfying instruction, factual, safety and format constraints</div>
+        </div>
+        <div class="term" style="border-left:2px solid var(--accent3);">
+          <div class="term-name" style="color:var(--accent3);">δ_curv｜curvature</div>
+          <div class="term-desc">Local connection curvature. Metaphor and legitimate pivots raise it too, so it cannot stand alone</div>
+        </div>
+        <div class="term" style="border-left:2px solid var(--accent2);">
+          <div class="term-name" style="color:var(--accent2);">1−e｜evidence deficiency</div>
+          <div class="term-desc">The degree to which a verifier fails to support the claim; wired directly to retrieval results</div>
+        </div>
+        <div class="term" style="border-left:2px solid var(--text-dim); grid-column:span 2;">
+          <div class="term-name" style="color:var(--text-muted);">u｜semantic uncertainty</div>
+          <div class="term-desc">Leakage from the marked subspace \(1-\langle\psi_t|\Pi_G|\psi_t\rangle\), or entropy over semantic classes (semantic entropy)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h3>Calibration and selective generation</h3>
+      <p>
+        \(R_t\) is a score by construction, not a true error probability. One fits logistic calibration or isotonic
+        regression on held-out data and evaluates with Brier score, ECE, AUROC and risk–coverage curves.
+        <strong>Training, calibration and final test splits must be kept separate.</strong>
+      </p>
+      <div class="math-box">
+        <span class="math-label">abstention rule</span>
+        \[ \text{abstain}(t) \iff R_t > \tau \qquad
+           \text{(compare against conformal abstention, not just a fixed threshold)} \]
+      </div>
+      <p style="margin-bottom:0;">
+        If a guarantee is to be claimed, the paper insists on stating the assumptions explicitly:
+        exchangeability, calibration set size, and monotonicity of the loss.
+      </p>
+    </div>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ What this risk cannot catch</div>
+      <ul>
+        <li>When a fluent falsehood is produced <strong>consistently</strong>, semantic uncertainty alone will not detect it.</li>
+        <li>When the retrieved source is itself wrong, the evidence term will support the error.</li>
+        <li>For value judgments, predictions about the future and ambiguous questions, truth labels are hard to define at all.</li>
+        <li>In high-stakes domains, generated output must not be the sole basis for a decision: build in human review and source attribution.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── EXPERIMENTS ── -->
+  <section id="experiments">
+    <div class="section-label">08 // VALIDATION</div>
+    <h2>Measured results from the Validation Studio</h2>
+
+    <p class="reveal">
+      The decisive update in this version is that the theory did not stop at paper.
+      A <strong>fully offline Validation Studio (v1.0.0)</strong> implements the classical quantum-inspired
+      realization and actually runs RQ1–RQ5 under one configuration:
+      random seed 20260720, 240 samples, observation noise 0.22, circuit noise 0.08, five seeds.
+      The outcome: <strong>RQ1–RQ4 supported, RQ5 (quantum advantage) a falsification candidate</strong>.
+    </p>
+
+    <div class="metric-grid reveal">
+      <div class="metric">
+        <div class="metric-label">RQ1 wavelength ↔ hierarchy<br>Spearman</div>
+        <div class="metric-val">0.852</div>
+        <div class="metric-base">baseline 0.707</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">RQ2 discourse alignment<br>mean score</div>
+        <div class="metric-val">0.933</div>
+        <div class="metric-base">baseline 0.589</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">RQ3 covariant phase<br>AUROC</div>
+        <div class="metric-val">0.881</div>
+        <div class="metric-base">cosine 0.765 / shuffle 0.536</div>
+      </div>
+      <div class="metric neg">
+        <div class="metric-label">RQ5 quantum run<br>end-to-end efficiency</div>
+        <div class="metric-val">0.107</div>
+        <div class="metric-base">classical Chebyshev 0.707</div>
+      </div>
+    </div>
+
+    <div class="table-scroll reveal">
+    <table class="energy-table">
+      <thead>
+        <tr><th>RQ</th><th>primary comparison</th><th>QuantumPhaseNet</th><th>baseline</th><th>outcome</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>RQ1</strong> hierarchy</td>
+          <td>Spearman correlation</td>
+          <td><strong>0.852</strong><br><span style="font-size:0.78rem;">direction accuracy 87.3% / inclusion AUC 0.953</span></td>
+          <td>0.707</td>
+          <td style="color:var(--accent);">Supported</td>
+        </tr>
+        <tr>
+          <td><strong>RQ2</strong> discourse</td>
+          <td>mean discourse alignment</td>
+          <td><strong>0.933</strong><br><span style="font-size:0.78rem;">41.2 paragraphs before drift / 95.4% aligned</span></td>
+          <td>0.589<br><span style="font-size:0.78rem;">16.2 paragraphs / 56.3%</span></td>
+          <td style="color:var(--accent);">Supported</td>
+        </tr>
+        <tr>
+          <td><strong>RQ3</strong> phase</td>
+          <td>AUROC</td>
+          <td><strong>0.881</strong><br><span style="font-size:0.78rem;">accuracy 81.5% / Brier 0.154</span></td>
+          <td>cosine 0.765<br><span style="font-size:0.78rem;">phase shuffle 0.536</span></td>
+          <td style="color:var(--accent);">Supported</td>
+        </tr>
+        <tr>
+          <td><strong>RQ4</strong> risk</td>
+          <td>error-detection AUROC</td>
+          <td><strong>0.854</strong><br><span style="font-size:0.78rem;">Brier 0.150 / ECE 0.098</span></td>
+          <td>entropy 0.634</td>
+          <td style="color:var(--accent);">Supported</td>
+        </tr>
+        <tr class="energy-highlight">
+          <td><strong>RQ5</strong> quantum</td>
+          <td>end-to-end efficiency</td>
+          <td><strong>0.107</strong><br><span style="font-size:0.78rem;">target-subspace probability 25.5%</span></td>
+          <td>Chebyshev 0.707<br><span style="font-size:0.78rem;">70.7%</span></td>
+          <td style="color:var(--accent3);">Falsification candidate</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="card reveal">
+      <h3>What RQ4 actually showed: abstention gets cheaper</h3>
+      <p>
+        Error-detection AUROC was 0.854 for geometric risk against 0.634 for the entropy baseline.
+        The operationally interesting number is risk–coverage:
+        <strong>at an allowed error rate of 10%, the answer rate was 53.1% versus 3.9% for entropy</strong>.
+      </p>
+      <p style="margin-bottom:0;">
+        Under the same "no more than 10% wrong" constraint, an entropy criterion abstains on nearly everything,
+        while geometric risk still answers more than half. That is the payoff from combining directional deviation,
+        evidence deficiency, curvature and uncertainty into one score.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>The negative RQ5 result was kept, not deleted</h3>
+      <p>
+        At circuit noise 0.08 the quantum simulation reached a target-subspace probability of 25.5%,
+        below the 70.7% of the classical Chebyshev approximation. Counting state preparation, circuit depth,
+        shots and readout, end-to-end cost efficiency was 0.107 against 0.707:
+        <strong>no advantage for the quantum-executable realization under this configuration</strong>.
+      </p>
+      <p style="margin-bottom:0;">
+        The paper states explicitly that this result is retained for scientific completeness.
+        Removing it would erase the distinction between the quantum-executable and the classical quantum-inspired
+        realizations, and would undermine the falsifiability built into the theory from the outset.
+        Note that it does not invalidate the classical quantum-inspired realization.
+      </p>
+    </div>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ What these numbers do not mean</div>
+      <ul>
+        <li>Everything comes from the <strong>built-in synthetic generator</strong>. There is <strong>no external validity yet</strong> on public benchmarks such as WordNet, HyperLex, TruthfulQA, FEVER or SAFE.</li>
+        <li>The Studio's "mean evidence strength ≈ 73%" is a relative visualization index internal to the Studio — neither the probability that the paper is correct nor a probability of truth.</li>
+        <li>The paper itself prescribes what future experiments need: separate training / calibration / final test splits, paired comparisons on identical inputs, at least ten seeds, preregistered primary metrics, and effect sizes reported together with computational cost.</li>
+      </ul>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">The falsification criteria are still live</h3>
+    <p class="reveal">
+      Being supported once does not retire the criteria. The seven conditions in Section 16.6 apply unchanged
+      to replication on external data.
+    </p>
+    <div class="table-scroll reveal">
+    <table class="energy-table">
+      <thead>
+        <tr><th>target</th><th>this would require rejecting or revising a central hypothesis</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>RQ1 hierarchy</td><td>Learned wavelengths do not consistently correlate with known hierarchies, or multi-axis variants still fail to beat Order / Poincaré embeddings</td></tr>
+        <tr><td>RQ2 discourse</td><td>The low-frequency direction increases topic drift relative to summary- or instruction-based directions</td></tr>
+        <tr><td>RQ3 phase</td><td>The covariant phase term cannot be distinguished from a phase-shuffled control</td></tr>
+        <tr><td>RQ4 risk</td><td>Geometric risk does not outperform entropy, semantic entropy or a standalone evidence verifier, or curvature cannot separate legitimate topic transitions from errors</td></tr>
+        <tr><td>RQ5 quantum</td><td>Neither simulation nor hardware shows an end-to-end advantage once noise, state preparation and readout are included</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">Complexity: where the cost really is</h3>
+    <div class="table-scroll reveal">
+    <table class="energy-table">
+      <thead>
+        <tr><th>method</th><th>complexity</th><th>how to read it</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>dense attention</td><td>\(O(n^2 d)\)</td><td>Baseline. Doubling \(n\) roughly quadruples all-pairs work</td></tr>
+        <tr><td>all-pairs WavePhase</td><td>\(O(n^2 d)\)</td><td>Same order, larger constant factor</td></tr>
+        <tr><td>full eigendecomposition</td><td>\(O(n^3)\)</td><td>Impractical at scale</td></tr>
+        <tr class="energy-highlight"><td>sparse Lanczos (low \(K\) modes)</td><td>approx. \(O(T K |E|)\)</td><td>Assumes a sparse graph. The realistic production choice</td></tr>
+        <tr><td>Chebyshev filter</td><td>linear in edges × polynomial degree × feature dimension</td><td>Polynomial approximation without any eigendecomposition</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="reveal" style="font-size:0.82rem;">
+      The paper is explicit that its complexity figure is a <strong>schematic plot of asymptotic expressions</strong>
+      at representative constants (\(d=64,\ k=16,\ K=10,\ T=20\)) — not measured runtimes.
+    </p>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ The quadratic costs people forget</div>
+      <ul>
+        <li>Rebuilding exact kNN by all-pairs comparison every step makes <strong>graph construction itself quadratic</strong>, erasing the benefit of sparsity. Preprocessing for ANN, Nyström, landmarks and graph reuse has to be measured too.</li>
+        <li>The same applies to all-pairs geodesic distance; compare against local tangent distance and neighborhood-only computation.</li>
+        <li>On the quantum side, QFT gate counts tell you nothing alone. State preparation, block-encoding of \(e^{iHt}\), the controlled time needed for QPE precision, amplification iterations, error correction and readout shots all enter the total — and that accumulation is exactly what decided RQ5.</li>
+      </ul>
+    </div>
+  </section>
+
+
+  <!-- ── CLAIMS MAP ── -->
+  <section id="claims">
+    <div class="section-label">09 // CLAIMS MAP</div>
+    <h2>Proved, hypothesized, unproved</h2>
+
+    <p class="reveal">
+      Section 20's correspondence table, re-read and color-coded by strength of claim.
+      <span class="badge thm">theorem</span> means internal consistency of the defined mathematics;
+      <span class="badge emp">hypothesis</span> means a correspondence real data can falsify, with the Studio's
+      synthetic measurements in parentheses; <span class="badge open">open</span> means future work.
+    </p>
+
+    <div class="table-scroll reveal">
+    <table class="energy-table">
+      <thead>
+        <tr><th>class</th><th>result</th><th>content</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="badge thm">theorem</span></td><td>invariance of covariant phase velocity</td><td>\(\Omega_\gamma\) and \(\lambda_\gamma\) are invariant under local gauge transformations</td></tr>
+        <tr><td><span class="badge thm">theorem</span></td><td>quotient hierarchy</td><td>Wavelength equivalence classes form a total order and a distributive lattice</td></tr>
+        <tr><td><span class="badge thm">proposition</span></td><td>multi-axis hierarchy</td><td>A distributive lattice if closed under componentwise min / max</td></tr>
+        <tr><td><span class="badge thm">theorem</span></td><td>Oracle</td><td>\(O_G=I-2\Pi_G\) is self-adjoint and involutive</td></tr>
+        <tr><td><span class="badge thm">theorem</span></td><td>amplitude amplification</td><td>Success probability is \(\sin^2((2k+1)\theta)\), \(\theta=\arcsin\sqrt{a}\)</td></tr>
+        <tr><td><span class="badge thm">theorem</span></td><td>quantum block</td><td>Unitary components give a unitary block</td></tr>
+        <tr><td><span class="badge thm">theorem</span></td><td>attention boundedness</td><td>Outputs stay in the convex hull of value vectors</td></tr>
+        <tr><td><span class="badge thm">theorem</span></td><td>local stability</td><td>Attention is Lipschitz under bounded Lipschitz features</td></tr>
+        <tr><td><span class="badge thm">conditional</span></td><td>generation convergence</td><td>Linear convergence on Hadamard manifolds under strong convexity and smoothness (strong assumptions)</td></tr>
+        <tr><td><span class="badge emp">hypothesis</span></td><td>long wavelength = superordinate</td><td>Synthetic: Spearman 0.852 (baseline 0.707), direction accuracy 87.3%, inclusion AUC 0.953. Public-data replication still pending</td></tr>
+        <tr><td><span class="badge emp">hypothesis</span></td><td>low frequency = discourse</td><td>Synthetic: mean alignment 0.933 (baseline 0.589), aligned-paragraph rate 95.4% (baseline 56.3%)</td></tr>
+        <tr><td><span class="badge emp">hypothesis</span></td><td>covariant phase is predictive</td><td>Synthetic: AUROC 0.881 (cosine 0.765, shuffled phase 0.536), Brier 0.154</td></tr>
+        <tr><td><span class="badge emp">hypothesis</span></td><td>risk predicts error</td><td>Synthetic: AUROC 0.854 (entropy 0.634), Brier 0.150, ECE 0.098</td></tr>
+        <tr class="energy-highlight"><td><span class="badge open">open</span></td><td>quantum advantage</td><td>Synthetic: quantum end-to-end efficiency 0.107 vs classical 0.707. <strong>No advantage observed; the paper does not claim it</strong></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="card reveal">
+      <h3>Staged implementation: never add everything at once</h3>
+      <p>
+        The minimal reproduction model starts with \(\mathcal{M}=\mathbb{R}^d\), \(g=I\) and a trivial connection.
+        Geodesic distance degenerates to Euclidean distance, parallel transport to the identity, and covariant phase
+        coherence to an ordinary complex inner product.
+      </p>
+      <div class="concept-flow" style="margin-bottom:0;">
+        <div class="concept-node">① Phase-only</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">② Wavelength</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">③ Direction</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">④ WP Attention</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">⑤ Evidence risk</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">⑥ Learned geometry</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">⑦ Quantum sim</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── RELATED ── -->
+  <section id="related">
+    <div class="section-label">10 // RELATED WORK</div>
+    <h2>Distance from related work</h2>
+
+    <div class="ref-card reveal">
+      <span class="ref-tag sim">shared premise</span>
+      <div>
+        <div class="ref-name">Order Embeddings / Poincaré Embeddings</div>
+        <div class="ref-desc">Shares the diagnosis that symmetric distance cannot express hypernymy. But the wavelength order here is <strong>an additional coordinate, not a replacement</strong>: entailment is never decided by wavelength alone, and multi-axis orders, hyperbolic geometry and supervised entailment losses are used alongside it.</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <span class="ref-tag sim">mathematical basis</span>
+      <div>
+        <div class="ref-name">Vector Diffusion Maps / connection Laplacian (Singer &amp; Wu 2012)</div>
+        <div class="ref-desc">Supplies the central tool — comparing vectors in different tangent spaces requires parallel transport. The document direction here is the low-pass component of a transported vector signal, not of scalar weights.</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <span class="ref-tag diff">what changed</span>
+      <div>
+        <div class="ref-name">Relation to WavePhaseNet (arXiv:2602.14419)</div>
+        <div class="ref-desc">The earlier work built a semantic hierarchy via a DFT over token sequences. This paper <strong>rewrites the same intuition in gauge-covariant form</strong>, taking covariant phase velocity — not the phase angle itself — as the observable. WavePhase Attention integrates the result as correction logits and residual features rather than competing with standard attention.</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <span class="ref-tag diff">what changed</span>
+      <div>
+        <div class="ref-name">Quantum NLP (Coecke et al.)</div>
+        <div class="ref-desc">Prior work describing semantic composition via Hilbert spaces, category theory and tensor products. This paper puts <strong>discrete band selection</strong> through QPE and amplitude amplification at the center, positioning QSVT as the smooth-filter alternative.</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <span class="ref-tag warn">not a replacement</span>
+      <div>
+        <div class="ref-name">SelfCheckGPT / semantic entropy / RAG</div>
+        <div class="ref-desc">Existing hallucination detectors are not replaced but <strong>absorbed as explicit terms</strong> for evidence alignment and semantic uncertainty. A probabilistic reading still requires calibration, and abstention guarantees leave room for conformal risk control.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── LIMITS ── -->
+  <section id="limits">
+    <div class="section-label">11 // LIMITS</div>
+    <h2>Identifiability and limitations</h2>
+
+    <div class="card reveal">
+      <h3>Gauge and coordinates are not unique</h3>
+      <p style="margin-bottom:0;">
+        The embedding map \(\iota\), the metric \(g\), the connection \(\nabla\) and the local frame are all non-unique.
+        What is observable is <strong>only the invariants</strong>: geodesic distance, transported inner products,
+        Wilson loops, covariant phase velocity. Phase angles and connection coefficients must never be interpreted as
+        semantic entities in themselves — a trap that visualization tooling walks into especially easily.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>Hierarchies are not unique either</h3>
+      <p style="margin-bottom:0;">
+        The same concept pair sits on different hierarchical axes depending on whether one means kind, part–whole,
+        time scale, causal abstraction or social category. A single wavelength cannot be a universal "conceptual depth";
+        multi-axis scales and supervised relation types are required.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>Quantum advantage remains unestablished</h3>
+      <p style="margin-bottom:0;">
+        Partial gate counts for QFT or amplitude amplification cannot establish end-to-end speedup.
+        The classical side has FFT, sparse methods, Lanczos, Chebyshev and GPU parallelism.
+        A fair comparison must equalize input/output models and target precision.
+        The paper states this repeatedly, and that caution is itself the design philosophy of the work.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── CONCLUSION ── -->
+  <section id="conclusion">
+    <div class="conclusion-box reveal">
+      <div class="section-label" style="text-align:center;">12 // CONCLUSION</div>
+      <h2>Conclusion</h2>
+      <p>
+        QuantumPhaseNet represents meaning as a composite object: manifold × complex bundle × connection × spectrum ×
+        quantum operators. Complex amplitudes carry contextual interference, covariant phase velocity carries the rate
+        of phase change along context, semantic wavelength carries conceptual scale, low-frequency direction carries
+        discourse, the connection carries the rule for cross-context comparison, and curvature carries the
+        non-commutativity of semantic composition.
+      </p>
+      <p style="margin-top:1rem;">
+        The most consequential revisions are: moving phase and wavelength
+        <strong>from gauge-dependent coordinates to invariant observables</strong>; distinguishing the inverse QFT inside
+        QPE from the external spectral transform; refusing to call the hallucination risk a "probability" before
+        calibration; and treating mathematical consistency, empirical effectiveness and quantum advantage as
+        <strong>three separate claims</strong>.
+      </p>
+      <p style="margin-top:1rem;">
+        In the Studio's synthetic example, the RQ1 hierarchy scale, RQ2 low-frequency discourse direction,
+        RQ3 covariant phase coherence and RQ4 geometric risk each outperformed their baselines — initial support for
+        the implementability of the classical quantum-inspired realization and for separating its mechanisms
+        experimentally. At the same time the RQ5 quantum simulation lost to the classical approximation on end-to-end
+        cost, so quantum advantage was not supported. The defensible empirical conclusion at this stage is therefore
+        deliberately narrow: <strong>the main mechanisms, built on classical linear algebra, sparse graphs and
+        polynomial filters, are testable under synthetic conditions.</strong>
+      </p>
+      <p style="margin-top:1rem;">
+        The next steps are (i) independent replication of the hierarchy results on WordNet and HyperLex,
+        (ii) evaluation of discourse retention on long-form and Japanese data, (iii) risk calibration on TruthfulQA,
+        FEVER and SAFE, (iv) discriminating error-induced curvature from curvature caused by legitimate topic
+        transitions, and (v) a fair classical–quantum resource comparison from state preparation through readout.
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrapper" style="padding-top:0; padding-bottom:0;">
+    QuantumPhaseNet Paper Explainer (Detailed) &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp; <a href="quantumphasenet_intro_en.html" style="color:inherit;">Plain-language version</a> &nbsp;|&nbsp; <a href="wavephasenet_en.html" style="color:inherit;">WavePhaseNet</a>
+  </div>
+</footer>
+
+<script>
+// ── Gauge phase-field canvas ──
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, frame = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Local phase field: each lattice site carries a U(1) phase that winds
+// around two "vortices" — a visual stand-in for a gauge connection.
+function phaseAt(x, y, t) {
+  const v1x = W * 0.28, v1y = H * 0.35;
+  const v2x = W * 0.74, v2y = H * 0.68;
+  const a1 = Math.atan2(y - v1y, x - v1x);
+  const a2 = Math.atan2(y - v2y, x - v2x);
+  const r  = Math.hypot(x - W * 0.5, y - H * 0.5);
+  return a1 - a2 + r * 0.004 + t * 0.012;
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  const step = 64, len = 13;
+
+  // phase arrows
+  for (let x = step * 0.5; x < W; x += step) {
+    for (let y = step * 0.5; y < H; y += step) {
+      const th = phaseAt(x, y, frame);
+      const dx = Math.cos(th) * len, dy = Math.sin(th) * len;
+      const shade = 0.5 + 0.5 * Math.cos(th);
+      ctx.beginPath();
+      ctx.strokeStyle = shade > 0.5 ? '#6d28d9' : '#0891b2';
+      ctx.globalAlpha = 0.10 + 0.20 * shade;
+      ctx.lineWidth = 1.2;
+      ctx.moveTo(x - dx, y - dy);
+      ctx.lineTo(x + dx, y + dy);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.fillStyle = '#6d28d9';
+      ctx.globalAlpha = 0.16;
+      ctx.arc(x + dx, y + dy, 1.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // expanding holonomy rings around each vortex
+  const rings = [
+    { cx: W * 0.28, cy: H * 0.35, color: '#6d28d9' },
+    { cx: W * 0.74, cy: H * 0.68, color: '#0891b2' }
+  ];
+  rings.forEach((rg, i) => {
+    for (let k = 0; k < 3; k++) {
+      const period = 320;
+      const p = ((frame + k * period / 3 + i * 90) % period) / period;
+      const rad = p * Math.max(W, H) * 0.42;
+      ctx.beginPath();
+      ctx.strokeStyle = rg.color;
+      ctx.globalAlpha = 0.16 * (1 - p);
+      ctx.lineWidth = 1;
+      ctx.arc(rg.cx, rg.cy, rad, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  });
+
+  ctx.globalAlpha = 1;
+  frame++;
+  if (!reduceMotion) requestAnimationFrame(draw);
+}
+draw();
+
+// ── Scroll reveal ──
+const reveals = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+reveals.forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
