@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WavePhaseNet — 論文解説</title>
+<title>WavePhaseNet — 論文解説（詳細）</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
@@ -18,7 +18,7 @@
     --accent3: #d97706;
     --text: #0d1829;
     --text-muted: #3d5166;
-    --text-dim: #8fa4bc;
+    --text-dim: #7d8fa3;
     --glow: rgba(0,136,170,0.12);
     --font-serif: 'Noto Serif JP', serif;
     --font-mono: 'Space Mono', monospace;
@@ -42,7 +42,7 @@
   #bg-canvas {
     position: fixed; top: 0; left: 0;
     width: 100%; height: 100%;
-    z-index: 0; opacity: 0.55;
+    z-index: 0; opacity: 0.5;
     pointer-events: none;
   }
 
@@ -69,7 +69,7 @@
     white-space: nowrap;
   }
   .nav-links {
-    display: flex; gap: 2rem; list-style: none;
+    display: flex; gap: 1.6rem; list-style: none;
     margin-left: 2rem;
   }
   .nav-links a {
@@ -153,7 +153,7 @@
   }
   .hero-title {
     font-family: var(--font-serif);
-    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    font-size: clamp(2.2rem, 5.6vw, 4rem);
     font-weight: 700;
     line-height: 1.15;
     letter-spacing: -0.01em;
@@ -176,7 +176,7 @@
     animation: fadeUp 0.6s ease 0.45s forwards;
   }
   .hero-meta {
-    display: flex; gap: 2rem;
+    display: flex; gap: 2rem; flex-wrap: wrap;
     font-size: 0.78rem;
     color: var(--text-muted);
     margin-bottom: 2.5rem;
@@ -254,7 +254,7 @@
     opacity: 0;
     transition: opacity 0.3s;
   }
-  .card:hover { border-color: rgba(0,136,170,0.35); }
+  .card:hover { border-color: rgba(0,136,170,0.4); }
   .card:hover::before { opacity: 1; }
 
   /* ── Abstract ── */
@@ -306,7 +306,7 @@
     opacity: 0.6;
   }
 
-  /* ── Freq bands ── */
+  /* ── Triple grid ── */
   .freq-grid {
     display: grid; grid-template-columns: repeat(3, 1fr);
     gap: 1px; background: var(--border);
@@ -337,6 +337,24 @@
   .freq-cell:nth-child(3) .freq-label { color: var(--accent2); }
   .freq-desc { font-size: 0.8rem; color: var(--text-muted); }
 
+  /* ── Two-column split ── */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem 0; }
+  .split-cell {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 1.6rem 1.5rem;
+  }
+  .split-cell.hot { border-color: rgba(0,136,170,0.45); }
+  .split-cell h4 {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 0.7rem;
+  }
+  .split-cell.cool h4 { color: var(--accent2); }
+  .split-cell p { font-size: 0.82rem; margin: 0; }
+
   /* ── Math box ── */
   .math-box {
     background: #0d1829;
@@ -360,7 +378,7 @@
     color: #e2e8f0 !important;
   }
 
-  /* ── Energy bar ── */
+  /* ── Table ── */
   .energy-table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
   .energy-table th {
     font-family: var(--font-mono);
@@ -376,19 +394,42 @@
     font-size: 0.85rem;
     border-bottom: 1px solid rgba(180,200,220,0.6);
     color: var(--text-muted);
+    vertical-align: top;
   }
   .energy-table tr:hover td { background: var(--surface); }
-  .energy-bar-wrap {
-    height: 6px; background: var(--border);
-    border-radius: 3px; overflow: hidden;
-    min-width: 120px;
-  }
-  .energy-bar {
-    height: 100%; border-radius: 3px;
-    background: linear-gradient(90deg, var(--accent2), var(--accent));
-    transition: width 1.5s ease;
-  }
   .energy-highlight td { color: var(--accent) !important; font-weight: 500; }
+  .table-scroll { overflow-x: auto; }
+
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    padding: 0.15em 0.55em;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .badge.thm { border-color: var(--accent); color: var(--accent); }
+  .badge.emp { border-color: var(--accent3); color: var(--accent3); }
+  .badge.open { border-color: var(--text-dim); color: var(--text-dim); }
+
+  /* ── Metric cards ── */
+  .metric-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: var(--border);
+    margin: 2rem 0;
+  }
+  .metric { background: var(--surface); padding: 1.5rem 1.1rem; text-align: center; }
+  .metric-label {
+    font-family: var(--font-mono); font-size: 0.6rem;
+    letter-spacing: 0.1em; color: var(--text-dim);
+    margin-bottom: 0.6rem; min-height: 2.2em;
+  }
+  .metric-val {
+    font-family: var(--font-mono); font-size: 1.9rem; font-weight: 700;
+    color: var(--accent); line-height: 1;
+  }
+  .metric-base { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.55rem; }
+  .metric.neg .metric-val { color: var(--accent3); }
 
   /* ── 3-pillars ── */
   .pillars { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin: 2rem 0; }
@@ -458,7 +499,7 @@
     margin-left: 1rem;
     transition: border-color 0.2s;
   }
-  .arch-step-body:hover { border-color: rgba(0,212,255,0.3); }
+  .arch-step-body:hover { border-color: rgba(0,136,170,0.35); }
   .arch-step-title {
     font-family: var(--font-mono);
     font-size: 0.78rem;
@@ -467,6 +508,12 @@
     margin-bottom: 0.4rem;
   }
   .arch-step-desc { font-size: 0.82rem; color: var(--text-muted); }
+
+  /* ── Risk terms ── */
+  .term-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-top: 1rem; }
+  .term { padding-left: 0.8rem; }
+  .term-name { font-size: 0.75rem; font-family: var(--font-mono); }
+  .term-desc { font-size: 0.78rem; color: var(--text-muted); }
 
   /* ── Related work ── */
   .ref-card {
@@ -479,7 +526,7 @@
     align-items: start;
     transition: border-color 0.2s;
   }
-  .ref-card:hover { border-color: rgba(0,212,255,0.3); }
+  .ref-card:hover { border-color: rgba(0,136,170,0.35); }
   .ref-tag {
     font-family: var(--font-mono);
     font-size: 0.65rem;
@@ -489,15 +536,33 @@
     align-self: start;
     margin-top: 0.1rem;
   }
-  .ref-tag.sim { border-color: var(--accent); color: var(--accent); }
-  .ref-tag.diff { border-color: var(--accent2); color: var(--accent2); }
+  .ref-tag.sim { border-color: var(--accent2); color: var(--accent2); }
+  .ref-tag.diff { border-color: var(--accent); color: var(--accent); }
+  .ref-tag.warn { border-color: var(--accent3); color: var(--accent3); }
   .ref-name { font-weight: 500; font-size: 0.88rem; margin-bottom: 0.4rem; }
   .ref-desc { font-size: 0.78rem; color: var(--text-muted); }
 
+  /* ── Caution list ── */
+  .caution {
+    border: 1px dashed var(--accent3);
+    background: rgba(217,119,6,0.04);
+    padding: 1.5rem 1.8rem;
+    margin: 1.5rem 0;
+  }
+  .caution-title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--accent3);
+    margin-bottom: 0.8rem;
+  }
+  .caution ul { margin: 0; padding-left: 1.2rem; }
+  .caution li { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+
   /* ── Conclusion highlight ── */
   .conclusion-box {
-    background: linear-gradient(135deg, rgba(0,136,170,0.05), rgba(109,40,217,0.07));
-    border: 1px solid rgba(0,212,255,0.2);
+    background: linear-gradient(135deg, rgba(0,136,170,0.06), rgba(0,136,170,0.07));
+    border: 1px solid rgba(0,136,170,0.2);
     padding: 3rem;
     text-align: center;
     position: relative;
@@ -506,10 +571,10 @@
   .conclusion-box::before {
     content: '';
     position: absolute; inset: 0;
-    background: radial-gradient(ellipse at 50% 50%, rgba(0,136,170,0.06), transparent 70%);
+    background: radial-gradient(ellipse at 50% 50%, rgba(0,136,170,0.07), transparent 70%);
   }
   .conclusion-box h2 { font-size: 1.5rem; margin-bottom: 1rem; }
-  .conclusion-box p { max-width: 600px; margin: 0 auto; font-size: 0.92rem; }
+  .conclusion-box p { max-width: 620px; margin: 0 auto; font-size: 0.92rem; }
 
   /* ── Tag chip ── */
   .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; }
@@ -540,8 +605,8 @@
     to { opacity: 1; transform: translateY(0); }
   }
   @keyframes pulse {
-    0%,100% { text-shadow: 0 0 20px rgba(0,212,255,0.3); }
-    50% { text-shadow: 0 0 40px rgba(0,212,255,0.7); }
+    0%,100% { text-shadow: 0 0 20px rgba(0,136,170,0.25); }
+    50% { text-shadow: 0 0 40px rgba(0,136,170,0.6); }
   }
   @keyframes expandLine {
     0% { width: 20px; opacity: 0.3; }
@@ -557,29 +622,36 @@
     opacity: 1; transform: translateY(0);
   }
 
+  @media (max-width: 760px) {
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+  }
   @media (max-width: 640px) {
+    .metric-grid { grid-template-columns: 1fr 1fr; }
     .pillars { grid-template-columns: 1fr; }
     .freq-grid { grid-template-columns: 1fr; }
+    .split { grid-template-columns: 1fr; }
+    .term-grid { grid-template-columns: 1fr; }
     .concept-flow { gap: 0.3rem; }
     .concept-arrow { display: none; }
   }
 </style>
-</head>
-<body>
+</head><body>
 
 <canvas id="bg-canvas"></canvas>
 
 <nav>
-  <div class="nav-logo">WavePhaseNet // 論文解説</div>
+  <div class="nav-logo">WavePhaseNet // 詳細解説</div>
   <ul class="nav-links">
     <li><a href="#abstract">概要</a></li>
-    <li><a href="#method">手法</a></li>
-    <li><a href="#results">結果</a></li>
-    <li><a href="#related">関連研究</a></li>
+    <li><a href="#hallucination">理論</a></li>
+    <li><a href="#dft">DFT</a></li>
+    <li><a href="#spectrum">次元</a></li>
+    <li><a href="#cohomology">整合性</a></li>
+    <li><a href="#claims">主張の地図</a></li>
   </ul>
   <div class="nav-right">
-    <a href="quantumphasenet_intro_ja.html" class="nav-page-tab">QuantumPhaseNet →</a>
-    <a href="wavephasenet_faq.html" class="nav-page-tab">FAQ →</a>
+    <a href="wavephasenet_intro_ja.html" class="nav-page-tab">かんたん解説 →</a>
     <div class="nav-lang">
       <a href="wavephasenet_ja.html" class="current">JA</a>
       <a href="wavephasenet_en.html">EN</a>
@@ -591,7 +663,7 @@
 
   <!-- ── HERO ── -->
   <div class="hero">
-    <div class="hero-tag">arXiv · 2026.01.12</div>
+    <div class="hero-tag">arXiv:2602.14419 · 2026.01.12</div>
     <h1 class="hero-title">
       <span class="wave">Wave</span>PhaseNet
     </h1>
@@ -601,13 +673,15 @@
       <span>📅 2026年1月12日</span>
     </div>
     <p class="hero-desc">
-      大規模言語モデル（LLM）における幻覚（ハルシネーション）を数学的構造の必然的帰結として定式化し、
-      離散フーリエ変換（DFT）を用いた意味的概念階層構造（SCHS）によりその抑制を実現する新しいフレームワーク。
+      Transformer / Attention を<strong>測度論</strong>と<strong>周波数解析</strong>から再定式化し、
+      ハルシネーションを学習不足ではなく<strong>数学的構造の必然的帰結</strong>として位置づける。
+      その上で離散フーリエ変換により埋め込み空間に<strong>意味的概念階層構造（SCHS）</strong>を明示的に構築し、
+      コホモロジー正則化で局所推論の不整合を制御する枠組みを提示する。
     </p>
     <div class="chips">
-      <span class="chip">LLM</span><span class="chip">Transformer</span><span class="chip">DFT</span>
-      <span class="chip">ハルシネーション抑制</span><span class="chip">コホモロジー</span>
-      <span class="chip">Hodge理論</span><span class="chip">次元削減</span>
+      <span class="chip">σ-加法族</span><span class="chip">条件付き期待値</span><span class="chip">DFT</span>
+      <span class="chip">SCHS</span><span class="chip">Zipf則</span><span class="chip">1/fスペクトル</span>
+      <span class="chip">コホモロジー</span><span class="chip">Hodge理論</span><span class="chip">次元削減</span>
     </div>
     <div class="scroll-hint">SCROLL TO EXPLORE</div>
   </div>
@@ -615,33 +689,39 @@
   <!-- ── ABSTRACT ── -->
   <section id="abstract">
     <div class="section-label">01 // ABSTRACT</div>
-    <h2>論文の概要</h2>
+    <h2>この論文が主張していること</h2>
 
     <div class="abstract-box reveal">
       <p>
-        本論文は、Transformer / Attentionメカニズムを<strong>測度論</strong>と<strong>周波数解析</strong>の観点から再定式化し、
+        本論文は、Transformer / Attention メカニズムを測度論と周波数解析の観点から再定式化し、
         ハルシネーションの構造的必然性を理論的に解明する。
-        埋め込み空間はσ-加法族上の条件付き期待値として機能しており、
-        これが意味的真値集合と同型でないことが論理的一貫性の破綻の根本原因であることを示す。
+        中心的な指摘は、埋め込み空間が<strong>σ-加法族上の条件付き期待値</strong>として機能しており、
+        これが意味的真値集合と同型でないことが論理的一貫性の破綻の根本原因である、というものである。
       </p>
       <p>
-        この観察をもとに、DFTを用いて埋め込み空間内に<strong>意味的概念階層構造（SCHS）</strong>を明示的に構築する
-        手法 <em>WavePhaseNet</em> を提案する。
-        低周波成分がグローバルな意味・意図に、高周波成分がローカルな構文・表現に対応することで、
-        対角化された空間での精密な意味操作が可能となる。
+        この観察をもとに、DFT を用いて埋め込み空間内に意味的概念階層構造（SCHS）を明示的に構築する手法
+        <em>WavePhaseNet</em> を提案する。低周波成分がグローバルな意味・意図に、高周波成分がローカルな構文・表現に
+        対応することで、対角化された空間での精密な意味操作が可能となる。
+        さらに、重なり合う局所窓の被覆にグラフ構造を導入してコチェイン複体を定義し、
+        局所推論間の不整合をコバウンダリに基づく損失として定量化する。
+      </p>
+      <p>
+        <strong>本稿は理論的枠組みの提示であり、実験的検証は含まない。</strong>
+        提示されるのは数学的定式化、理論的導出、および今後検証すべき指標である。
+        この点は後述の「主張の地図」で明示的に区別する。
       </p>
     </div>
 
     <div class="pillars reveal">
       <div class="pillar">
         <div class="pillar-num">01</div>
-        <h4>ハルシネーションの数学的定義</h4>
-        <p>σ-加法族上で最適（高確率）であっても、現実世界の真値集合に属さない出力として定式化</p>
+        <h4>幻覚の数学的定義</h4>
+        <p>σ-加法族上で最適（高確率）であっても、現実世界の真値集合に属さない出力として定式化する</p>
       </div>
       <div class="pillar">
         <div class="pillar-num">02</div>
         <h4>DFTによるSCHS構築</h4>
-        <p>トークン列にDFTを適用し、意味情報を周波数帯域に分解。階層的意味構造を埋め込み空間に明示的に埋め込む</p>
+        <p>トークン列にDFTを適用し意味情報を周波数帯域へ分解。階層的意味構造を埋め込み空間に明示的に埋め込む</p>
       </div>
       <div class="pillar">
         <div class="pillar-num">03</div>
@@ -651,56 +731,156 @@
     </div>
   </section>
 
-  <!-- ── HALLUCINATION ── -->
-  <section id="hallucination">
-    <div class="section-label">02 // THEORY</div>
-    <h2>ハルシネーションの構造的必然性</h2>
+  <!-- ── MEASURE ── -->
+  <section id="measure">
+    <div class="section-label">02 // MEASURE THEORY</div>
+    <h2>自己回帰モデルを測度論で書き直す</h2>
 
     <div class="card reveal">
-      <h3>自己回帰モデルの測度論的定式化</h3>
+      <h3>σ-加法族としての文脈</h3>
       <p>
         自己回帰モデルは結合分布を条件付き確率の積として分解する。
-        過去のトークン列 \(X_{&lt;t}\) が生成するボレル集合はσ-加法族 \(\mathcal{F}_t = \sigma(x_1,\ldots,x_t)\) をなし、
-        埋め込みベクトルは可測空間上のランダム変数として解釈できる。
+        過去のトークン列 \(X_{&lt;t}\) が生成する情報集合（ボレル集合）はσ-加法族をなす。
       </p>
       <div class="math-box">
-        <span class="math-label">条件付き期待値</span>
-        \[ \mathcal{L}^P(\Omega, \mathcal{F}, P) \ni f, \quad \|f\|_p = \left(\int_\Omega |f(\omega)|^p \, dP(\omega)\right)^{1/p} \]
+        <span class="math-label">分解とσ-加法族</span>
+        \[ P(X_1,\ldots,X_N) = \prod_{t=1}^{N} P(X_t \mid X_{&lt;t}),
+           \qquad \mathcal{F}_t = \sigma(x_1,\ldots,x_t) \]
       </div>
-      <p>
-        モデル全体はσ-加法族上の条件付き期待値の逐次近似器であり、
-        その出力は点ごとの真値ではなく<strong>確率分布上の平均的最適性</strong>（ルベーグ測度：期待値E）である。
+      <p style="margin-bottom:0;">
+        したがって可測空間 \((\Omega,\mathcal{F}_t,P)\) 上で定義された埋め込みベクトルは、
+        σ-加法族上の<strong>ランダム変数</strong>として解釈できる。
+        モデル全体は条件付き期待値 \(E[\phi(X_{t+1})\mid\mathcal{F}_t]\) の逐次近似器である。
       </p>
     </div>
 
     <div class="card reveal">
-      <h3>ハルシネーションの定義と構造的不可避性</h3>
+      <h3>\(L^p\) 空間とノルム構造</h3>
       <p>
-        ミンコフスキー不等式 \(\|f+g\|_p \leq \|f\|_p + \|g\|_p\) により、
-        異なる仮説 \(f_1, f_2\) を \(f = \alpha f_1 + (1-\alpha)f_2\) と線形結合できる。
-        しかし不完備性により、存在しない命題が生じうる。
+        埋め込み空間は内積空間を経由した（不完備な場合もある）ノルム空間として扱われる。
+        モデル全体は \(L^p(\Omega,\mathcal{F},P)\) に住み、そのノルムは確率分布の期待値を表すルベーグ積分に対応する。
       </p>
       <div class="math-box">
-        <span class="math-label">ハルシネーションの定義</span>
-        \[ \text{真値集合} \ T \subset V^*, \quad \text{モデル最適集合} \neq T \]
+        <span class="math-label">\(L^p\) ノルム</span>
+        \[ \|f\|_p = \left(\int_\Omega |f(\omega)|^p \, dP(\omega)\right)^{1/p} \]
       </div>
       <p>
-        真値集合は一般に<strong>非凸・非線形</strong>であるのに対し、
-        \(L^P\)空間は<strong>線形かつ凸</strong>の構造を持つ。
-        この「非線形な真値集合 vs 線形・凸な表現空間」のミスマッチが、
-        ハルシネーションの本質的原因である。
+        ここから決定的な帰結が出る。モデルの出力は<strong>点ごとの真値ではなく、確率分布上の平均的最適性</strong>である。
+        「もっともらしさの平均」を最大化しているのであって、個々の主張の真偽を最適化しているのではない。
+      </p>
+      <div class="math-box">
+        <span class="math-label">Minkowski 不等式</span>
+        \[ \|f+g\|_p \le \|f\|_p + \|g\|_p \]
+      </div>
+      <p style="margin-bottom:0;">
+        この不等式により、異なる仮説 \(f_1, f_2\) を \(f = \alpha f_1 + (1-\alpha) f_2\) と線形結合できてしまう。
+        しかし空間の不完備性により、その結合が<strong>存在しない命題</strong>を指すことがある。
+        次節の定式化はここから始まる。
       </p>
     </div>
   </section>
 
-  <!-- ── METHOD ── -->
-  <section id="method">
-    <div class="section-label">03 // METHOD</div>
-    <h2>WavePhaseNet の手法</h2>
+  <!-- ── HALLUCINATION ── -->
+  <section id="hallucination">
+    <div class="section-label">03 // THEORY</div>
+    <h2>ハルシネーションの構造的必然性</h2>
 
-    <h3>周波数帯域と意味の対応</h3>
+    <div class="card reveal">
+      <h3>定義</h3>
+      <p>
+        本稿はハルシネーションを次のように定義する。
+        <strong>「σ-加法族上で最適（高確率）であるが、現実世界の真値集合に属さない出力」</strong>。
+      </p>
+      <div class="math-box">
+        <span class="math-label">幻覚の定義</span>
+        \[ \text{真値集合}\ T \subset V^{*},
+           \qquad \text{モデル最適集合}\ \arg\min_f E\big[\ell(f(X),Y)\big],
+           \qquad T \neq \arg\min L^p \]
+      </div>
+      <p style="margin-bottom:0;">
+        この定義の要点は、幻覚を<strong>モデルの失敗ではなく、二つの集合のズレとして</strong>捉えるところにある。
+        モデルは自らの目的関数の上では正しく振る舞っている。ズレているのは目的関数の方である。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>なぜ不可避なのか：非凸な真値集合 vs 凸な表現空間</h3>
+      <p>
+        真値集合は一般に<strong>非凸</strong>であり、線形結合について閉じていない。
+        一方 \(L^p\) 空間は<strong>線形かつ凸</strong>である。この構造的ミスマッチが本質的原因である。
+      </p>
+
+      <div class="split">
+        <div class="split-cell hot">
+          <h4>TRUTH SET \(T\)</h4>
+          <p>
+            非凸。飛び地を持ち、二つの真な主張の中点が真とは限らない。
+            Čech 型の整合性（局所的な真理の貼り合わせ）を要求する構造。
+          </p>
+        </div>
+        <div class="split-cell cool">
+          <h4>EMBEDDING SPACE \(L^p\)</h4>
+          <p>
+            線形かつ凸。任意の二点の内分点が必ず存在する。
+            大数の法則による統計的平均化は「平均的にもっともらしい分布」しか与えない。
+          </p>
+        </div>
+      </div>
+
+      <p style="margin-bottom:0;">
+        したがって LLM は多様で柔軟な文章生成には適するが、
+        <strong>厳密な論理的厳密性を要する推論過程には原理的に不向き</strong>である、と論文は結論する。
+        そしてこの弱点が致命的になる領域として、AIエージェントとエッジコンピューティングを名指ししている。
+      </p>
+    </div>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ この主張の射程</div>
+      <ul>
+        <li>「不可避」とは<strong>この定式化の下で</strong>という意味である。埋め込み空間を非凸な構造に作り替える別の道を否定するものではない（むしろ本稿はその方向を提案している）。</li>
+        <li>また、幻覚が構造的に生じることと、その頻度や深刻度は別問題である。本稿は前者を扱い、後者の定量化は行っていない。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── SCHS ── -->
+  <section id="schs">
+    <div class="section-label">04 // SCHS</div>
+    <h2>なぜ意味的概念階層構造が必要か</h2>
+
+    <p class="reveal">
+      解決の方向は「表現空間の側に意味の階層を作る」ことである。ではなぜ既存の手段では足りないのか。
+    </p>
+
+    <div class="table-scroll reveal">
+    <table class="energy-table">
+      <thead>
+        <tr><th>既存手段</th><th>限界</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>シソーラス・オントロジー・知識ネットワーク</td>
+          <td>埋め込み空間（σ-加法族空間）へ<strong>直接埋め込むことができない</strong>。外付けの構造にとどまる</td>
+        </tr>
+        <tr>
+          <td>RAG</td>
+          <td>外部への<strong>強い依存性</strong>と拡張性の低さ。検索結果の品質がそのまま出力品質の上限になる</td>
+        </tr>
+        <tr class="energy-highlight">
+          <td>高度なプロンプト設計</td>
+          <td>複雑な推論タスクほど<strong>利用者側のスキルに依存</strong>する。属人化し、組織的な運用に耐えない</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p class="reveal">
+      したがって SCHS は埋め込み空間<strong>そのものの内側</strong>に構築されねばならない、というのが本稿の立論である。
+      これが実現すれば、利用者が高度なプロンプト表現スキルを持つ必要性は大幅に低減される。
+    </p>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">周波数帯域と意味の対応</h3>
     <p class="reveal">DFTをトークン列方向に適用すると、意味情報は周波数帯域に分解される。</p>
-
     <div class="freq-grid reveal">
       <div class="freq-cell">
         <span class="freq-icon">〰️</span>
@@ -718,18 +898,117 @@
         <div class="freq-desc">局所的な語順・語用・表現の違い。位相が位置的差異を決定</div>
       </div>
     </div>
+  </section>
 
-    <h3 class="reveal" style="margin-top:2.5rem;">DFTの数式定義</h3>
-    <div class="math-box reveal">
-      <span class="math-label">シーケンス方向DFT</span>
-      \[ \hat{X}_k = \sum_{n=0}^{N-1} x_n \, e^{-2\pi i k n / N}, \quad k = 0, \ldots, N-1 \]
-    </div>
-    <div class="math-box reveal">
-      <span class="math-label">振幅・位相分解</span>
-      \[ \hat{X}_k = A_k \odot e^{i\Phi_k}, \quad A_k = |\hat{X}_k| \in \mathbb{R}^d, \quad \Phi_k = \angle\hat{X}_k \in \mathbb{R}^d \]
+  <!-- ── DFT ── -->
+  <section id="dft">
+    <div class="section-label">05 // DFT</div>
+    <h2>系列方向DFTと完全再構成</h2>
+
+    <div class="card reveal">
+      <h3>定義</h3>
+      <p>
+        トークン列長を \(N\)、埋め込み次元を \(d\)、埋め込み行列を \(X\in\mathbb{R}^{N\times d}\) とする。
+        系列方向にDFTを適用すると、各埋め込み次元について次を得る。
+      </p>
+      <div class="math-box">
+        <span class="math-label">系列方向DFT</span>
+        \[ \hat{X}_k = \sum_{n=0}^{N-1} X_n \, e^{-2\pi i k n / N}, \qquad k = 0,\ldots,N-1 \]
+      </div>
+      <div class="math-box">
+        <span class="math-label">振幅・位相分解</span>
+        \[ \hat{X}_k = A_k \odot e^{i\Phi_k},
+           \qquad A_k = |\hat{X}_k| \in \mathbb{R}^d,
+           \qquad \Phi_k = \angle\hat{X}_k \in \mathbb{R}^d \]
+      </div>
+      <p style="margin-bottom:0;">
+        振幅 \(A_k\) は各帯域がどれだけ強く効いているかを、位相 \(\Phi_k\) は
+        その成分が系列上のどこに寄るかを決める。
+        <strong>位相を捨てると位置情報が失われる</strong> — これが FNet との決定的な違いになる。
+      </p>
     </div>
 
-    <h3 class="reveal" style="margin-top:2.5rem;">モデルアーキテクチャ</h3>
+    <div class="card reveal">
+      <h3>完全再構成と共役対称性</h3>
+      <p>
+        DFTは可逆であり、逆変換によって元の埋め込み行列を完全に復元できる。
+        論文は \(d=4, N=3\) の最小例で実際の数値を追い、完全再構成を確認している。
+      </p>
+      <div class="math-box">
+        <span class="math-label">共役対称性</span>
+        \[ \hat{X}_{N-k} = \overline{\hat{X}_k}
+           \quad\Longrightarrow\quad
+           \text{実数値での復元が保証される} \]
+      </div>
+      <p style="margin-bottom:0;">
+        この対称性には実装上の意味がある。高周波成分は<strong>半分だけ学習すればよい</strong>。
+        残りは共役から自動的に決まるため、学習すべきパラメータが実質的に半減する。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>提案モデルとの対応</h3>
+      <p style="margin-bottom:0;">
+        最小例が示すのは、(i) 低周波を要約ベクトルとして固定し、(ii) 高周波の位相と振幅を条件付きで生成し、
+        (iii) 逆DFTで文を再構成する — という設計が<strong>数学的に整合し、完全再構成を許す</strong>ということである。
+        DFT自体の健全性が確認できた上で、低周波（大域的意味）・中周波（多段階の中間意味）・高周波（局所的意味）の
+        同時行列表現による証明へ進む、というのが論文の構成である。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── OPERATOR ── -->
+  <section id="operator">
+    <div class="section-label">06 // OPERATOR</div>
+    <h2>周波数マスクとしての意味演算子</h2>
+
+    <p class="reveal">
+      DFTの本質的価値は可逆変換それ自体ではなく、
+      <strong>周波数側に移してから挟み込む操作</strong>にある。往復の間に何をするかが本体である。
+    </p>
+
+    <div class="concept-flow reveal">
+      <div class="concept-node">X（入力）</div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">DFT</div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">M(k)演算子</div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">iDFT</div>
+      <span class="concept-arrow">→</span>
+      <div class="concept-node">X̃（変換後）</div>
+    </div>
+
+    <div class="math-box reveal">
+      <span class="math-label">意味演算子</span>
+      \[ \tilde{X} = F^{-1} M(\omega) F X \]
+      \[ M(k) = \begin{cases}
+         1.0 & k=0 \quad \text{（グローバルトピック：保持）} \\
+         0.5 & k=1,3 \quad \text{（表現・トーン：減衰）} \\
+         0.0 & k=2 \quad \text{（否定・対比構造：除去）}
+         \end{cases} \]
+    </div>
+
+    <p class="reveal">
+      論文は具体的な数値例でこの操作を追跡している。
+      係数を書き換えて逆変換すると、元の文の<strong>テーマは保たれたまま、対比構造だけが消える</strong>。
+      「意味的に何が変換されたのか」を、線形代数の演算として厳密に記述できる点が主張の核心である。
+    </p>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ 帯域と意味の対応は仮定である</div>
+      <ul>
+        <li>「k=2 が否定・対比構造に対応する」という割り当ては、この数値例における解釈であって、一般に成り立つ法則として証明されたものではない。</li>
+        <li>帯域と意味役割の対応は、実データでの検証を要する経験的仮説である。論文もこれを「後の数値例と完全再構成の証明によって支持される仮定」と位置づけている。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── ARCHITECTURE ── -->
+  <section id="architecture">
+    <div class="section-label">07 // ARCHITECTURE</div>
+    <h2>モデルアーキテクチャ</h2>
+
     <div class="arch-flow reveal">
       <div class="arch-step">
         <div class="arch-step-num">1</div>
@@ -742,7 +1021,7 @@
         <div class="arch-step-num">2</div>
         <div class="arch-step-body">
           <div class="arch-step-title">DFT LAYER (FFT)</div>
-          <div class="arch-step-desc">シーケンス方向にFFT適用 → \(\hat{X} \in \mathbb{C}^{N \times d}\)（計算量 \(O(N \log N)\)）</div>
+          <div class="arch-step-desc">系列方向にFFT適用 → \(\hat{X} \in \mathbb{C}^{N \times d}\)。計算量 \(O(N \log N)\) と軽量</div>
         </div>
       </div>
       <div class="arch-step">
@@ -756,14 +1035,14 @@
         <div class="arch-step-num">4</div>
         <div class="arch-step-body">
           <div class="arch-step-title">LOW-FREQ MODULE (Intent)</div>
-          <div class="arch-step-desc">位相Φと振幅Aを入力として意図ベクトル \(S \in \mathbb{R}^m\) を生成。位置的系列情報を保持</div>
+          <div class="arch-step-desc">位相Φと振幅Aを入力として意図ベクトル \(S \in \mathbb{R}^m\) を生成。位置的系列情報を保持する</div>
         </div>
       </div>
       <div class="arch-step">
         <div class="arch-step-num">5</div>
         <div class="arch-step-body">
           <div class="arch-step-title">HIGH-FREQ MODULE (Generation)</div>
-          <div class="arch-step-desc">条件付き生成器 \(G\) が \(\hat{X}'_H \sim p(\hat{X}_H | S)\) を出力。normalizing flowやVAEが選択肢</div>
+          <div class="arch-step-desc">条件付き生成器 \(G\) が \(\hat{X}'_H \sim p(\hat{X}_H \mid S)\) を出力。normalizing flow や VAE が選択肢</div>
         </div>
       </div>
       <div class="arch-step">
@@ -775,56 +1054,54 @@
       </div>
     </div>
 
-    <h3 class="reveal" style="margin-top:2.5rem;">周波数マスクとしての意味演算子</h3>
-    <p class="reveal">DFTの本質的価値は可逆変換そのものでなく、周波数依存の意味演算子の挿入にある：</p>
-    <div class="concept-flow reveal">
-      <div class="concept-node">X（入力）</div>
-      <span class="concept-arrow">→</span>
-      <div class="concept-node">DFT</div>
-      <span class="concept-arrow">→</span>
-      <div class="concept-node">M(k)演算子</div>
-      <span class="concept-arrow">→</span>
-      <div class="concept-node">iDFT</div>
-      <span class="concept-arrow">→</span>
-      <div class="concept-node">X̃（変換後）</div>
-    </div>
-    <div class="math-box reveal">
-      <span class="math-label">意味演算子</span>
-      \[ \tilde{X} = F^{-1} M(\omega) F X \]
-      \[ M(k) = \begin{cases} 1.0 & k=0 \text{（グローバルトピック：保持）} \\ 0.5 & k=1,3 \text{（表現・トーン：減衰）} \\ 0.0 & k=2 \text{（否定・対比構造：除去）} \end{cases} \]
+    <div class="card reveal">
+      <h3>Transformer への統合</h3>
+      <p>
+        置き換えではなく差し込みである。各層 \(l\)・各ヘッド \(h\) について長さ \(w\) の短い窓を
+        トークン軸に沿ってスライドさせ、DFT を適用する。
+        窓の低周波再構成 \(g^{(l)}_t\) を、自己注意の入力に<strong>残差として加算</strong>する。
+      </p>
+      <div class="math-box">
+        <span class="math-label">残差としての意図注入</span>
+        \[ \tilde{x}^{(l)}_t = x^{(l)}_t + \alpha^{(l)} g^{(l)}_t \]
+      </div>
+      <p style="margin-bottom:0;">
+        \(\alpha^{(l)}\) は学習可能なスカラー（またはチャネルごとのスケーリングベクトル）である。
+        この補正表現が Query / Key / Value の入力として使われる。
+      </p>
     </div>
   </section>
 
-  <!-- ── RESULTS ── -->
-  <section id="results">
-    <div class="section-label">04 // RESULTS</div>
-    <h2>実験結果・理論的根拠</h2>
+  <!-- ── SPECTRUM ── -->
+  <section id="spectrum">
+    <div class="section-label">08 // DIMENSIONALITY</div>
+    <h2>24,576次元 → 3,000次元の理論的根拠</h2>
 
     <div class="card reveal">
-      <h3>GPT-4（24,576次元）の1/fスペクトル構造</h3>
+      <h3>Zipf則と 1/f スペクトル</h3>
       <p>
-        自然言語はZipf則に従い自己相似構造を持つ。
-        埋め込み振幅のエネルギースペクトルは以下の1/f型減衰を示す：
+        自然言語はZipf則に従い、自己相似構造を持つ。
+        その結果、埋め込み振幅のエネルギースペクトルは 1/f 型の減衰を示す。
       </p>
       <div class="math-box">
-        \[ E(f) \propto \frac{1}{f^\alpha}, \quad \alpha \approx 1.1 \sim 1.4 \]
+        <span class="math-label">エネルギースペクトル</span>
+        \[ E(f) \propto \frac{1}{f^{\alpha}}, \qquad \alpha \approx 1.1 \sim 1.4 \]
       </div>
-      <p>
-        \(\alpha > 1\) となる理由は、構文制約の存在（文法はセマンティクスより局所的）と
-        TransformerによるLayerNorm/Attentionが高周波を正則化するためである。
+      <p style="margin-bottom:0;">
+        \(\alpha > 1\) となる理由として、構文制約の存在（文法は意味論より局所的である）と、
+        Transformer の LayerNorm / Attention が高周波を正則化することが挙げられる。
       </p>
     </div>
 
-    <h3 class="reveal" style="margin-top:2rem;">累積エネルギー解析：24,576次元 → 3,000次元削減の正当性</h3>
+    <h3 class="reveal" style="margin-top:2.5rem;">累積エネルギー解析</h3>
+    <p class="reveal">
+      低周波から次元 \(K\) まで累積エネルギーを評価すると、次の対応が得られる。
+    </p>
 
-    <table class="energy-table reveal">
+    <div class="table-scroll reveal">
+    <table class="energy-table">
       <thead>
-        <tr>
-          <th>次元数 K</th>
-          <th>累積エネルギー</th>
-          <th>エネルギーバー</th>
-          <th>評価</th>
-        </tr>
+        <tr><th>次元数 K</th><th>累積エネルギー</th><th>エネルギーバー</th><th>評価</th></tr>
       </thead>
       <tbody>
         <tr>
@@ -853,10 +1130,11 @@
         </tr>
       </tbody>
     </table>
+    </div>
 
     <div class="card reveal">
-      <h3>3,000次元が意味の下限である理由</h3>
-      <p>NLP観点からGPT-4埋め込みの内在次元を分析すると：</p>
+      <h3>3,000次元が下限である理由</h3>
+      <p>NLP観点からGPT-4埋め込みの内在次元を分解すると、次の積み上げになる。</p>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin:1rem 0;">
         <div style="border:1px solid var(--border); padding:1rem;">
           <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--accent); margin-bottom:0.4rem;">語義的意味空間</div>
@@ -868,85 +1146,317 @@
           <div style="font-size:1.4rem; font-weight:700; font-family:var(--font-mono);">1,000〜2,000</div>
           <div style="font-size:0.75rem; color:var(--text-muted);">次元</div>
         </div>
-        <div style="border:1px solid var(--border); padding:1rem; grid-column:span 2; border-color:rgba(0,212,255,0.3);">
+        <div style="border:1px solid var(--border); padding:1rem; grid-column:span 2; border-color:rgba(0,136,170,0.35);">
           <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--accent); margin-bottom:0.4rem;">文の意図 + 談話構造</div>
           <div style="font-size:1.4rem; font-weight:700; font-family:var(--font-mono); color:var(--accent);">2,000〜3,000</div>
           <div style="font-size:0.75rem; color:var(--text-muted);">次元 → <strong>3,000次元が意味と意図を保存する下限</strong></div>
         </div>
       </div>
-      <p style="margin:0;">3,000次元を下回ると、意味的に類似した文と構文的に類似した文の区別が不可能になる。</p>
+      <p style="margin:0;">
+        3,000次元を下回ると、<strong>意味的に類似した文と構文的に類似した文の区別が不可能になる</strong>。
+        したがって 24,576 → 3,000 の削減は、情報理論的にも言語統計的にも正当化される、というのが論文の主張である。
+      </p>
+    </div>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ これらの数値は導出であって実測ではない</div>
+      <ul>
+        <li>累積エネルギー 82〜88% は <strong>1/f モデルからの理論的導出</strong>であり、実際の GPT-4 埋め込みを解析した測定値ではない。</li>
+        <li>\(\alpha \approx 1.1\sim1.4\) という指数も、Zipf則からの推定範囲として与えられている。</li>
+        <li>内在次元の内訳（300〜800 / 1,000〜2,000 / 2,000〜3,000）は NLP 分野の知見に基づく見積もりである。</li>
+        <li>この主張は<strong>実測可能</strong>であり、既存モデルの埋め込みスペクトルを解析するだけで検証できる。本稿の主張のうち最も検証しやすい部分である。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── COHOMOLOGY ── -->
+  <section id="cohomology">
+    <div class="section-label">09 // COHOMOLOGY</div>
+    <h2>局所推論の整合性をどう測るか</h2>
+
+    <p class="reveal">
+      ここまでで「大域的な意図を取り出す」道具は揃った。残るのは
+      <strong>局所の推論どうしが矛盾しないことをどう保証するか</strong>である。
+    </p>
+
+    <div class="card reveal">
+      <h3>スペクトルエントロピーと帯域選択</h3>
+      <p>
+        どこまでを「低周波」とするかは恣意的に決めない。スペクトル分布に対するエントロピー汎関数を定義し、
+        情報損失を最小化する帯域 \(\Omega\) を選ぶ。
+      </p>
+      <div class="math-box">
+        <span class="math-label">帯域選択規準</span>
+        \[ H(p) = -\sum_{n=1}^{T} p_n \log p_n,
+           \qquad p^{(\Omega)}_n = \frac{E_n \mathbf{1}(n\in\Omega)}{\sum_{m\in\Omega} E_m} \]
+        \[ \min_{\Omega} D_{KL}\big(p \,\|\, p^{(\Omega)}\big)
+           \quad\text{または}\quad
+           \sum_{n\in\Omega} E_n \ge \rho \sum_{n=1}^{T} E_n \]
+      </div>
+      <p style="margin-bottom:0;">
+        つまり「エネルギー保存率 \(\rho\) を満たす最小の帯域」を選ぶ。
+        前節の累積エネルギー解析は、この規準を GPT-4 の次元に当てはめたものである。
+      </p>
     </div>
 
     <div class="card reveal">
-      <h3>コホモロジー正則化と統一最適化目的関数</h3>
-      <p>重複する局所ウィンドウのカバリングにグラフ構造を導入し、コチェイン複体を定義。</p>
+      <h3>大域意図ベクトル \(g\)</h3>
+      <p>
+        選ばれた低周波帯域から、逆DFT再構成によって大域意図埋め込みを定義する。
+        位置に依存しない意図を仮定する場合は帯域内の全周波数成分を平均する。
+      </p>
+      <div class="math-box">
+        <span class="math-label">大域意図</span>
+        \[ g = \frac{1}{|\Omega|}\sum_{n\in\Omega} \Re\big(\tilde{V}_{(:,n)}\big) \in \mathbb{R}^d,
+           \qquad
+           G = \mathrm{IDFT}\big(\tilde{V}_{(:,\Omega)}\big) \in \mathbb{R}^{d\times T} \]
+      </div>
+      <p style="margin-bottom:0;">
+        位置依存の再構成を各トークン位置に対応させる場合は \(G\) を用いる。これが系列版の大域意図となる。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>窓被覆・コチェイン・コバウンダリ</h3>
+      <p>
+        トークン集合を覆う重なり合う窓の族 \(\mathcal{U}=\{U_i\}\) を考える。
+        各窓に対して局所推論モジュールが切断表現 \(s_i \in \mathbb{R}^r\) を出力し、
+        \(s=(s_1,\ldots,s_N)\) が<strong>0-コチェイン</strong>をなす。
+      </p>
+      <div class="math-box">
+        <span class="math-label">コバウンダリ作用素</span>
+        \[ \delta s = (B \otimes I_r)\, s,
+           \qquad U_i \cap U_j \neq \emptyset \ \Longleftrightarrow\ (i,j)\in E \]
+      </div>
+      <p style="margin-bottom:0;">
+        \(B\) は有向接続行列である。\(\delta s\) の大きさが、窓どうしの<strong>解釈の食い違いの総量</strong>にあたる。
+        これをゼロに近づけることが「意味の貼り合わせ」に相当する。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>Hodge分解と調和射影</h3>
+      <p>
+        Laplacian の固有分解 \(L = U\Lambda U^{\top}\) において、
+        零固有値に対応する部分空間 \(\ker L\) が、
+        <strong>すべての窓に矛盾なく値を割り当てる調和0-コチェイン</strong>に対応する。
+      </p>
+      <div class="math-box">
+        <span class="math-label">グラフ Hodge 分解と調和射影</span>
+        \[ \mathbb{R}^{mr} = \mathrm{im}(\delta^{\dagger}) \oplus \ker(L\otimes I_r) \oplus \mathrm{im}(\delta) \]
+        \[ P_{\mathrm{harm}} = U_0 U_0^{\top},
+           \qquad s_{\mathrm{harm}} = P_{\ker(L\otimes I_r)}\, s \]
+      </div>
+      <p style="margin-bottom:0;">
+        実装では零空間の基底 \(U_0\) を特異値分解または Lanczos 法で計算する。
+        重要な但し書きとして、<strong>この射影は高次コホモロジーに由来する真の障害を消さない</strong>。
+        それらは学習によって減らすべき不可避の意味的不整合として残る、と論文は明記している。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>統一最適化目的関数</h3>
       <div class="math-box">
         <span class="math-label">統一損失関数</span>
-        \[ \mathcal{L} = \sum_i L_i^{\text{loc}}(s_i) + \lambda \, s^\top (L \otimes I_r) s + \mu \, D_{KL}(p \| p^{(\Omega)}) + \eta \sum_i \| s_i - P_i(g) \|_2^2 \]
+        \[ \mathcal{L} = \sum_i L_i^{\text{loc}}(s_i)
+           + \lambda\, s^{\top}(L \otimes I_r)\, s
+           + \mu\, D_{KL}\big(p \,\|\, p^{(\Omega)}\big)
+           + \eta \sum_i \big\| s_i - P_i(g) \big\|_2^2 \]
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin-top:1rem;">
-        <div style="border-left:2px solid var(--accent); padding-left:0.8rem;">
-          <div style="font-size:0.75rem; color:var(--accent); font-family:var(--font-mono);">L^loc_i</div>
-          <div style="font-size:0.78rem; color:var(--text-muted);">ウィンドウiのタスク損失（クロスエントロピー等）</div>
+      <div class="term-grid">
+        <div class="term" style="border-left:2px solid var(--accent);">
+          <div class="term-name" style="color:var(--accent);">L^loc_i｜タスク損失</div>
+          <div class="term-desc">窓 \(i\) の負の対数尤度（クロスエントロピーや回帰誤差）</div>
         </div>
-        <div style="border-left:2px solid var(--accent3); padding-left:0.8rem;">
-          <div style="font-size:0.75rem; color:var(--accent3); font-family:var(--font-mono);">λ・s⊤(L⊗I)s</div>
-          <div style="font-size:0.78rem; color:var(--text-muted);">コバウンダリ二乗ノルムによる局所不整合ペナルティ</div>
+        <div class="term" style="border-left:2px solid var(--accent2);">
+          <div class="term-name" style="color:var(--accent2);">λ・sᵀ(L⊗I)s｜整合性</div>
+          <div class="term-desc">コバウンダリ二乗ノルムによる局所不整合ペナルティ</div>
         </div>
-        <div style="border-left:2px solid var(--accent2); padding-left:0.8rem;">
-          <div style="font-size:0.75rem; color:var(--accent2); font-family:var(--font-mono);">μ・D_KL</div>
-          <div style="font-size:0.78rem; color:var(--text-muted);">Zipf則からの逸脱抑制（帯域選択の適切性）</div>
+        <div class="term" style="border-left:2px solid var(--accent3);">
+          <div class="term-name" style="color:var(--accent3);">μ・D_KL｜帯域選択</div>
+          <div class="term-desc">Zipf則からの急激な逸脱を抑制し、適切な帯域選択を促す</div>
         </div>
-        <div style="border-left:2px solid var(--text-dim); padding-left:0.8rem;">
-          <div style="font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono);">η・‖s_i−P_i(g)‖²</div>
-          <div style="font-size:0.78rem; color:var(--text-muted);">グローバル意図との一致度強制</div>
+        <div class="term" style="border-left:2px solid var(--text-dim);">
+          <div class="term-name" style="color:var(--text-muted);">η・‖s_i − P_i(g)‖²｜意図整合</div>
+          <div class="term-desc">各窓の解釈を大域意図の制限と一致させる</div>
         </div>
+      </div>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">計算量</h3>
+    <div class="table-scroll reveal">
+    <table class="energy-table">
+      <thead>
+        <tr><th>処理</th><th>計算量</th><th>読み方</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>窓ごとのFFT</td><td>\(O(d\,T\log T)\)</td><td>小FFTの並列化でさらに高速化できる</td></tr>
+        <tr class="energy-highlight"><td>Laplacian 関連</td><td>反復あたり \(O(\#\text{nonzeros})\)</td><td>隣接行列が疎なので \(L\otimes I_r\) も疎。CG法で扱える</td></tr>
+        <tr><td>零空間基底の計算</td><td>低次元のみ</td><td>Lanczos / ARPACK / 疎SVD。零固有値の固有ベクトルだけ求める</td></tr>
+        <tr><td>メモリ</td><td>ブロック対角なら分散容易</td><td>Transformer統合時はミニバッチごとに同様の演算</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="card reveal">
+      <h3>評価すべき指標</h3>
+      <p style="margin-bottom:0;">
+        論文は評価計画として次を挙げる。<strong>perplexity</strong>（クロスエントロピーから標準的に算出）、
+        <strong>局所整合率</strong>（重なり対 \((i,j)\) について \(\mathbf{1}[\mathrm{agree}(s_i,s_j)]\) の平均）、
+        <strong>Zipf偏差</strong>（学習前後の Zipf\((p)\) の差とエネルギー保存率）。
+        アブレーションとしては \(\lambda=0\)（コホモロジーなし）、\(\mu=0\)（スペクトル制約なし）、
+        \(\eta=0\)（大域事前分布なし）の比較を指定している。
+        <strong>いずれも本稿では実施されていない。</strong>
+      </p>
+    </div>
+  </section>
+
+  <!-- ── CLAIMS MAP ── -->
+  <section id="claims">
+    <div class="section-label">10 // CLAIMS MAP</div>
+    <h2>導出済み・仮説・未検証の地図</h2>
+
+    <p class="reveal">
+      本稿の主張を強さで色分けして読み直したもの。
+      <span class="badge thm">導出</span> は定義した数学系の内部で示されること、
+      <span class="badge emp">仮説</span> は実データで反証されうる対応、
+      <span class="badge open">未検証</span> は実験が必要な項目である。
+    </p>
+
+    <div class="table-scroll reveal">
+    <table class="energy-table">
+      <thead>
+        <tr><th>区分</th><th>結果</th><th>内容</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="badge thm">導出</span></td><td>DFTの可逆性</td><td>逆変換により埋め込み行列を完全再構成できる（最小例で数値確認）</td></tr>
+        <tr><td><span class="badge thm">導出</span></td><td>共役対称性</td><td>\(\hat{X}_{N-k}=\overline{\hat{X}_k}\) により実数値復元が保証され、高周波は半分の学習で足りる</td></tr>
+        <tr><td><span class="badge thm">導出</span></td><td>幻覚の構造的必然性</td><td>非凸な真値集合と凸な \(L^p\) 空間のミスマッチから帰結する</td></tr>
+        <tr><td><span class="badge thm">導出</span></td><td>Hodge分解</td><td>\(\ker L\) が矛盾なく貼り合わせ可能な調和成分に対応する</td></tr>
+        <tr><td><span class="badge thm">導出</span></td><td>計算量</td><td>FFT・疎行列・反復解法によりスケールする</td></tr>
+        <tr><td><span class="badge emp">仮説</span></td><td>低周波＝大域意図</td><td>帯域と意味役割の対応。要約整合・話題保持で検証すべき</td></tr>
+        <tr><td><span class="badge emp">仮説</span></td><td>1/fスペクトル (α≈1.1〜1.4)</td><td>Zipf則からの推定。実際の埋め込みスペクトル解析で<strong>直接検証可能</strong></td></tr>
+        <tr class="energy-highlight"><td><span class="badge emp">仮説</span></td><td>3,000次元＝保存の下限</td><td>累積エネルギー82〜88%は1/fモデルからの導出。<strong>実測ではない</strong></td></tr>
+        <tr><td><span class="badge emp">仮説</span></td><td>意味演算子の帯域割当</td><td>「k=2＝対比構造」等は数値例における解釈であり一般則ではない</td></tr>
+        <tr><td><span class="badge open">未検証</span></td><td>幻覚抑制の効果</td><td>評価実験・ベンチマーク比較が未実施</td></tr>
+        <tr><td><span class="badge open">未検証</span></td><td>λ・μ・η の寄与</td><td>アブレーション研究が未実施</td></tr>
+        <tr><td><span class="badge open">未検証</span></td><td>次元削減後の性能</td><td>3,000次元に削減して精度が保たれるかは未検証</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="card reveal">
+      <h3>検証しやすい順に並べると</h3>
+      <p>
+        本稿の主張のうち、<strong>スペクトル構造に関する部分はモデルを改造せずに検証できる</strong>。
+        既存モデルの埋め込みを取り出してFFTをかけ、累積エネルギーを積むだけでよい。
+      </p>
+      <div class="concept-flow" style="margin-bottom:0;">
+        <div class="concept-node">① スペクトル実測</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">② 累積エネルギー</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">③ 次元削減</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">④ 意図注入</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">⑤ コホモロジー正則化</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">⑥ アブレーション</div>
       </div>
     </div>
   </section>
 
   <!-- ── RELATED ── -->
   <section id="related">
-    <div class="section-label">05 // RELATED WORK</div>
-    <h2>関連研究との比較</h2>
+    <div class="section-label">11 // RELATED WORK</div>
+    <h2>関連研究との距離</h2>
 
     <div class="ref-card reveal">
       <span class="ref-tag sim">類似点</span>
       <div>
         <div class="ref-name">FNet（Google Research）</div>
-        <div class="ref-desc">AttentionをFourier変換で置換することで高速化と意味解析を実現。トークン列に対するDFT適用による意味階層化の有効性を実証済み。本提案のSCHS構築の動機の一つ。</div>
+        <div class="ref-desc">Attentionをフーリエ変換で置換することで高速化と意味解析を実現。トークン列に対するDFT適用による意味階層化の有効性を実証済みであり、本提案のSCHS構築の動機の一つとなっている。</div>
       </div>
     </div>
     <div class="ref-card reveal">
       <span class="ref-tag diff">差別化点</span>
       <div>
         <div class="ref-name">WavePhaseNet vs FNet</div>
-        <div class="ref-desc">FNetは複素表現の虚部を破棄するため、共参照関係や文脈依存性の処理が弱い。本提案は<strong>位相情報を保持</strong>し、意味階層への操作を明示的に導入する点で本質的に異なる。</div>
+        <div class="ref-desc">FNetは複素表現の<strong>虚部を破棄する</strong>ため、共参照関係や文脈依存性の処理が弱い。本提案は<strong>位相情報を保持</strong>し、意味階層への操作を明示的に導入する点で本質的に異なる。速度ではなく意味操作が目的である。</div>
       </div>
     </div>
     <div class="ref-card reveal">
       <span class="ref-tag diff">超越点</span>
       <div>
         <div class="ref-name">RAGベースアプローチとの比較</div>
-        <div class="ref-desc">RAGは強い依存性と拡張性の低さを持つ。WavePhaseNetは埋め込み空間内にSCHSを直接構築することで、ユーザが高度なプロンプト表現スキルを持つ必要性を大幅に低減する。</div>
+        <div class="ref-desc">RAGは外部への強い依存性と拡張性の低さを持つ。WavePhaseNetは埋め込み空間内にSCHSを直接構築することで、ユーザが高度なプロンプト表現スキルを持つ必要性を大幅に低減することを狙う。</div>
       </div>
+    </div>
+    <div class="ref-card reveal">
+      <span class="ref-tag warn">後続研究</span>
+      <div>
+        <div class="ref-name">QuantumPhaseNet（2026.07.30）</div>
+        <div class="ref-desc">本稿の着想を<strong>ゲージ共変な枠組みへ書き直した</strong>後継論文。位相角そのものではなく、局所基底の取り方に依存しない共変位相速度を観測量とする。また検証スタジオによる試作実験を伴い、本稿に欠けていた実測が加えられている。<a href="quantumphasenet_ja.html" style="color:var(--accent);">→ 詳細解説</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── LIMITS ── -->
+  <section id="limits">
+    <div class="section-label">12 // LIMITS</div>
+    <h2>限界と注意</h2>
+
+    <div class="card reveal">
+      <h3>実験的検証が存在しない</h3>
+      <p style="margin-bottom:0;">
+        本稿には評価実験、ベンチマーク比較、アブレーション研究のいずれも含まれない。
+        提示されているのは数学的定式化と、検証すべき指標の一覧である。
+        したがって「幻覚がどの程度減るか」という問いには、現時点で答えられない。
+        <strong>これは欠陥ではなく本稿の設計である</strong> — 原因の定式化を先に置き、対策の実証を後続に委ねる構成になっている。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>射影で消せない障害が残る</h3>
+      <p style="margin-bottom:0;">
+        論文自身が明記するとおり、調和射影は<strong>高次コホモロジーに由来する真の障害を除去しない</strong>。
+        それらは学習によって減らすべき不可避の意味的不整合として残る。
+        すなわちこの枠組みは矛盾を「ゼロにする」ものではなく、「測って減らす」ものである。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>低周波が正しさを保証しない</h3>
+      <p style="margin-bottom:0;">
+        低周波成分は「文書全体で一貫して現れる成分」であって、「正しい成分」ではない。
+        長く反復される誤情報も低周波になり得る。
+        大域意図の抽出は、事実性の検証とは<strong>独立に</strong>評価される必要がある。
+        後続の QuantumPhaseNet ではこの点が明示的な注意事項として扱われている。
+      </p>
     </div>
   </section>
 
   <!-- ── CONCLUSION ── -->
   <section id="conclusion">
     <div class="conclusion-box reveal">
-      <div class="section-label" style="text-align:center;">06 // CONCLUSION</div>
+      <div class="section-label" style="text-align:center;">13 // CONCLUSION</div>
       <h2>結論</h2>
       <p>
-        本論文はLLMのハルシネーションを数学的構造から必然的に生じる現象として定式化し、
+        本論文はLLMのハルシネーションを、学習不足やデータ欠陥ではなく
+        <strong>モデル自身の数学的構造から必然的に生じる現象</strong>として定式化し、
         DFTベースのSCHSを埋め込み空間に導入することでその抑制の理論的枠組みを提示した。
-        Zipf則と1/fスペクトルに基づく累積エネルギー解析により、
-        24,576次元から3,000次元への削減が正当化されることが本提案の核心的貢献である。
       </p>
       <p style="margin-top:1rem;">
-        WavePhaseNetは意味的流れを線形代数で厳密に記述することを可能とし、
+        Zipf則と1/fスペクトルに基づく累積エネルギー解析により、
+        24,576次元から3,000次元への削減が正当化されることが本提案の核心的貢献である。
+        WavePhaseNet は意味的流れを線形代数で厳密に記述することを可能とし、
         次世代の推論指向型言語モデルへの道を開く。
+      </p>
+      <p style="margin-top:1rem;">
+        残された課題は、(i) 実データでのスペクトル構造の確認、(ii) 次元削減後の性能評価、
+        (iii) λ・μ・η のアブレーションによる寄与の切り分け、(iv) 局所整合率の実測である。
+        これらの一部は後続の <a href="quantumphasenet_ja.html" style="color:var(--accent);">QuantumPhaseNet</a> で着手されている。
       </p>
     </div>
   </section>
@@ -955,10 +1465,12 @@
 
 <footer>
   <div class="wrapper" style="padding-top:0; padding-bottom:0;">
-    <a href="index.html" style="color:inherit;">目次</a> &nbsp;|&nbsp; WavePhaseNet 論文解説ページ &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp; 本ページは論文の解説を目的として作成されました
+    <a href="index.html" style="color:inherit;">目次</a> &nbsp;|&nbsp; WavePhaseNet 論文解説（詳細） &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp;
+    <a href="wavephasenet_intro_ja.html" style="color:inherit;">かんたん解説</a> &nbsp;|&nbsp;
+    <a href="wavephasenet_faq.html" style="color:inherit;">FAQ</a> &nbsp;|&nbsp;
+    <a href="quantumphasenet_ja.html" style="color:inherit;">QuantumPhaseNet</a>
   </div>
 </footer>
-
 <script>
 // ── Wave canvas animation ──
 const canvas = document.getElementById('bg-canvas');
@@ -972,13 +1484,15 @@ function resize() {
 resize();
 window.addEventListener('resize', resize);
 
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 function drawWaves() {
   ctx.clearRect(0, 0, W, H);
   const waves = [
-    { amp: 60, freq: 0.008, speed: 0.015, y: H*0.3, color: '#0088aa', alpha: 0.45 },
-    { amp: 35, freq: 0.014, speed: 0.022, y: H*0.5, color: '#6d28d9', alpha: 0.35 },
-    { amp: 20, freq: 0.025, speed: 0.035, y: H*0.7, color: '#0088aa', alpha: 0.2 },
-    { amp: 45, freq: 0.006, speed: 0.010, y: H*0.2, color: '#d97706', alpha: 0.18 },
+    { amp: 60, freq: 0.008, speed: 0.015, y: H * 0.30, color: '#0088aa', alpha: 0.45 },
+    { amp: 35, freq: 0.014, speed: 0.022, y: H * 0.50, color: '#6d28d9', alpha: 0.35 },
+    { amp: 20, freq: 0.025, speed: 0.035, y: H * 0.70, color: '#0088aa', alpha: 0.20 },
+    { amp: 45, freq: 0.006, speed: 0.010, y: H * 0.20, color: '#d97706', alpha: 0.18 },
   ];
   waves.forEach(w => {
     ctx.beginPath();
@@ -991,33 +1505,28 @@ function drawWaves() {
     }
     ctx.stroke();
   });
-  // grid dots
   ctx.globalAlpha = 0.07;
   ctx.fillStyle = '#0088aa';
   for (let x = 0; x < W; x += 80) {
     for (let y = 0; y < H; y += 80) {
       ctx.beginPath();
-      ctx.arc(x, y, 1, 0, Math.PI*2);
+      ctx.arc(x, y, 1, 0, Math.PI * 2);
       ctx.fill();
     }
   }
   ctx.globalAlpha = 1;
   frame++;
-  requestAnimationFrame(drawWaves);
+  if (!reduceMotion) requestAnimationFrame(drawWaves);
 }
 drawWaves();
 
 // ── Scroll reveal ──
-const reveals = document.querySelectorAll('.reveal');
 const obs = new IntersectionObserver((entries) => {
   entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.classList.add('visible');
-      obs.unobserve(e.target);
-    }
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
   });
 }, { threshold: 0.1 });
-reveals.forEach(el => obs.observe(el));
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 </script>
 </body>
 </html>
