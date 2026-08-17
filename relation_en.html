@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How the Two Papers Relate — WavePhaseNet and QuantumPhaseNet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f7f8fc;
+    --surface2: #eef1f8;
+    --border: #d3d8ea;
+    --wave: #0088aa;
+    --quantum: #6d28d9;
+    --amber: #d97706;
+    --text: #101728;
+    --text-muted: #414a63;
+    --text-dim: #949bb2;
+    --font-serif: 'Noto Serif JP', serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-sans: 'Noto Sans JP', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    line-height: 1.9;
+    overflow-x: hidden;
+  }
+
+  #bg-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; opacity: 0.4;
+    pointer-events: none;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex; align-items: center;
+  }
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+  .nav-logo .w { color: var(--wave); }
+  .nav-logo .q { color: var(--quantum); }
+  .nav-links { display: flex; gap: 1.6rem; list-style: none; margin-left: 2rem; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none;
+    font-size: 0.78rem; letter-spacing: 0.08em; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-right { display: flex; align-items: center; gap: 1.4rem; margin-left: auto; }
+  .nav-lang {
+    display: flex; align-items: center;
+    border: 1px solid var(--border); border-radius: 20px;
+    overflow: hidden; flex-shrink: 0;
+  }
+  .nav-lang a {
+    font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em;
+    padding: 0.28em 0.75em; color: var(--text-dim);
+    text-decoration: none; transition: all 0.2s; line-height: 1;
+  }
+  .nav-lang a.current { background: var(--text); color: #fff; }
+  .nav-lang a:not(.current):hover { color: var(--text); }
+  .nav-page-tab {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em;
+    color: var(--text-muted); text-decoration: none;
+    padding-bottom: 2px; border-bottom: 2px solid transparent;
+    transition: all 0.2s; flex-shrink: 0; white-space: nowrap;
+  }
+  .nav-page-tab:hover { color: var(--text); border-bottom-color: var(--text); }
+
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 900px; margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    min-height: 78vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding-top: 90px;
+  }
+  .hero-tag {
+    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.2em;
+    color: var(--text-muted); border: 1px solid var(--border);
+    padding: 0.3em 0.9em; display: inline-block; margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.2s forwards;
+  }
+  .hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.9rem, 4.6vw, 3rem);
+    font-weight: 700; line-height: 1.35;
+    margin-bottom: 1.4rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.35s forwards;
+  }
+  .hero-title .w { color: var(--wave); }
+  .hero-title .q { color: var(--quantum); }
+  .hero-desc {
+    font-size: 1.05rem; color: var(--text-muted);
+    max-width: 660px; line-height: 2;
+    opacity: 0; animation: fadeUp 0.6s ease 0.55s forwards;
+    margin-bottom: 2rem;
+  }
+  .scroll-hint {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--text-dim); letter-spacing: 0.15em;
+    display: flex; align-items: center; gap: 0.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.75s forwards;
+  }
+  .scroll-hint::after {
+    content: ''; display: block; width: 40px; height: 1px;
+    background: var(--text-dim); animation: expandLine 1.5s ease infinite;
+  }
+
+  /* ── Sections ── */
+  section { padding: 4.5rem 0; border-top: 1px solid var(--border); }
+  .section-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.25em;
+    color: var(--text-muted); margin-bottom: 0.6rem; opacity: 0.9;
+  }
+  h2 {
+    font-family: var(--font-serif); font-size: 1.75rem;
+    font-weight: 700; margin-bottom: 1.6rem; line-height: 1.4;
+  }
+  h3 {
+    font-family: var(--font-serif); font-size: 1.15rem;
+    font-weight: 600; margin-bottom: 0.9rem;
+  }
+  p { margin-bottom: 1.2rem; color: var(--text-muted); }
+  .lead { font-size: 1.02rem; }
+
+  /* ── Timeline ── */
+  .timeline { display: flex; flex-direction: column; margin: 2rem 0; }
+  .tl-item { display: grid; grid-template-columns: 120px 1fr; gap: 1.5rem; align-items: start; }
+  .tl-date {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    letter-spacing: 0.08em; color: var(--text-dim);
+    padding-top: 0.35rem; text-align: right;
+  }
+  .tl-body {
+    border-left: 2px solid var(--border);
+    padding: 0 0 2.2rem 1.5rem;
+    position: relative;
+  }
+  .tl-item:last-child .tl-body { border-left-color: transparent; padding-bottom: 0; }
+  .tl-body::before {
+    content: ''; position: absolute;
+    left: -6px; top: 0.6rem;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--border);
+  }
+  .tl-item.w .tl-body::before { border-color: var(--wave); }
+  .tl-item.q .tl-body::before { border-color: var(--quantum); }
+  .tl-name { font-family: var(--font-serif); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.3rem; }
+  .tl-item.w .tl-name { color: var(--wave); }
+  .tl-item.q .tl-name { color: var(--quantum); }
+  .tl-desc { font-size: 0.87rem; color: var(--text-muted); }
+
+  /* ── Shared list ── */
+  .shared { display: grid; grid-template-columns: repeat(2,1fr); gap: 1rem; margin: 2rem 0; }
+  .shared-item {
+    border: 1px solid var(--border); background: var(--surface);
+    padding: 1.5rem 1.4rem;
+    border-top: 2px solid var(--text-dim);
+    transition: all 0.25s;
+  }
+  .shared-item:hover { border-top-color: var(--text); transform: translateY(-2px); }
+  .shared-item h4 {
+    font-family: var(--font-serif); font-size: 0.98rem;
+    font-weight: 600; margin-bottom: 0.5rem;
+  }
+  .shared-item p { font-size: 0.83rem; margin: 0; }
+
+  /* ── Versus ── */
+  .vs {
+    display: grid; grid-template-columns: 1fr 40px 1fr;
+    gap: 0; margin: 1.2rem 0; align-items: stretch;
+  }
+  .vs-cell { padding: 1.5rem 1.4rem; border: 1px solid var(--border); background: var(--surface); }
+  .vs-cell.w { border-top: 3px solid var(--wave); }
+  .vs-cell.q { border-top: 3px solid var(--quantum); }
+  .vs-arrow {
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-dim); font-family: var(--font-mono); font-size: 1.1rem;
+  }
+  .vs-label {
+    font-family: var(--font-mono); font-size: 0.62rem;
+    letter-spacing: 0.12em; margin-bottom: 0.6rem;
+  }
+  .vs-cell.w .vs-label { color: var(--wave); }
+  .vs-cell.q .vs-label { color: var(--quantum); }
+  .vs-cell p { font-size: 0.85rem; margin: 0; }
+  .vs-cell p + p { margin-top: 0.7rem; }
+
+  /* ── Table ── */
+  .table-scroll { overflow-x: auto; }
+  table.cmp { width: 100%; border-collapse: collapse; margin: 1.8rem 0; }
+  table.cmp th {
+    font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.1em;
+    text-align: left; padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  table.cmp th.w { color: var(--wave); }
+  table.cmp th.q { color: var(--quantum); }
+  table.cmp th:first-child { color: var(--text-muted); }
+  table.cmp td {
+    padding: 0.85rem 1rem; font-size: 0.85rem;
+    border-bottom: 1px solid rgba(200,208,230,0.6);
+    color: var(--text-muted); vertical-align: top;
+  }
+  table.cmp td:first-child { color: var(--text); font-weight: 500; white-space: nowrap; }
+  table.cmp tr:hover td { background: var(--surface); }
+
+  /* ── Math ── */
+  .math-box {
+    background: #101728; border: 1px solid var(--border);
+    padding: 1.6rem 1.8rem; margin: 1.3rem 0;
+    font-family: var(--font-mono); font-size: 0.85rem;
+    overflow-x: auto; position: relative;
+  }
+  .math-box .math-label {
+    position: absolute; top: 0.6rem; right: 1rem;
+    font-size: 0.6rem; color: #7d8fa8; letter-spacing: 0.1em;
+  }
+  .math-box mjx-container, .math-box mjx-container * { color: #e6ebf5 !important; }
+
+  /* ── Note / caution ── */
+  .note {
+    border-left: 2px solid var(--amber);
+    background: rgba(217,119,6,0.04);
+    padding: 1.3rem 1.6rem; margin: 1.8rem 0;
+  }
+  .note-title {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    letter-spacing: 0.12em; color: var(--amber); margin-bottom: 0.7rem;
+  }
+  .note p { font-size: 0.85rem; margin: 0; }
+  .note p + p { margin-top: 0.7rem; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 1.9rem; margin-bottom: 1.3rem;
+  }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* ── Guide ── */
+  .guide { display: grid; grid-template-columns: repeat(2,1fr); gap: 1rem; margin: 2rem 0; }
+  .guide-card {
+    border: 1px solid var(--border); background: var(--surface);
+    padding: 1.6rem 1.5rem; display: flex; flex-direction: column;
+    transition: all 0.25s;
+  }
+  .guide-card:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(16,23,40,0.07); }
+  .guide-card .who {
+    font-family: var(--font-mono); font-size: 0.62rem;
+    letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 0.6rem;
+  }
+  .guide-card h4 { font-family: var(--font-serif); font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .guide-card p { font-size: 0.83rem; flex: 1; margin-bottom: 1rem; }
+  .guide-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .guide-links a {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.06em;
+    text-decoration: none; padding: 0.4em 0.9em;
+    border: 1px solid var(--border); color: var(--text-muted);
+    transition: all 0.2s;
+  }
+  .guide-links a.w:hover { background: var(--wave); border-color: var(--wave); color: #fff; }
+  .guide-links a.q:hover { background: var(--quantum); border-color: var(--quantum); color: #fff; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 0 2rem; text-align: center;
+    font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--text-dim); letter-spacing: 0.08em;
+    position: relative; z-index: 1;
+  }
+  footer a { color: inherit; }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px);} to {opacity:1; transform:translateY(0);} }
+  @keyframes expandLine { 0%{width:20px;opacity:0.3;} 50%{width:60px;opacity:0.8;} 100%{width:20px;opacity:0.3;} }
+
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 760px) {
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 640px) {
+    .shared, .guide { grid-template-columns: 1fr; }
+    .vs { grid-template-columns: 1fr; }
+    .vs-arrow { padding: 0.5rem 0; transform: rotate(90deg); }
+    .tl-item { grid-template-columns: 1fr; gap: 0.3rem; }
+    .tl-date { text-align: left; }
+  }
+</style>
+</head><body>
+
+<canvas id="bg-canvas"></canvas>
+
+<nav>
+  <div class="nav-logo"><span class="w">Wave</span> × <span class="q">Quantum</span> // How the papers relate</div>
+  <ul class="nav-links">
+    <li><a href="#timeline">Timeline</a></li>
+    <li><a href="#shared">Shared</a></li>
+    <li><a href="#changed">Changed</a></li>
+    <li><a href="#core">Core</a></li>
+    <li><a href="#dropped">Continuity</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="index.html" class="nav-page-tab">← Index</a>
+    <div class="nav-lang">
+      <a href="relation_ja.html">JA</a>
+      <a href="relation_en.html" class="current">EN</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrapper">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-tag">2026.01 → 2026.07</div>
+    <h1 class="hero-title">
+      Why <span class="w">WavePhaseNet</span> became<br>
+      <span class="q">QuantumPhaseNet</span>
+    </h1>
+    <p class="hero-desc">
+      Two papers by the same authors: an earlier one and its successor. The intuition carries over,
+      but the mathematical stage was swapped out underneath it. What changed, what did not — and,
+      just as importantly, <strong>what was left behind</strong>.
+    </p>
+    <div class="scroll-hint">SCROLL</div>
+  </div>
+
+  <!-- ── TIMELINE ── -->
+  <section id="timeline">
+    <div class="section-label">01 // TIMELINE</div>
+    <h2>Six months</h2>
+
+    <div class="timeline reveal">
+      <div class="tl-item w">
+        <div class="tl-date">2026.01.12</div>
+        <div class="tl-body">
+          <div class="tl-name">WavePhaseNet</div>
+          <div class="tl-desc">
+            Formalizes hallucination as the mismatch between a non-convex truth set and a convex \(L^p\) space.
+            Builds a semantic conceptual hierarchy into the embedding space with the DFT and controls local
+            contradiction through cohomology regularization. <strong>No experiments were run.</strong>
+          </div>
+        </div>
+      </div>
+      <div class="tl-item q">
+        <div class="tl-date">2026.07.23</div>
+        <div class="tl-body">
+          <div class="tl-name">QuantumPhaseNet (first draft)</div>
+          <div class="tl-desc">
+            Redefines phase as a quantity independent of the local frame, moving to a stage of manifolds,
+            complex vector bundles and connections, and introducing quantum spectral selection and geometric risk.
+            Still theory only at this point.
+          </div>
+        </div>
+      </div>
+      <div class="tl-item q">
+        <div class="tl-date">2026.07.30</div>
+        <div class="tl-body">
+          <div class="tl-name">QuantumPhaseNet (arXiv submission)</div>
+          <div class="tl-desc">
+            Adds prototype experiments from the Validation Studio. RQ1–RQ4 were supported and RQ5
+            (quantum advantage) became a falsification candidate. The title now carries
+            <em>with Prototype Validation</em>.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="reveal">
+      The move from one paper to the next is not a feature addition. It is
+      <strong>the same intuition rebuilt on mathematics that breaks less easily</strong>.
+      To see why that was worth doing, look at the weakness the earlier paper carried.
+    </p>
+  </section>
+
+  <!-- ── SHARED ── -->
+  <section id="shared">
+    <div class="section-label">02 // SHARED</div>
+    <h2>Five foundations that did not move</h2>
+
+    <p class="lead reveal">
+      The stage changed; the roots did not.
+    </p>
+
+    <div class="shared reveal">
+      <div class="shared-item">
+        <h4>How the problem is framed</h4>
+        <p>Hallucination follows from the structure of the representation space, not from insufficient training. So rebuild the space, not the dataset. Both the diagnosis and the prescription carry over.</p>
+      </div>
+      <div class="shared-item">
+        <h4>Frequency maps to meaning</h4>
+        <p>Slowly varying components carry the intent of a whole document; rapidly varying ones carry local expression. This reading sits at the center of both papers.</p>
+      </div>
+      <div class="shared-item">
+        <h4>Phase is never discarded</h4>
+        <p>Both criticize FNet for dropping the imaginary part and thereby handling coreference and context dependency poorly. Hence "Phase" in both names.</p>
+      </div>
+      <div class="shared-item">
+        <h4>The Transformer is not replaced</h4>
+        <p>Both are designed as correction terms and residuals. Zero the coefficients and you recover the original model exactly, so it can be layered in and removed again.</p>
+      </div>
+      <div class="shared-item" style="grid-column:span 2;">
+        <h4>Distrust of bolted-on knowledge</h4>
+        <p>Thesauri and ontologies cannot be embedded directly, and RAG brings heavy external dependency with poor extensibility. So the hierarchy is built inside the space — a position both papers share.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CHANGED ── -->
+  <section id="changed">
+    <div class="section-label">03 // CHANGED</div>
+    <h2>What was swapped out</h2>
+
+    <div class="table-scroll reveal">
+    <table class="cmp">
+      <thead>
+        <tr>
+          <th>aspect</th>
+          <th class="w">WavePhaseNet</th>
+          <th class="q">QuantumPhaseNet</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Mathematical stage</td>
+          <td>Flat embedding space; linear algebra</td>
+          <td>Riemannian manifold + complex vector bundle + unitary connection</td>
+        </tr>
+        <tr>
+          <td>What "phase" is</td>
+          <td>The DFT phase angle \(\Phi_k\) — a <strong>coordinate</strong></td>
+          <td>The covariant phase rate \(\Omega_\gamma\) — an <strong>invariant</strong></td>
+        </tr>
+        <tr>
+          <td>How hierarchy is built</td>
+          <td>Frequency bands are the hierarchy levels</td>
+          <td>Semantic wavelength \(\lambda\) → quotient set → distributive lattice; multi-axis possible</td>
+        </tr>
+        <tr>
+          <td>Where low frequency comes from</td>
+          <td>A DFT along the sequence (assumes an evenly spaced line)</td>
+          <td>Low eigenmodes of a graph Laplacian (arbitrary connectivity)</td>
+        </tr>
+        <tr>
+          <td>How consistency is enforced</td>
+          <td>Cohomology regularization + Hodge harmonic projection</td>
+          <td>Geometric risk combining curvature, evidence and uncertainty</td>
+        </tr>
+        <tr>
+          <td>How distance is measured</td>
+          <td>Euclidean distance</td>
+          <td>Geodesic distance under a learnable metric</td>
+        </tr>
+        <tr>
+          <td>Role of "quantum"</td>
+          <td>Absent — the DFT is classical</td>
+          <td>QFT, QPE, Oracle, amplitude amplification — with no advantage claimed</td>
+        </tr>
+        <tr>
+          <td>Headline claim</td>
+          <td>Reducing 24,576 → 3,000 dimensions is justified</td>
+          <td>RQ1–RQ4 supported; RQ5 a falsification candidate</td>
+        </tr>
+        <tr>
+          <td>Experiments</td>
+          <td><strong>None</strong> (theory only)</td>
+          <td>Measured in the Validation Studio (synthetic, five seeds)</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ── CORE ── -->
+  <section id="core">
+    <div class="section-label">04 // CORE</div>
+    <h2>Two changes are doing the real work</h2>
+
+    <p class="lead reveal">
+      The table has many rows, but two changes sit underneath. The rest follows from them.
+    </p>
+
+    <h3 class="reveal" style="margin-top:2rem;">① Phase: from coordinate to invariant</h3>
+
+    <div class="vs reveal">
+      <div class="vs-cell w">
+        <div class="vs-label">WAVEPHASENET</div>
+        <p>
+          Two terms are compared through the difference of their phase angles.
+          But \(\Phi_k\) is a <strong>coordinate</strong> — it depends on the chosen basis.
+        </p>
+        <p>
+          Writing \(\cos(\varphi_i - \varphi_j)\) silently assumes that every term shares one common reference axis.
+        </p>
+      </div>
+      <div class="vs-arrow">→</div>
+      <div class="vs-cell q">
+        <div class="vs-label">QUANTUMPHASENET</div>
+        <p>
+          <strong>Parallel transport</strong> is inserted before the inner product, so two points can be compared
+          without fixing any reference axis.
+        </p>
+        <p>
+          That the value is unchanged under local gauge transformations is proved as a theorem.
+        </p>
+      </div>
+    </div>
+
+    <div class="math-box reveal">
+      <span class="math-label">covariant phase rate and coherence</span>
+      \[ \Omega_\gamma(t) = \operatorname{Im}\big\langle \hat\psi,\, D_t\hat\psi \big\rangle,
+         \qquad
+         C^{\nabla}_{ij} = \operatorname{Re}\big\langle \hat\psi_i,\ P^{\nabla}_{j\to i}\hat\psi_j \big\rangle \]
+    </div>
+
+    <p class="reveal">
+      There is a price. Parallel transport <strong>depends on the path</strong>, so a convention must be fixed —
+      the shortest geodesic, the path induced by textual order, or a learned reference path.
+      That is one more implementation decision than the earlier paper required.
+    </p>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">② From a line to an arbitrary graph</h3>
+
+    <div class="vs reveal">
+      <div class="vs-cell w">
+        <div class="vs-label">WAVEPHASENET</div>
+        <p>
+          The DFT assumes tokens sit evenly spaced along a single line.
+        </p>
+        <p>
+          Relations that are <strong>not sequential</strong> — dependency, coreference, retrieved evidence —
+          have no place in that framework.
+        </p>
+      </div>
+      <div class="vs-arrow">→</div>
+      <div class="vs-cell q">
+        <div class="vs-label">QUANTUMPHASENET</div>
+        <p>
+          Replacing it with low eigenmodes of a graph Laplacian performs the same low-frequency extraction over
+          <strong>any connectivity structure</strong>.
+        </p>
+        <p>
+          The edge set can mix causal neighborhoods, k-nearest neighbors, syntactic dependency, coreference and
+          retrieval-evidence edges.
+        </p>
+      </div>
+    </div>
+
+    <p class="reveal">
+      This may matter more in practice. A document is not really a line of tokens; it is a
+      <strong>network of references</strong>. The generalization also comes with the connection Laplacian,
+      which measures smoothness while keeping each vector in its own tangent space.
+    </p>
+  </section>
+
+  <!-- ── DROPPED ── -->
+  <section id="dropped">
+    <div class="section-label">05 // CONTINUITY</div>
+    <h2>Two claims that did not carry over</h2>
+
+    <p class="lead reveal">
+      The successor does not subsume the earlier paper. Two of its main claims simply do not appear.
+    </p>
+
+    <div class="card reveal">
+      <h3>① Cohomology and Hodge decomposition</h3>
+      <p>
+        The earlier paper's core — window coverings, cochains, coboundaries and semantic gluing through harmonic
+        projection — has all but disappeared. Measuring local disagreement is now handled by curvature and geometric risk.
+      </p>
+      <p>
+        But the two measure different things. A coboundary measures
+        <strong>disagreement between overlapping windows</strong>; curvature measures
+        <strong>how far a semantic state fails to return to itself after traversing a closed contextual loop</strong>.
+        Whether the latter subsumes the former is not obvious.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>② The 3,000-dimension floor</h3>
+      <p>
+        Dimensionality reduction via cumulative energy analysis was called the "core contribution" of the earlier paper,
+        yet the successor never mentions it. Its complexity discussion moves to sparse graphs, Lanczos and Chebyshev
+        approximation instead.
+      </p>
+      <p style="margin-bottom:0;">
+        Note also that the earlier figure (82–88% cumulative energy) is a
+        <strong>derivation from the 1/f model, not a measurement</strong>.
+        Since it can be checked by analyzing the embeddings of an existing model, it is the cheapest claim to test
+        across either paper.
+      </p>
+    </div>
+
+    <div class="note reveal">
+      <div class="note-title">⚠ Reading both together</div>
+      <p>
+        If the omissions are deliberate, nothing is wrong. But with both papers published side by side, a reader
+        cannot easily tell whether the successor replaces the earlier work or complements it.
+      </p>
+      <p>
+        The accurate reading today is that <strong>the successor rebuilds part of the earlier paper on firmer
+        mathematics — not all of it</strong>. For cohomology regularization and the dimensionality claim,
+        the earlier paper remains the reference.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── GUIDE ── -->
+  <section id="guide">
+    <div class="section-label">06 // WHERE TO START</div>
+    <h2>Which one to read first</h2>
+
+    <div class="guide reveal">
+      <div class="guide-card">
+        <div class="who">FIRST TIME HERE</div>
+        <h4>Start with the QuantumPhaseNet plain-language page</h4>
+        <p>
+          Having measurements makes it concrete about what does and does not work. The figure
+          "53.1% answer rate at 10% allowed error" is the fastest way to grasp what this means operationally.
+        </p>
+        <div class="guide-links">
+          <a class="q" href="quantumphasenet_intro_en.html">Plain-language →</a>
+        </div>
+      </div>
+      <div class="guide-card">
+        <div class="who">WHY HALLUCINATION HAPPENS</div>
+        <h4>Read the WavePhaseNet problem section</h4>
+        <p>
+          The formulation of the cause — a non-convex truth set against a convex representation space — is
+          developed more carefully in the earlier paper. The successor inherits that diagnosis as a premise.
+        </p>
+        <div class="guide-links">
+          <a class="w" href="wavephasenet_intro_en.html">Plain-language →</a>
+        </div>
+      </div>
+      <div class="guide-card">
+        <div class="who">FOLLOWING THE MATHEMATICS</div>
+        <h4>Read both detailed pages side by side</h4>
+        <p>
+          Measure theory and cohomology in the earlier paper; gauge covariance and quantum spectral selection in the
+          successor. They overlap surprisingly little and are largely complementary.
+        </p>
+        <div class="guide-links">
+          <a class="w" href="wavephasenet_en.html">Wave detailed →</a>
+          <a class="q" href="quantumphasenet_en.html">Quantum detailed →</a>
+        </div>
+      </div>
+      <div class="guide-card">
+        <div class="who">EVALUATING ADOPTION</div>
+        <h4>Compare both adoption paths</h4>
+        <p>
+          The earlier paper starts by measuring an existing model's spectrum; the successor starts with a
+          phase-only implementation. In both, the first two stages need no model surgery.
+        </p>
+        <div class="guide-links">
+          <a class="w" href="wavephasenet_intro_en.html#steps">Wave →</a>
+          <a class="q" href="quantumphasenet_intro_en.html#steps">Quantum →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrapper" style="padding-top:0; padding-bottom:0;">
+    <a href="index.html">Index</a> &nbsp;|&nbsp; How the two papers relate &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp;
+    <a href="wavephasenet_intro_en.html">WavePhaseNet</a> &nbsp;|&nbsp;
+    <a href="quantumphasenet_intro_en.html">QuantumPhaseNet</a>
+  </div>
+</footer>
+<script>
+// ── Background: a wave field resolving into a phase field ──
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, frame = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // left: travelling waves (WavePhaseNet)
+  const waves = [
+    { amp: 46, freq: 0.008, speed: 0.015, y: H * 0.30, alpha: 0.30 },
+    { amp: 26, freq: 0.014, speed: 0.022, y: H * 0.52, alpha: 0.20 },
+    { amp: 34, freq: 0.006, speed: 0.010, y: H * 0.74, alpha: 0.14 },
+  ];
+  waves.forEach(w => {
+    ctx.beginPath();
+    ctx.strokeStyle = '#0088aa';
+    ctx.globalAlpha = w.alpha;
+    ctx.lineWidth = 1.4;
+    for (let x = 0; x <= W; x += 3) {
+      const fade = Math.max(0, 1 - x / (W * 0.72));
+      const y = w.y + Math.sin(x * w.freq + frame * w.speed) * w.amp * fade;
+      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  });
+
+  // right: rotating phase arrows (QuantumPhaseNet)
+  const step = 72, len = 11;
+  for (let x = W * 0.42; x < W; x += step) {
+    for (let y = step * 0.5; y < H; y += step) {
+      const th = Math.atan2(y - H * 0.55, x - W * 0.78)
+               + Math.hypot(x - W * 0.78, y - H * 0.55) * 0.004 + frame * 0.012;
+      const fade = Math.min(1, (x - W * 0.42) / (W * 0.35));
+      const dx = Math.cos(th) * len, dy = Math.sin(th) * len;
+      ctx.beginPath();
+      ctx.strokeStyle = '#6d28d9';
+      ctx.globalAlpha = 0.10 * fade + 0.10 * fade * (0.5 + 0.5 * Math.cos(th));
+      ctx.lineWidth = 1.2;
+      ctx.moveTo(x - dx, y - dy);
+      ctx.lineTo(x + dx, y + dy);
+      ctx.stroke();
+    }
+  }
+
+  ctx.globalAlpha = 1;
+  frame++;
+  if (!reduceMotion) requestAnimationFrame(draw);
+}
+draw();
+
+// ── Scroll reveal ──
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
