@@ -670,14 +670,14 @@
 
   <!-- ── HERO ── -->
   <div class="hero">
-    <div class="hero-tag">arXiv:2602.14419 · 2026.01.12</div>
+    <div class="hero-tag">arXiv:2602.14419v2 · 2026.04.12</div>
     <h1 class="hero-title">
       <span class="wave">Wave</span>PhaseNet
     </h1>
     <div class="hero-subtitle">A DFT-Based Method for Constructing Semantic Conceptual Hierarchy Structures (SCHS)</div>
     <div class="hero-meta">
       <span>👤 Kiyotaka Kasubuchi, Kazuo Fukiya</span>
-      <span>📅 2026年1月12日</span>
+      <span>📅 2026年4月12日（v2）</span>
     </div>
     <p class="hero-desc">
       Transformer / Attention を<strong>測度論</strong>と<strong>周波数解析</strong>から再定式化し、
@@ -686,7 +686,7 @@
       コホモロジー正則化で局所推論の不整合を制御する枠組みを提示する。
     </p>
     <div class="chips">
-      <span class="chip">σ-加法族</span><span class="chip">条件付き期待値</span><span class="chip">DFT</span>
+      <span class="chip">σ-代数</span><span class="chip">条件付き期待値</span><span class="chip">DFT</span>
       <span class="chip">SCHS</span><span class="chip">Zipf則</span><span class="chip">1/fスペクトル</span>
       <span class="chip">コホモロジー</span><span class="chip">Hodge理論</span><span class="chip">次元削減</span>
     </div>
@@ -702,7 +702,7 @@
       <p>
         本論文は、Transformer / Attention メカニズムを測度論と周波数解析の観点から再定式化し、
         ハルシネーションの構造的必然性を理論的に解明する。
-        中心的な指摘は、埋め込み空間が<strong>σ-加法族上の条件付き期待値</strong>として機能しており、
+        中心的な指摘は、埋め込み空間が<strong>σ-代数上の条件付き期待値</strong>として機能しており、
         これが意味的真値集合と同型でないことが論理的一貫性の破綻の根本原因である、というものである。
       </p>
       <p>
@@ -723,7 +723,7 @@
       <div class="pillar">
         <div class="pillar-num">01</div>
         <h4>幻覚の数学的定義</h4>
-        <p>σ-加法族上で最適（高確率）であっても、現実世界の真値集合に属さない出力として定式化する</p>
+        <p>σ-代数上で最適（高確率）であっても、現実世界の真値集合に属さない出力として定式化する</p>
       </div>
       <div class="pillar">
         <div class="pillar-num">02</div>
@@ -744,19 +744,19 @@
     <h2>自己回帰モデルを測度論で書き直す</h2>
 
     <div class="card reveal">
-      <h3>σ-加法族としての文脈</h3>
+      <h3>σ-代数としての文脈</h3>
       <p>
         自己回帰モデルは結合分布を条件付き確率の積として分解する。
-        過去のトークン列 \(X_{&lt;t}\) が生成する情報集合（ボレル集合）はσ-加法族をなす。
+        過去のトークン列 \(X_{&lt;t}\) が生成する情報集合（ボレル集合）はσ-代数をなす。
       </p>
       <div class="math-box">
-        <span class="math-label">分解とσ-加法族</span>
+        <span class="math-label">分解とσ-代数</span>
         \[ P(X_1,\ldots,X_N) = \prod_{t=1}^{N} P(X_t \mid X_{&lt;t}),
            \qquad \mathcal{F}_t = \sigma(x_1,\ldots,x_t) \]
       </div>
       <p style="margin-bottom:0;">
         したがって可測空間 \((\Omega,\mathcal{F}_t,P)\) 上で定義された埋め込みベクトルは、
-        σ-加法族上の<strong>ランダム変数</strong>として解釈できる。
+        σ-代数上の<strong>ランダム変数</strong>として解釈できる。
         モデル全体は条件付き期待値 \(E[\phi(X_{t+1})\mid\mathcal{F}_t]\) の逐次近似器である。
       </p>
     </div>
@@ -796,7 +796,7 @@
       <h3>定義</h3>
       <p>
         本稿はハルシネーションを次のように定義する。
-        <strong>「σ-加法族上で最適（高確率）であるが、現実世界の真値集合に属さない出力」</strong>。
+        <strong>「σ-代数上で最適（高確率）であるが、現実世界の真値集合に属さない出力」</strong>。
       </p>
       <div class="math-box">
         <span class="math-label">幻覚の定義</span>
@@ -867,7 +867,7 @@
       <tbody>
         <tr>
           <td>シソーラス・オントロジー・知識ネットワーク</td>
-          <td>埋め込み空間（σ-加法族空間）へ<strong>直接埋め込むことができない</strong>。外付けの構造にとどまる</td>
+          <td>埋め込み空間（σ-代数空間）へ<strong>直接埋め込むことができない</strong>。外付けの構造にとどまる</td>
         </tr>
         <tr>
           <td>RAG</td>
@@ -939,7 +939,7 @@
       <h3>完全再構成と共役対称性</h3>
       <p>
         DFTは可逆であり、逆変換によって元の埋め込み行列を完全に復元できる。
-        論文は \(d=4, N=3\) の最小例で実際の数値を追い、完全再構成を確認している。
+        論文は \(d=4, N=4\) の最小例で実際の数値を追い、完全再構成を確認している。
       </p>
       <div class="math-box">
         <span class="math-label">共役対称性</span>
@@ -1169,7 +1169,7 @@
       <div class="caution-title">⚠ これらの数値は導出であって実測ではない</div>
       <ul>
         <li>累積エネルギー 82〜88% は <strong>1/f モデルからの理論的導出</strong>であり、実際の GPT-4 埋め込みを解析した測定値ではない。</li>
-        <li>\(\alpha \approx 1.1\sim1.4\) という指数も、Zipf則からの推定範囲として与えられている。</li>
+        <li>\(\alpha \approx 1.1\sim1.4\) という指数について、v2 は §8.3.6 で論証を与えている（構文制約・文法の局所性・LayerNorm/Attention による高周波抑制から \(\alpha>1\) を導く）。ただし示されるのは<strong>「DFTをかけて \(\log A_k^2\) 対 \(\log k\) をプロットすれば傾き −1.1〜−1.4 になる」という手順と結論であり、実際のプロット結果は掲載されていない</strong>。</li>
         <li>内在次元の内訳（300〜800 / 1,000〜2,000 / 2,000〜3,000）は NLP 分野の知見に基づく見積もりである。</li>
         <li>この主張は<strong>実測可能</strong>であり、既存モデルの埋め込みスペクトルを解析するだけで検証できる。本稿の主張のうち最も検証しやすい部分である。</li>
       </ul>
@@ -1382,7 +1382,7 @@
     <div class="ref-card reveal">
       <span class="ref-tag sim">類似点</span>
       <div>
-        <div class="ref-name">FNet（Google Research）</div>
+        <div class="ref-name">FNet（Lee-Thorp et al. 2021, arXiv:2105.03824）</div>
         <div class="ref-desc">Attentionをフーリエ変換で置換することで高速化と意味解析を実現。トークン列に対するDFT適用による意味階層化の有効性を実証済みであり、本提案のSCHS構築の動機の一つとなっている。</div>
       </div>
     </div>
@@ -1390,7 +1390,7 @@
       <span class="ref-tag diff">差別化点</span>
       <div>
         <div class="ref-name">WavePhaseNet vs FNet</div>
-        <div class="ref-desc">FNetは複素表現の<strong>虚部を破棄する</strong>ため、共参照関係や文脈依存性の処理が弱い。本提案は<strong>位相情報を保持</strong>し、意味階層への操作を明示的に導入する点で本質的に異なる。速度ではなく意味操作が目的である。</div>
+        <div class="ref-desc">FNet は Attention の計算効率化が目的で DFT をトークン混合に使うのに対し、本提案は<strong>意味階層の明示的構築</strong>のために周波数分解として使う。FNet は全帯域をそのまま使い位相を解釈しないが、本提案は<strong>位相を位置構造の保持として明示的に扱い</strong>、帯域を低（意図）から高（構文）へ絞り込む。v2 ではこの対比が比較表（Table 1）として整理された。</div>
       </div>
     </div>
     <div class="ref-card reveal">
