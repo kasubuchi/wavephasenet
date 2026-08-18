@@ -16,7 +16,7 @@
     --amber: #d97706;
     --text: #101728;
     --text-muted: #414a63;
-    --text-dim: #949bb2;
+    --text-dim: #6b7591;
     --font-serif: 'Noto Serif JP', serif;
     --font-mono: 'Space Mono', monospace;
     --font-sans: 'Noto Sans JP', sans-serif;
@@ -329,7 +329,8 @@
     <div class="extras">
       <a href="wavephasenet_faq.html">💬 FAQ（日本語）</a>
       <a href="wavephasenet_faq_en.html">💬 FAQ (English)</a>
-      <a href="WavePhaseNet_en20260203.pdf">📄 論文PDF（英語版・2026.02.03）</a>
+      <a href="https://arxiv.org/abs/2602.14419">📄 arXiv:2602.14419（最新版）</a>
+      <a href="WavePhaseNet_en20260203.pdf">📄 旧版PDF（2026.02.03・更新前）</a>
     </div>
   </section>
 
@@ -400,9 +401,20 @@ function draw() {
 
   ctx.globalAlpha = 1;
   frame++;
-  if (!reduceMotion) requestAnimationFrame(draw);
+  if (!reduceMotion && running) requestAnimationFrame(draw);
 }
-draw();
+
+// 非表示タブ・画面外スクロール時は描画を止めて CPU を解放する
+let running = true;
+function setRunning(v) {
+  if (v === running) return;
+  running = v;
+  if (running && !reduceMotion) requestAnimationFrame(draw);
+}
+document.addEventListener('visibilitychange', () => setRunning(!document.hidden));
+window.addEventListener('scroll', () => setRunning(window.scrollY < window.innerHeight * 1.5), { passive: true });
+setRunning(window.scrollY < window.innerHeight * 1.5);
+if (running) draw();
 </script>
 </body>
 </html>
