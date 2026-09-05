@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>How the Two Papers Relate — WavePhaseNet and QuantumPhaseNet</title>
+<title>How the Three Papers Relate — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
@@ -15,6 +15,7 @@
     --border: #d3d8ea;
     --wave: #0088aa;
     --quantum: #6d28d9;
+    --modular: #15803d;
     --amber: #d97706;
     --text: #101728;
     --text-muted: #414a63;
@@ -62,6 +63,7 @@
   }
   .nav-logo .w { color: var(--wave); }
   .nav-logo .q { color: var(--quantum); }
+  .nav-logo .m { color: var(--modular); }
   .nav-links { display: flex; gap: 1.6rem; list-style: none; margin-left: 2rem; }
   .nav-links a {
     color: var(--text-muted); text-decoration: none;
@@ -117,6 +119,7 @@
   }
   .hero-title .w { color: var(--wave); }
   .hero-title .q { color: var(--quantum); }
+  .hero-title .m { color: var(--modular); }
   .hero-desc {
     font-size: 1.05rem; color: var(--text-muted);
     max-width: 660px; line-height: 2;
@@ -134,6 +137,9 @@
     background: var(--text-dim); animation: expandLine 1.5s ease infinite;
   }
 
+  .keep { white-space: nowrap; }
+  @media (max-width: 520px) { .keep { white-space: normal; } }
+
   /* ── Sections ── */
   section { padding: 4.5rem 0; border-top: 1px solid var(--border); }
   .section-label {
@@ -150,6 +156,16 @@
   }
   p { margin-bottom: 1.2rem; color: var(--text-muted); }
   .lead { font-size: 1.02rem; }
+
+  /* ── One-line summary strip ── */
+  .strip { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); margin: 2rem 0; }
+  .strip-cell { background: var(--surface); padding: 1.5rem 1.3rem; }
+  .strip-name { font-family: var(--font-mono); font-size: 0.76rem; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
+  .strip-cell.w .strip-name { color: var(--wave); }
+  .strip-cell.q .strip-name { color: var(--quantum); }
+  .strip-cell.m .strip-name { color: var(--modular); }
+  .strip-line { font-size: 0.86rem; color: var(--text-muted); }
+  .strip-year { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-dim); margin-top: 0.8rem; }
 
   /* ── Timeline ── */
   .timeline { display: flex; flex-direction: column; margin: 2rem 0; }
@@ -174,9 +190,11 @@
   }
   .tl-item.w .tl-body::before { border-color: var(--wave); }
   .tl-item.q .tl-body::before { border-color: var(--quantum); }
+  .tl-item.m .tl-body::before { border-color: var(--modular); }
   .tl-name { font-family: var(--font-serif); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.3rem; }
   .tl-item.w .tl-name { color: var(--wave); }
   .tl-item.q .tl-name { color: var(--quantum); }
+  .tl-item.m .tl-name { color: var(--modular); }
   .tl-desc { font-size: 0.87rem; color: var(--text-muted); }
 
   /* ── Shared list ── */
@@ -202,6 +220,7 @@
   .vs-cell { padding: 1.5rem 1.4rem; border: 1px solid var(--border); background: var(--surface); }
   .vs-cell.w { border-top: 3px solid var(--wave); }
   .vs-cell.q { border-top: 3px solid var(--quantum); }
+  .vs-cell.m { border-top: 3px solid var(--modular); }
   .vs-arrow {
     display: flex; align-items: center; justify-content: center;
     color: var(--text-dim); font-family: var(--font-mono); font-size: 1.1rem;
@@ -212,12 +231,13 @@
   }
   .vs-cell.w .vs-label { color: var(--wave); }
   .vs-cell.q .vs-label { color: var(--quantum); }
+  .vs-cell.m .vs-label { color: var(--modular); }
   .vs-cell p { font-size: 0.85rem; margin: 0; }
   .vs-cell p + p { margin-top: 0.7rem; }
 
   /* ── Table ── */
   .table-scroll { overflow-x: auto; }
-  table.cmp { width: 100%; border-collapse: collapse; margin: 1.8rem 0; }
+  table.cmp { width: 100%; border-collapse: collapse; margin: 1.8rem 0; min-width: 720px; }
   table.cmp th {
     font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.1em;
     text-align: left; padding: 0.7rem 1rem;
@@ -225,6 +245,7 @@
   }
   table.cmp th.w { color: var(--wave); }
   table.cmp th.q { color: var(--quantum); }
+  table.cmp th.m { color: var(--modular); }
   table.cmp th:first-child { color: var(--text-muted); }
   table.cmp td {
     padding: 0.85rem 1rem; font-size: 0.85rem;
@@ -289,6 +310,7 @@
   }
   .guide-links a.w:hover { background: var(--wave); border-color: var(--wave); color: #fff; }
   .guide-links a.q:hover { background: var(--quantum); border-color: var(--quantum); color: #fff; }
+  .guide-links a.m:hover { background: var(--modular); border-color: var(--modular); color: #fff; }
 
   footer {
     border-top: 1px solid var(--border);
@@ -307,7 +329,7 @@
 
   @media (max-width: 420px) {
     nav { padding: 0 0.7rem; gap: 0.5rem; }
-    .nav-logo { font-size: 0.68rem; letter-spacing: 0.04em; }
+    .nav-logo { font-size: 0.64rem; letter-spacing: 0.02em; }
     .nav-right { gap: 0.6rem; }
     .nav-page-tab { font-size: 0.62rem; }
     .nav-lang a { padding: 0.28em 0.55em; font-size: 0.6rem; }
@@ -317,25 +339,26 @@
     .nav-links { display: none; }
   }
   @media (max-width: 640px) {
-    .shared, .guide { grid-template-columns: 1fr; }
+    .shared, .guide, .strip { grid-template-columns: 1fr; }
     .vs { grid-template-columns: 1fr; }
     .vs-arrow { padding: 0.5rem 0; transform: rotate(90deg); }
     .tl-item { grid-template-columns: 1fr; gap: 0.3rem; }
     .tl-date { text-align: left; }
   }
 </style>
-</head><body>
+</head>
+<body>
 
 <canvas id="bg-canvas"></canvas>
 
 <nav>
-  <div class="nav-logo"><span class="w">Wave</span> × <span class="q">Quantum</span> // How the papers relate</div>
+  <div class="nav-logo"><span class="w">Wave</span> × <span class="q">Quantum</span> × <span class="m">Modular</span></div>
   <ul class="nav-links">
     <li><a href="#timeline">Timeline</a></li>
     <li><a href="#shared">Shared</a></li>
     <li><a href="#changed">Changed</a></li>
     <li><a href="#core">Core</a></li>
-    <li><a href="#dropped">Continuity</a></li>
+    <li><a href="#continuity">Continuity</a></li>
   </ul>
   <div class="nav-right">
     <a href="index.html" class="nav-page-tab">← Index</a>
@@ -350,23 +373,55 @@
 
   <!-- ── HERO ── -->
   <div class="hero">
-    <div class="hero-tag">2026.01 → 2026.07</div>
+    <div class="hero-tag">2026.01 → 2026.08</div>
     <h1 class="hero-title">
-      Why <span class="w">WavePhaseNet</span> became<br>
-      <span class="q">QuantumPhaseNet</span>
+      From <span class="w">WavePhaseNet</span> to
+      <span class="q">QuantumPhaseNet</span>,<br>
+      then <span class="m">ModularPhaseNet</span>
     </h1>
     <p class="hero-desc">
-      Two papers by the same authors: an earlier one and its successor. The intuition carries over,
-      but the mathematical stage was swapped out underneath it. What changed, what did not — and,
+      Three papers by the same authors. The intuition is continuous, but the mathematical stage was swapped
+      out twice: <strong>a continuous Fourier phase → a gauge-covariant complex geometry → a finite cyclic
+      group that closes in integer arithmetic</strong>. What changed, what did not — and,
       just as importantly, <strong>what was left behind</strong>.
     </p>
     <div class="scroll-hint">SCROLL</div>
   </div>
 
+  <!-- ── STRIP ── -->
+  <section id="summary">
+    <div class="section-label">00 // IN ONE LINE</div>
+    <h2>One line each</h2>
+
+    <div class="strip reveal">
+      <div class="strip-cell w">
+        <div class="strip-name">WavePhaseNet</div>
+        <div class="strip-line">Formalizes <strong>why hallucination is structurally unavoidable</strong> and builds a semantic conceptual hierarchy into the embedding space with the DFT.</div>
+        <div class="strip-year">arXiv:2602.14419 / theory only</div>
+      </div>
+      <div class="strip-cell q">
+        <div class="strip-name">QuantumPhaseNet</div>
+        <div class="strip-line">Rewrites the same idea in a <strong>frame-independent geometry</strong> and treats hallucination as a calibratable geometric risk. With prototype validation.</div>
+        <div class="strip-year">arXiv:2608.15820 / measured on synthetic data</div>
+      </div>
+      <div class="strip-cell m">
+        <div class="strip-name">ModularPhaseNet</div>
+        <div class="strip-line">Quantizes just the phase channel into a <strong>finite cyclic group</strong>, so hierarchy, direction and contradiction are computed exactly in integers.</div>
+        <div class="strip-year">2026.08.11 / theory + pre-registered plan</div>
+      </div>
+    </div>
+
+    <p class="reveal">
+      In a sentence: <strong>the first paper poses the problem, the second rebuilds the stage, and the third
+      makes it runnable</strong>. But the third does not carry everything from the second — and that
+      selection is the most interesting part of the sequence.
+    </p>
+  </section>
+
   <!-- ── TIMELINE ── -->
   <section id="timeline">
     <div class="section-label">01 // TIMELINE</div>
-    <h2>Six months</h2>
+    <h2>Seven months</h2>
 
     <div class="timeline reveal">
       <div class="tl-item w">
@@ -402,44 +457,62 @@
           </div>
         </div>
       </div>
+      <div class="tl-item m">
+        <div class="tl-date">2026.08.11<br><span style="font-size:0.9em;">(English 09.05)</span></div>
+        <div class="tl-body">
+          <div class="tl-name">ModularPhaseNet</div>
+          <div class="tl-desc">
+            Quantizes the continuous complex phase into a finite cyclic group
+            \(G=\langle g\rangle\subset\mathbb{F}_p^{\times}\). The quantum Fourier transform, phase estimation
+            and amplitude amplification are all removed, leaving inference to modular exponentiation and table
+            lookups. <strong>No experiments were run; a pre-registered evaluation plan and falsification
+            criteria are published instead.</strong>
+          </div>
+        </div>
+      </div>
     </div>
 
     <p class="reveal">
-      The move from one paper to the next is not a feature addition. It is
-      <strong>the same intuition rebuilt on mathematics that breaks less easily</strong>.
-      To see why that was worth doing, look at the weakness the earlier paper carried.
+      The second move was the same intuition rebuilt on mathematics that breaks less easily.
+      The third move has a different motive: <strong>taking that mathematics and landing it on hardware that
+      already exists</strong>. One migration was made for <em>correctness</em>, the other for
+      <em>executability</em> — reading them that way makes the sequence easier to follow.
     </p>
   </section>
 
   <!-- ── SHARED ── -->
   <section id="shared">
     <div class="section-label">02 // SHARED</div>
-    <h2>Five foundations that did not move</h2>
+    <h2>Foundations that run through all three</h2>
 
     <p class="lead reveal">
-      The stage changed; the roots did not.
+      The stage changed twice; the roots did not.
     </p>
 
     <div class="shared reveal">
       <div class="shared-item">
         <h4>How the problem is framed</h4>
-        <p>Hallucination follows from the structure of the representation space, not from insufficient training. So rebuild the space, not the dataset. Both the diagnosis and the prescription carry over.</p>
+        <p>Hallucination follows from the structure of the representation space, not from insufficient training. So rebuild the space, not the dataset. Both the diagnosis and the prescription carry through all three papers.</p>
       </div>
       <div class="shared-item">
-        <h4>Frequency maps to meaning</h4>
-        <p>Slowly varying components carry the intent of a whole document; rapidly varying ones carry local expression. This reading sits at the center of both papers.</p>
+        <h4>Frequency and phase map to meaning</h4>
+        <p>Slowly varying components carry the intent of a whole document; rapidly varying ones carry local expression. The third paper inherits this as "small phase change = long wavelength = higher-level concept" — and, like its predecessors, treats it as an <strong>empirical hypothesis</strong>.</p>
       </div>
       <div class="shared-item">
         <h4>Phase is never discarded</h4>
-        <p>Both retain the phase of the complex representation and use it for semantic manipulation. The explicit criticism of FNet, however, belongs to WavePhaseNet — the QuantumPhaseNet text does not mention FNet at all.</p>
+        <p>All three retain phase and use it for semantic manipulation. The third discretizes phase but does not throw it away: after rounding onto ticks, composition, inversion and relative phase are computed exactly.</p>
       </div>
       <div class="shared-item">
         <h4>The Transformer is not replaced</h4>
-        <p>Both are designed as correction terms and residuals. Zero the coefficients and you recover the original model exactly, so it can be layered in and removed again.</p>
+        <p>All are designed as correction terms and residuals; zero the coefficients and the original model returns exactly. The third goes further — every added quantity is a <strong>real-valued scalar bias</strong>, so no existing kernel has to be modified.</p>
       </div>
-      <div class="shared-item" style="grid-column:span 2;">
-        <h4>Intrinsic structure first (but external evidence is handled differently)</h4>
-        <p>Both build the semantic hierarchy inside the embedding space. Their treatment of external knowledge diverges, though: WavePhaseNet criticizes RAG for heavy external dependency and poor extensibility, whereas QuantumPhaseNet <strong>actively incorporates</strong> retrieval — as the evidence term in attention, the evidence-deficiency term in risk, and retrieval-evidence edges in the graph. It divides the labor between intrinsic structure and external grounding.</p>
+      <div class="shared-item">
+        <h4>Proofs and hypotheses stay separate</h4>
+        <p>Separating what can be proved from what can be refuted on real data became explicit in the second paper; the third organizes it further into five proved theorems, the empirical hypotheses, five claims deliberately avoided, and seven falsification criteria.</p>
+      </div>
+      <div class="shared-item">
+        <h4>Intrinsic structure first (external evidence divides the labor)</h4>
+        <p>All three build the semantic hierarchy inside the representation. Their treatment of external knowledge diverges: WavePhaseNet criticizes RAG for heavy external dependency, whereas both successors <strong>actively incorporate</strong> retrieval — as the evidence term in attention and the evidence-deficiency term in risk.</p>
       </div>
     </div>
   </section>
@@ -456,6 +529,7 @@
           <th>aspect</th>
           <th class="w">WavePhaseNet</th>
           <th class="q">QuantumPhaseNet</th>
+          <th class="m">ModularPhaseNet</th>
         </tr>
       </thead>
       <tbody>
@@ -463,46 +537,67 @@
           <td>Mathematical stage</td>
           <td>Flat embedding space; linear algebra</td>
           <td>Riemannian manifold + complex vector bundle + unitary connection</td>
+          <td>Finite cyclic group \(C_q\) and its Cayley graph; integer arithmetic</td>
         </tr>
         <tr>
           <td>What "phase" is</td>
           <td>The DFT phase angle \(\Phi_k\) — a <strong>coordinate</strong></td>
           <td>The covariant phase rate \(\Omega_\gamma\) — an <strong>invariant</strong></td>
+          <td>The group element \(z=g^{a}\bmod p\) — a <strong>discretized invariant</strong></td>
         </tr>
         <tr>
           <td>How hierarchy is built</td>
           <td>Frequency bands are the hierarchy levels</td>
-          <td>Semantic wavelength \(\lambda\) → quotient set → distributive lattice; multi-axis possible</td>
+          <td>Semantic wavelength \(\lambda\) → quotient set → distributive lattice</td>
+          <td>A quotient filtration \(q_0\mid q_1\mid\cdots\mid q_L\) plus a depth variable</td>
+        </tr>
+        <tr>
+          <td>Hierarchical consistency</td>
+          <td>Rests on the ordering of frequency bands</td>
+          <td>Rests on wavelength ordering and training</td>
+          <td><strong>Guaranteed as a theorem by the group structure</strong> (nested partitions)</td>
         </tr>
         <tr>
           <td>Where low frequency comes from</td>
           <td>A DFT along the sequence (assumes an evenly spaced line)</td>
           <td>Low eigenmodes of a graph Laplacian (arbitrary connectivity)</td>
+          <td>No low-frequency semantics assumed; direction is an oriented group element</td>
         </tr>
         <tr>
           <td>How consistency is enforced</td>
           <td>Cohomology regularization + Hodge harmonic projection</td>
           <td>Geometric risk combining curvature, evidence and uncertainty</td>
+          <td>An exact test of whether the cycle holonomy \(W_C\) returns to the identity</td>
         </tr>
         <tr>
           <td>How distance is measured</td>
           <td>Euclidean distance</td>
           <td>Geodesic distance under a learnable metric</td>
+          <td>Word metric on the Cayley graph (shortest number of ticks)</td>
         </tr>
         <tr>
           <td>Role of "quantum"</td>
           <td>Absent — the DFT is classical</td>
           <td>QFT, QPE, Oracle, amplitude amplification — with no advantage claimed</td>
+          <td><strong>All removed</strong>, replaced by a learned discrete selector and a risk gate</td>
+        </tr>
+        <tr>
+          <td>Arithmetic at inference</td>
+          <td>Real-valued linear algebra</td>
+          <td>Complex arithmetic, sparse graphs, polynomial filters</td>
+          <td>Integer modular exponentiation and \(O(1)\) table lookups</td>
         </tr>
         <tr>
           <td>Headline claim</td>
           <td>Reducing 24,576 → 3,000 dimensions is justified</td>
           <td>RQ1–RQ4 supported; RQ5 a falsification candidate</td>
+          <td>Whether local inferences integrate globally is checkable on a finite group</td>
         </tr>
         <tr>
           <td>Experiments</td>
           <td><strong>None</strong> (theory only)</td>
           <td>Measured in the Validation Studio (synthetic, five seeds)</td>
+          <td><strong>None</strong> (theory + a pre-registered evaluation plan)</td>
         </tr>
       </tbody>
     </table>
@@ -512,15 +607,15 @@
   <!-- ── CORE ── -->
   <section id="core">
     <div class="section-label">04 // CORE</div>
-    <h2>Two changes are doing the real work</h2>
+    <h2>Three changes are doing the real work</h2>
 
     <p class="lead reveal">
-      The table has many rows, but two changes matter most when reading the papers against each other.
-      Quantum spectral selection, evidence risk, and calibration with abstention do not follow from them —
-      they are <strong>independent additions</strong>.
+      The table has many rows, but three changes matter most when reading the papers against each other.
+      The first two belong to the move from the first paper to the second; the third to the move from the
+      second to the third.
     </p>
 
-    <h3 class="reveal" style="margin-top:2rem;">① Phase: from coordinate to invariant</h3>
+    <h3 class="reveal" style="margin-top:2rem;">① Phase: from coordinate to invariant<span style="font-size:0.8em; color:var(--text-dim);"> (Wave → Quantum)</span></h3>
 
     <div class="vs reveal">
       <div class="vs-cell w">
@@ -559,7 +654,7 @@
       That is one more implementation decision than the earlier paper required.
     </p>
 
-    <h3 class="reveal" style="margin-top:2.5rem;">② From a line to an arbitrary graph</h3>
+    <h3 class="reveal" style="margin-top:2.5rem;">② From a line to an arbitrary graph<span style="font-size:0.8em; color:var(--text-dim);"> (Wave → Quantum)</span></h3>
 
     <div class="vs reveal">
       <div class="vs-cell w">
@@ -587,60 +682,138 @@
     </div>
 
     <p class="reveal">
-      This may matter more in practice. A document is not really a line of tokens; it is a
-      <strong>network of references</strong>. The generalization also comes with the connection Laplacian,
-      which measures smoothness while keeping each vector in its own tangent space.
+      A document is not really a line of tokens; it is a <strong>network of references</strong>.
+      This generalization carries straight into the third paper, where it reappears as a directed graph over
+      tokens, sentences or propositions.
     </p>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">③ From continuous to finite<span style="font-size:0.8em; color:var(--text-dim);"> (Quantum → Modular)</span></h3>
+
+    <div class="vs reveal">
+      <div class="vs-cell q">
+        <div class="vs-label">QUANTUMPHASENET</div>
+        <p>
+          Phase lives in a continuous complex amplitude \(\psi=Ae^{i\phi}u\), and spectral selection uses the QFT,
+          phase estimation and amplitude amplification.
+        </p>
+        <p>
+          Expressive, but it needs complex arithmetic — and consistency can only ever be
+          <strong>approximated numerically</strong>.
+        </p>
+      </div>
+      <div class="vs-arrow">→</div>
+      <div class="vs-cell m">
+        <div class="vs-label">MODULARPHASENET</div>
+        <p>
+          Phase is rounded onto \(q\) ticks and held as a group element \(g^{a}\bmod p\).
+          Composition becomes group multiplication; relative phase becomes group division.
+        </p>
+        <p>
+          Consistency then reduces to an <strong>exact integer comparison</strong>, and the same input always
+          yields the same verdict.
+        </p>
+      </div>
+    </div>
+
+    <div class="math-box reveal">
+      <span class="math-label">covariant residual and cycle holonomy, finite-group version</span>
+      \[ r_{ij}=z_{i}^{-1}U_{ij}z_{j}\in G,
+         \qquad
+         W_{C}=\prod_{t=0}^{m-1}U_{i_{t}i_{t+1}}\bmod p \]
+    </div>
+
+    <p class="reveal">
+      What matters here is that the move buys <strong>no additional representational power</strong>.
+      The paper says so itself: the modular-exponential representation is isomorphic to the exponent-residue one
+      and creates no new capacity. What it buys instead is
+      <strong>exact composition, reproducibility, subgroup projection, and checkability as a checksum</strong>.
+      The costs are discretization error (aliasing and code collisions at small \(q\)) and dependence on the
+      choice of generator.
+    </p>
+
+    <div class="note reveal">
+      <div class="note-title">⚠ The third paper is not faster</div>
+      <p>
+        Falling back to integer arithmetic does not improve the complexity of attention. The \(O(N^2 d)\) of
+        dense attention remains, and the claim is only that the added pair-bias term stays of lower order when
+        \(H\ll d\). The value of the third paper is not acceleration but
+        <strong>an inductive bias of exactness and checkability</strong>.
+      </p>
+    </div>
   </section>
 
-  <!-- ── DROPPED ── -->
-  <section id="dropped">
+  <!-- ── CONTINUITY ── -->
+  <section id="continuity">
     <div class="section-label">05 // CONTINUITY</div>
-    <h2>Two claims that did not carry over</h2>
+    <h2>What carried over, and what did not</h2>
 
     <p class="lead reveal">
-      The successor does not subsume the earlier paper. Two of its main claims simply do not appear.
+      No successor subsumes its predecessor. Across the three papers there are claims that disappeared,
+      claims that returned in a different form, and claims that were deliberately dropped.
     </p>
 
     <div class="card reveal">
-      <h3>① Cohomology and Hodge decomposition</h3>
+      <h3>① Cohomology and Hodge decomposition — <span style="color:var(--modular);">partly returned in another form</span></h3>
       <p>
-        The earlier paper's core — window coverings, cochains, coboundaries and semantic gluing through harmonic
-        projection — has all but disappeared. Measuring local disagreement is now handled by curvature and geometric risk.
+        The first paper's core — window coverings, cochains, coboundaries and semantic gluing through harmonic
+        projection — all but disappeared in the second, where measuring local disagreement moved to curvature
+        and geometric risk.
       </p>
       <p>
-        But the two measure different things. A coboundary measures
-        <strong>disagreement between overlapping windows</strong>; curvature measures
-        <strong>how far a semantic state fails to return to itself after traversing a closed contextual loop</strong>.
-        Whether the latter subsumes the former is not obvious.
+        In the third paper this thread returns as <strong>cycle holonomy and discrete integrability</strong>.
+        The theorem "if \(W_C=1\) on every cycle, a global assignment of semantic phases exists" is positioned by
+        the paper itself as the finite-cyclic-group counterpart of the second paper's connection, curvature and
+        cohomological consistency.
+      </p>
+      <p style="margin-bottom:0;">
+        It is not a full restoration, though, because the objects measured differ. A coboundary measures
+        <strong>disagreement between overlapping windows</strong>; holonomy measures
+        <strong>how far phase fails to return after traversing a closed contextual loop</strong>.
+        Whether the latter subsumes the former is still not obvious.
       </p>
     </div>
 
     <div class="card reveal">
-      <h3>② The 3,000-dimension floor</h3>
+      <h3>② The 3,000-dimension floor — <span style="color:var(--text-dim);">absent from both successors</span></h3>
       <p>
-        Dimensionality reduction via cumulative energy analysis was called the "core contribution" of the earlier paper,
-        yet the successor never mentions it. Its complexity discussion moves to sparse graphs, Lanczos and Chebyshev
-        approximation instead.
+        Dimensionality reduction via cumulative energy analysis was called the "core contribution" of the first
+        paper, yet neither successor mentions it. The complexity discussion moved to sparse graphs and Chebyshev
+        approximation in the second, and to table lookups and local windows in the third.
       </p>
       <p style="margin-bottom:0;">
-        Note also that the earlier figure (82–88% cumulative energy) is a
+        Note also that the original figure (82–88% cumulative energy) is a
         <strong>derivation from the 1/f model, not a measurement</strong>.
-        Since it can be checked by analyzing the embeddings of an existing model, it is the cheapest claim to test
-        across either paper.
+        Since it can be checked by analyzing the embeddings of an existing model, it remains the cheapest claim
+        to test anywhere in the series.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>③ The quantum algorithms — <span style="color:var(--amber);">deliberately dropped</span></h3>
+      <p>
+        The QFT, phase estimation, the Oracle and amplitude amplification that sat at the center of the second
+        paper are all removed in the third. This is a decision, not an oversight: in the second paper's
+        validation, RQ5 (quantum advantage) became a falsification candidate, with the simulated quantum circuit
+        losing to a classical approximation on total cost.
+      </p>
+      <p style="margin-bottom:0;">
+        The third paper also drops quant-ph from its submission categories, declaring itself a classical
+        finite-group version that requires no quantum hardware.
+        <strong>The quantum component of the second paper was not inherited by the third; it was replaced.</strong>
       </p>
     </div>
 
     <div class="note reveal">
-      <div class="note-title">⚠ Reading both together</div>
+      <div class="note-title">⚠ Reading all three together</div>
       <p>
-        If the omissions are deliberate, nothing is wrong. But with both papers published side by side, a reader
-        cannot easily tell whether the successor replaces the earlier work or complements it.
+        With three papers published side by side, a reader cannot easily tell whether each successor replaces
+        its predecessor or complements it. The accurate reading today is that
+        <strong>each successor rebuilds part of the earlier work on different mathematics — not all of it</strong>.
       </p>
       <p>
-        The accurate reading today is that <strong>the successor rebuilds part of the earlier paper on firmer
-        mathematics — not all of it</strong>. For cohomology regularization and the dimensionality claim,
-        the earlier paper remains the reference.
+        For cohomology regularization and the dimensionality claim, the first paper remains the reference;
+        for quantum spectral selection and measured results, the second. Reading only the third does not give
+        the whole picture.
       </p>
     </div>
   </section>
@@ -664,37 +837,40 @@
       </div>
       <div class="guide-card">
         <div class="who">WHY HALLUCINATION HAPPENS</div>
-        <h4>Read the WavePhaseNet problem section</h4>
+        <h4>Start with WavePhaseNet's problem section</h4>
         <p>
           The formulation of the cause — a non-convex truth set against a convex representation space — is
-          developed more carefully in the earlier paper. The successor inherits that diagnosis as a premise.
+          most carefully argued in the first paper. Both successors inherit that diagnosis as a premise.
         </p>
         <div class="guide-links">
           <a class="w" href="wavephasenet_intro_en.html">Plain-language →</a>
         </div>
       </div>
       <div class="guide-card">
-        <div class="who">FOLLOWING THE MATHEMATICS</div>
-        <h4>Read both detailed pages side by side</h4>
+        <div class="who">LOOKING FOR SOMETHING RUNNABLE</div>
+        <h4>Start with ModularPhaseNet</h4>
         <p>
-          Measure theory and cohomology in the earlier paper; gauge covariance and quantum spectral selection in the
-          successor. They overlap surprisingly little and are largely complementary.
+          No quantum hardware, no complex arithmetic — it can be trialled as adapters on the top layers of an
+          existing model. But no experiments have been run yet, so any benefit is still
+          <strong>at the hypothesis stage</strong>.
         </p>
         <div class="guide-links">
-          <a class="w" href="wavephasenet_en.html">Wave detailed →</a>
-          <a class="q" href="quantumphasenet_en.html">Quantum detailed →</a>
+          <a class="m" href="modularphasenet_intro_en.html">Plain-language →</a>
+          <a class="m" href="modularphasenet_en.html">Detailed →</a>
         </div>
       </div>
       <div class="guide-card">
-        <div class="who">EVALUATING ADOPTION</div>
-        <h4>Compare both adoption paths</h4>
+        <div class="who">FOLLOWING THE MATHEMATICS</div>
+        <h4>Read the three detailed pages side by side</h4>
         <p>
-          The earlier paper starts by measuring an existing model's spectrum; the successor starts with a
-          phase-only implementation. In both, the first two stages need no model surgery.
+          Measure theory and cohomology in the first, gauge covariance and quantum spectral selection in the
+          second, finite groups and discrete integrability in the third. They overlap little and complement
+          each other.
         </p>
         <div class="guide-links">
-          <a class="w" href="wavephasenet_intro_en.html#steps">Wave →</a>
-          <a class="q" href="quantumphasenet_intro_en.html#steps">Quantum →</a>
+          <a class="w" href="wavephasenet_en.html">Wave →</a>
+          <a class="q" href="quantumphasenet_en.html">Quantum →</a>
+          <a class="m" href="modularphasenet_en.html">Modular →</a>
         </div>
       </div>
     </div>
@@ -704,13 +880,15 @@
 
 <footer>
   <div class="wrapper" style="padding-top:0; padding-bottom:0;">
-    <a href="index.html">Index</a> &nbsp;|&nbsp; How the two papers relate &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp;
+    <a href="index.html">Index</a> &nbsp;|&nbsp; How the three papers relate &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp;
     <a href="wavephasenet_intro_en.html">WavePhaseNet</a> &nbsp;|&nbsp;
-    <a href="quantumphasenet_intro_en.html">QuantumPhaseNet</a>
+    <a href="quantumphasenet_intro_en.html">QuantumPhaseNet</a> &nbsp;|&nbsp;
+    <a href="modularphasenet_intro_en.html">ModularPhaseNet</a>
   </div>
 </footer>
+
 <script>
-// ── Background: a wave field resolving into a phase field ──
+// ── Background: waves → phase arrows → discrete ticks ──
 const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d');
 let W, H, frame = 0;
@@ -727,36 +905,37 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').match
 function draw() {
   ctx.clearRect(0, 0, W, H);
 
-  // left: travelling waves (WavePhaseNet)
+  // left third: travelling waves (WavePhaseNet)
   const waves = [
-    { amp: 46, freq: 0.008, speed: 0.015, y: H * 0.30, alpha: 0.30 },
-    { amp: 26, freq: 0.014, speed: 0.022, y: H * 0.52, alpha: 0.20 },
-    { amp: 34, freq: 0.006, speed: 0.010, y: H * 0.74, alpha: 0.14 },
+    { amp: 42, freq: 0.008, speed: 0.015, y: H * 0.30, alpha: 0.28 },
+    { amp: 24, freq: 0.014, speed: 0.022, y: H * 0.52, alpha: 0.18 },
+    { amp: 30, freq: 0.006, speed: 0.010, y: H * 0.74, alpha: 0.13 },
   ];
   waves.forEach(w => {
     ctx.beginPath();
     ctx.strokeStyle = '#0088aa';
     ctx.globalAlpha = w.alpha;
     ctx.lineWidth = 1.4;
-    for (let x = 0; x <= W; x += 3) {
-      const fade = Math.max(0, 1 - x / (W * 0.72));
+    for (let x = 0; x <= W * 0.5; x += 3) {
+      const fade = Math.max(0, 1 - x / (W * 0.45));
       const y = w.y + Math.sin(x * w.freq + frame * w.speed) * w.amp * fade;
       x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     }
     ctx.stroke();
   });
 
-  // right: rotating phase arrows (QuantumPhaseNet)
+  // middle band: rotating phase arrows (QuantumPhaseNet)
   const step = 72, len = 11;
-  for (let x = W * 0.42; x < W; x += step) {
+  for (let x = W * 0.30; x < W * 0.82; x += step) {
     for (let y = step * 0.5; y < H; y += step) {
-      const th = Math.atan2(y - H * 0.55, x - W * 0.78)
-               + Math.hypot(x - W * 0.78, y - H * 0.55) * 0.004 + frame * 0.012;
-      const fade = Math.min(1, (x - W * 0.42) / (W * 0.35));
+      const th = Math.atan2(y - H * 0.55, x - W * 0.60)
+               + Math.hypot(x - W * 0.60, y - H * 0.55) * 0.004 + frame * 0.012;
+      const edge = Math.min((x - W * 0.30) / (W * 0.16), (W * 0.82 - x) / (W * 0.16));
+      const fade = Math.max(0, Math.min(1, edge));
       const dx = Math.cos(th) * len, dy = Math.sin(th) * len;
       ctx.beginPath();
       ctx.strokeStyle = '#6d28d9';
-      ctx.globalAlpha = 0.10 * fade + 0.10 * fade * (0.5 + 0.5 * Math.cos(th));
+      ctx.globalAlpha = 0.09 * fade + 0.09 * fade * (0.5 + 0.5 * Math.cos(th));
       ctx.lineWidth = 1.2;
       ctx.moveTo(x - dx, y - dy);
       ctx.lineTo(x + dx, y + dy);
@@ -764,12 +943,55 @@ function draw() {
     }
   }
 
+  // right side: discrete ticks on a cyclic dial (ModularPhaseNet)
+  const S = Math.min(W, H);
+  const rings = [
+    { cx: 0.86, cy: 0.33, r: 0.13, q: 16, dir:  1 },
+    { cx: 0.78, cy: 0.74, r: 0.10, q: 8,  dir: -1 }
+  ];
+  rings.forEach((rg, idx) => {
+    const cx = rg.cx * W, cy = rg.cy * H, rad = rg.r * S;
+    ctx.beginPath();
+    ctx.strokeStyle = '#15803d';
+    ctx.globalAlpha = 0.08;
+    ctx.lineWidth = 1;
+    ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+    ctx.stroke();
+
+    const rot = rg.dir * frame * 0.004 + idx;
+    for (let a = 0; a < rg.q; a++) {
+      const th = (2 * Math.PI * a) / rg.q + rot;
+      const lit = 0.5 + 0.5 * Math.cos(th * 3 - frame * 0.02);
+      ctx.beginPath();
+      ctx.fillStyle = '#15803d';
+      ctx.globalAlpha = 0.10 + 0.20 * lit;
+      ctx.arc(cx + Math.cos(th) * rad, cy + Math.sin(th) * rad, 1.5 + 1.2 * lit, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // the closing triangle: holonomy returning to the identity
+    const base = rot * 1.3;
+    const pts = [0, 1, 2].map(k => {
+      const th = base + (2 * Math.PI * k) / 3;
+      return [cx + Math.cos(th) * rad, cy + Math.sin(th) * rad];
+    });
+    ctx.beginPath();
+    ctx.strokeStyle = '#15803d';
+    ctx.globalAlpha = 0.10;
+    ctx.lineWidth = 1;
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    ctx.lineTo(pts[1][0], pts[1][1]);
+    ctx.lineTo(pts[2][0], pts[2][1]);
+    ctx.closePath();
+    ctx.stroke();
+  });
+
   ctx.globalAlpha = 1;
   frame++;
   if (!reduceMotion && running) requestAnimationFrame(draw);
 }
 
-// 非表示タブ・画面外スクロール時は描画を止めて CPU を解放する
+// Pause drawing when the tab is hidden or the canvas is scrolled away.
 let running = true;
 function setRunning(v) {
   if (v === running) return;
