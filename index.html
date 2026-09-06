@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paper Explainers — WavePhaseNet / QuantumPhaseNet</title>
+<title>Paper Explainers — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -13,6 +13,7 @@
     --border: #d3d8ea;
     --wave: #0088aa;
     --quantum: #6d28d9;
+    --modular: #15803d;
     --amber: #d97706;
     --text: #101728;
     --text-muted: #414a63;
@@ -63,6 +64,7 @@
   }
   h1 .w { color: var(--wave); }
   h1 .q { color: var(--quantum); }
+  h1 .m { color: var(--modular); }
   .lede {
     font-size: 1rem; color: var(--text-muted);
     max-width: 620px; margin-bottom: 1.6rem;
@@ -84,6 +86,7 @@
   }
   .project.q .project-name { color: var(--quantum); }
   .project.w .project-name { color: var(--wave); }
+  .project.m .project-name { color: var(--modular); }
   .project-date {
     font-family: var(--font-mono); font-size: 0.68rem;
     letter-spacing: 0.1em; color: var(--text-dim);
@@ -107,12 +110,14 @@
   }
   .project.q .card:hover { border-color: var(--quantum); transform: translateY(-2px); box-shadow: 0 8px 26px rgba(109,40,217,0.09); }
   .project.w .card:hover { border-color: var(--wave); transform: translateY(-2px); box-shadow: 0 8px 26px rgba(0,136,170,0.09); }
+  .project.m .card:hover { border-color: var(--modular); transform: translateY(-2px); box-shadow: 0 8px 26px rgba(21,128,61,0.09); }
   .card-kicker {
     font-family: var(--font-mono); font-size: 0.62rem;
     letter-spacing: 0.12em; margin-bottom: 0.6rem;
   }
   .project.q .card-kicker { color: var(--quantum); }
   .project.w .card-kicker { color: var(--wave); }
+  .project.m .card-kicker { color: var(--modular); }
   .card h3 {
     font-family: var(--font-serif); font-size: 1.05rem;
     font-weight: 600; margin-bottom: 0.5rem;
@@ -130,6 +135,7 @@
   }
   .project.q .card-links a:hover { background: var(--quantum); border-color: var(--quantum); color: #fff; }
   .project.w .card-links a:hover { background: var(--wave); border-color: var(--wave); color: #fff; }
+  .project.m .card-links a:hover { background: var(--modular); border-color: var(--modular); color: #fff; }
 
   /* ── Extra links row ── */
   .extras {
@@ -205,17 +211,65 @@
   <header>
     <div class="eyebrow">KASUBUCHI &amp; FUKIYA — PAPER EXPLAINERS</div>
     <h1>
-      <span class="w">WavePhaseNet</span> and
-      <span class="q">QuantumPhaseNet</span><br>
-      Paper Explainers
+      <span class="w">WavePhaseNet</span>, <span class="q">QuantumPhaseNet</span>,<br>
+      <span class="m">ModularPhaseNet</span> — Paper Explainers
     </h1>
     <p class="lede">
       A line of work treating hallucination in large language models through the frequency structure
-      and geometry of meaning. Each paper has explainers written for two audiences,
-      in English and Japanese.
+      and geometry of meaning — from a continuous Fourier phase, to a gauge-covariant complex geometry,
+      to a finite cyclic group that runs in integer arithmetic.
+      Each of the three papers has explainers written for two audiences, in English and Japanese.
     </p>
     <div class="byline">Kiyotaka Kasubuchi &amp; Kazuo Fukiya</div>
   </header>
+
+  <!-- ── ModularPhaseNet ── -->
+  <section class="project m">
+    <div class="project-head">
+      <div class="project-name">ModularPhaseNet</div>
+      <div class="project-date">2026.08.11 · submission pending</div>
+    </div>
+    <div class="project-sub">
+      Finite-Cyclic Phase Geometry for Computable Semantic Hierarchy, Direction,<br>
+      and Context Consistency in Standard Transformers
+    </div>
+    <p class="project-desc">
+      The newest paper. It quantizes the continuous complex phase of QuantumPhaseNet into a finite cyclic
+      group so that everything runs in <strong>integer arithmetic on ordinary GPUs and CPUs</strong>.
+      Concept hierarchy becomes a nested partition of quotient groups, semantic direction an oriented group
+      element, contextual consistency a cycle holonomy — all computed exactly by modular exponentiation.
+      No quantum hardware, complex matrix multiplication or discrete-logarithm computation is required.
+      <strong>Theory and a pre-registered evaluation plan only; no experimental results are reported.</strong>
+    </p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-kicker">FOR DECISION MAKERS</div>
+        <h3>Plain-language</h3>
+        <p>
+          No mathematics. What it means to check "does this hold together" with integer multiplication,
+          how it relates to the two earlier papers, what is settled so far, and how to trial it — in three minutes.
+        </p>
+        <div class="card-links">
+          <a href="modularphasenet_intro_en.html">English</a>
+          <a href="modularphasenet_intro_ja.html">日本語</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-kicker">FOR ENGINEERS &amp; RESEARCHERS</div>
+        <h3>Detailed</h3>
+        <p>
+          Quantization-distortion bounds, nesting of the quotient filtration, gauge invariance, global
+          integrability of flat connections, boundedness of attention — five theorems and the evaluation
+          plan across thirteen sections.
+        </p>
+        <div class="card-links">
+          <a href="modularphasenet_en.html">English</a>
+          <a href="modularphasenet_ja.html">日本語</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- ── QuantumPhaseNet ── -->
   <section class="project q">
@@ -273,11 +327,11 @@
            onmouseout="this.style.borderLeftColor='var(--text-dim)';this.style.transform='none';">
         <div class="card-kicker" style="color:var(--text-dim);">HOW THEY RELATE</div>
         <h3 style="font-family:var(--font-serif); font-size:1.05rem; font-weight:600; margin-bottom:0.5rem;">
-          Why WavePhaseNet became QuantumPhaseNet
+          From WavePhaseNet to QuantumPhaseNet, then ModularPhaseNet
         </h3>
         <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.8rem;">
-          What the two papers share, what was swapped out, and — just as importantly — the two claims
-          from the earlier paper that did not carry over.
+          What runs through all three papers, what was swapped out twice, and — just as importantly —
+          which claims carried over, which returned in another form, and which were deliberately dropped.
         </p>
         <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted);
                      border-bottom:1px solid var(--border);">Read the comparison →</span>
@@ -340,7 +394,8 @@
   <div class="note">
     These pages were created to explain the papers. For exact definitions and proofs, consult the papers themselves.
     The QuantumPhaseNet results come from synthetic data in the Validation Studio; external validity on public
-    benchmarks has not been established.
+    benchmarks has not been established. ModularPhaseNet reports theory and a pre-registered evaluation plan
+    only — its experiments have not yet been carried out.
   </div>
 
 </div>

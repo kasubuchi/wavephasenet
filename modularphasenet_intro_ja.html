@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ModularPhaseNet — かんたん解説</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f3faf6;
+    --surface2: #e4f3ea;
+    --border: #c9e3d4;
+    --accent: #15803d;
+    --accent2: #0891b2;
+    --accent3: #d97706;
+    --text: #0f1c15;
+    --text-muted: #3f5a49;
+    --text-dim: #6b8577;
+    --glow: rgba(21,128,61,0.12);
+    --font-serif: 'Noto Serif JP', serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-sans: 'Noto Sans JP', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--font-sans); font-weight: 300;
+    line-height: 1.9; overflow-x: hidden;
+  }
+
+  #bg-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; opacity: 0.45; pointer-events: none;
+  }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem; height: 56px;
+    display: flex; align-items: center;
+  }
+  .nav-logo {
+    font-family: var(--font-mono); font-size: 0.85rem;
+    color: var(--accent); letter-spacing: 0.1em; white-space: nowrap;
+  }
+  .nav-links { display: flex; gap: 1.6rem; list-style: none; margin-left: 2rem; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none;
+    font-size: 0.78rem; letter-spacing: 0.08em; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-right { display: flex; align-items: center; gap: 1.4rem; margin-left: auto; }
+  .nav-lang {
+    display: flex; align-items: center; border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden; flex-shrink: 0;
+  }
+  .nav-lang a {
+    font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em;
+    padding: 0.28em 0.75em; color: var(--text-dim);
+    text-decoration: none; transition: all 0.2s; line-height: 1;
+  }
+  .nav-lang a.current { background: var(--accent); color: #fff; }
+  .nav-lang a:not(.current):hover { color: var(--accent); }
+  .nav-page-tab {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em;
+    color: var(--text-muted); text-decoration: none; padding-bottom: 2px;
+    border-bottom: 2px solid transparent; transition: all 0.2s;
+    flex-shrink: 0; white-space: nowrap;
+  }
+  .nav-page-tab:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 860px; margin: 0 auto; padding: 0 2rem 6rem;
+  }
+
+  .hero {
+    min-height: 92vh; display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start; padding-top: 80px;
+  }
+  .hero-tag {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.2em;
+    color: var(--accent); border: 1px solid var(--accent);
+    padding: 0.3em 0.9em; display: inline-block; margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.2s forwards;
+  }
+  .hero-title {
+    font-family: var(--font-serif); font-size: clamp(1.8rem, 4.4vw, 3rem);
+    font-weight: 700; line-height: 1.35; margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.35s forwards;
+  }
+  .hero-title em { font-style: normal; color: var(--accent); }
+  .hero-desc {
+    font-size: 1.02rem; color: var(--text-muted); max-width: 640px;
+    margin-bottom: 2rem; opacity: 0; animation: fadeUp 0.6s ease 0.5s forwards;
+  }
+  .hero-meta {
+    font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim);
+    margin-bottom: 2.5rem; opacity: 0; animation: fadeUp 0.6s ease 0.6s forwards;
+  }
+  .scroll-hint {
+    font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim);
+    letter-spacing: 0.15em; display: flex; align-items: center; gap: 0.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.75s forwards;
+  }
+  .scroll-hint::after {
+    content: ''; display: block; width: 40px; height: 1px;
+    background: var(--text-dim); animation: expandLine 1.5s ease infinite;
+  }
+
+  section { padding: 4.5rem 0; border-top: 1px solid var(--border); }
+  .section-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.25em;
+    color: var(--accent); margin-bottom: 0.6rem; opacity: 0.85;
+  }
+  h2 {
+    font-family: var(--font-serif); font-size: 1.7rem; font-weight: 700;
+    margin-bottom: 1.6rem; line-height: 1.4;
+  }
+  h3 { font-family: var(--font-serif); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.8rem; }
+  p { margin-bottom: 1.2rem; color: var(--text-muted); }
+  .lead { font-size: 1.02rem; }
+
+  .problems { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin: 2rem 0; }
+  .problem {
+    border: 1px solid var(--border); background: var(--surface);
+    padding: 1.6rem 1.4rem; transition: all 0.25s;
+  }
+  .problem:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .problem-icon { font-size: 1.6rem; margin-bottom: 0.7rem; display: block; }
+  .problem h4 { font-family: var(--font-serif); font-size: 0.98rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .problem p { font-size: 0.83rem; margin: 0; }
+
+  .analogy {
+    display: grid; grid-template-columns: auto 1fr; gap: 1.6rem;
+    border: 1px solid var(--border); background: var(--surface);
+    padding: 1.9rem 1.8rem; margin-bottom: 1rem; transition: border-color 0.25s;
+  }
+  .analogy:hover { border-color: rgba(21,128,61,0.4); }
+  .analogy-num {
+    font-family: var(--font-mono); font-size: 2rem; font-weight: 700;
+    color: var(--border); line-height: 1; transition: color 0.3s;
+  }
+  .analogy:hover .analogy-num { color: var(--accent); opacity: 0.45; }
+  .analogy h3 { margin-bottom: 0.5rem; }
+  .analogy .kicker {
+    font-family: var(--font-mono); font-size: 0.64rem;
+    letter-spacing: 0.12em; color: var(--accent); margin-bottom: 0.4rem;
+  }
+  .analogy p { font-size: 0.9rem; margin-bottom: 0.8rem; }
+  .analogy p:last-child { margin-bottom: 0; }
+  .like {
+    border-left: 2px solid var(--accent2); padding-left: 0.9rem;
+    font-size: 0.85rem; color: var(--text-muted); background: rgba(8,145,178,0.04);
+    padding-top: 0.5rem; padding-bottom: 0.5rem;
+  }
+
+  .flow { display: flex; flex-direction: column; gap: 0; margin: 2rem 0; }
+  .flow-step { display: flex; align-items: stretch; }
+  .flow-num {
+    font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent);
+    width: 34px; min-width: 34px; display: flex; align-items: center;
+    justify-content: center; position: relative;
+  }
+  .flow-num::after {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    width: 1px; height: 100%; background: var(--border);
+  }
+  .flow-step:last-child .flow-num::after { display: none; }
+  .flow-body {
+    flex: 1; border: 1px solid var(--border); background: var(--surface);
+    padding: 1.1rem 1.4rem; margin: 4px 0 4px 1rem;
+  }
+  .flow-title { font-weight: 500; font-size: 0.92rem; margin-bottom: 0.3rem; }
+  .flow-desc { font-size: 0.83rem; color: var(--text-muted); }
+
+  .cases { display: grid; grid-template-columns: repeat(2,1fr); gap: 1rem; margin: 2rem 0; }
+  .case {
+    border: 1px solid var(--border); background: var(--surface);
+    padding: 1.6rem 1.5rem; transition: all 0.25s;
+  }
+  .case:hover { border-color: var(--accent); box-shadow: 0 8px 26px rgba(21,128,61,0.08); }
+  .case h4 { font-family: var(--font-serif); font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .case p { font-size: 0.83rem; margin-bottom: 0.6rem; }
+  .case .why {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--accent); letter-spacing: 0.05em;
+  }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem 0; }
+  .split-cell { border: 1px solid var(--border); background: var(--surface); padding: 1.7rem 1.5rem; }
+  .split-cell h4 {
+    font-family: var(--font-mono); font-size: 0.74rem;
+    letter-spacing: 0.1em; margin-bottom: 0.8rem;
+  }
+  .split-cell.yes { border-left: 3px solid var(--accent); }
+  .split-cell.yes h4 { color: var(--accent); }
+  .split-cell.not { border-left: 3px solid var(--accent3); }
+  .split-cell.not h4 { color: var(--accent3); }
+  .split-cell ul { margin: 0; padding-left: 1.1rem; }
+  .split-cell li { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+
+  .caution {
+    border: 1px dashed var(--accent3); background: rgba(217,119,6,0.04);
+    padding: 1.5rem 1.8rem; margin: 1.5rem 0;
+  }
+  .caution-title {
+    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em;
+    color: var(--accent3); margin-bottom: 0.8rem;
+  }
+  .caution ul { margin: 0; padding-left: 1.2rem; }
+  .caution li { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+
+  .lineage { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); margin: 2rem 0; }
+  .lineage-cell { background: var(--surface); padding: 1.6rem 1.3rem; }
+  .lineage-name { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
+  .lineage-cell:nth-child(1) .lineage-name { color: #0088aa; }
+  .lineage-cell:nth-child(2) .lineage-name { color: #6d28d9; }
+  .lineage-cell:nth-child(3) .lineage-name { color: var(--accent); }
+  .lineage-desc { font-size: 0.82rem; color: var(--text-muted); }
+  .lineage-year { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-dim); margin-top: 0.7rem; }
+
+  .faq { border-bottom: 1px solid var(--border); padding: 1.4rem 0; }
+  .faq:first-of-type { border-top: 1px solid var(--border); }
+  .faq-q {
+    font-weight: 500; font-size: 0.95rem; margin-bottom: 0.6rem;
+    position: relative; padding-left: 1.6rem;
+  }
+  .faq-q::before {
+    content: 'Q'; position: absolute; left: 0; top: 0;
+    font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent);
+  }
+  .faq-a { font-size: 0.88rem; color: var(--text-muted); padding-left: 1.6rem; margin: 0; }
+
+  .cta {
+    background: linear-gradient(135deg, rgba(21,128,61,0.06), rgba(8,145,178,0.06));
+    border: 1px solid rgba(21,128,61,0.2);
+    padding: 3rem 2rem; text-align: center;
+  }
+  .cta h2 { font-size: 1.4rem; margin-bottom: 0.8rem; }
+  .cta p { max-width: 560px; margin: 0 auto 1.8rem; font-size: 0.92rem; }
+  .cta-btn {
+    font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.1em;
+    text-decoration: none; padding: 0.7em 1.8em;
+    border: 1px solid var(--accent); color: var(--accent);
+    transition: all 0.2s; display: inline-block; margin: 0 0.3rem 0.6rem;
+  }
+  .cta-btn:hover { background: var(--accent); color: #fff; }
+
+  footer {
+    border-top: 1px solid var(--border); padding: 3rem 0 2rem; text-align: center;
+    font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim);
+    letter-spacing: 0.08em; position: relative; z-index: 1;
+  }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes expandLine {
+    0% { width: 20px; opacity: 0.3; }
+    50% { width: 60px; opacity: 0.8; }
+    100% { width: 20px; opacity: 0.3; }
+  }
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 420px) {
+    nav { padding: 0 0.7rem; }
+    .nav-logo { font-size: 0.68rem; letter-spacing: 0.04em; }
+    .nav-right { gap: 0.6rem; }
+    .nav-page-tab { font-size: 0.62rem; }
+    .nav-lang a { padding: 0.28em 0.55em; font-size: 0.6rem; }
+  }
+  @media (max-width: 760px) {
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 640px) {
+    .problems, .cases, .split, .lineage { grid-template-columns: 1fr; }
+    .analogy { grid-template-columns: 1fr; gap: 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<nav>
+  <div class="nav-logo">ModularPhaseNet // かんたん解説</div>
+  <ul class="nav-links">
+    <li><a href="#problem">課題</a></li>
+    <li><a href="#idea">考え方</a></li>
+    <li><a href="#status">現在地</a></li>
+    <li><a href="#value">使いどころ</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="modularphasenet_ja.html" class="nav-page-tab">詳細解説 →</a>
+    <div class="nav-lang">
+      <a href="modularphasenet_intro_ja.html" class="current">JA</a>
+      <a href="modularphasenet_intro_en.html">EN</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrapper">
+
+  <div class="hero">
+    <div class="hero-tag">3分でわかる ModularPhaseNet</div>
+    <h1 class="hero-title">
+      AIの「話の筋が通っているか」を、<br>
+      <em>整数の掛け算3回</em>で確かめる。
+    </h1>
+    <p class="hero-desc">
+      ModularPhaseNet は、前作 QuantumPhaseNet の考え方を
+      <strong>ふつうのGPU・CPUで動く整数計算</strong>に置き換えた枠組みです。
+      概念の上下関係、話の進む向き、文脈の矛盾——この3つを、
+      複素数も量子コンピュータも使わずに、厳密に計算できる形にします。
+    </p>
+    <div class="hero-meta">
+      Kiyotaka Kasubuchi &amp; Kazuo Fukiya ／ 2026年8月11日 ／ 理論編（実験はこれから）
+    </div>
+    <div class="scroll-hint">SCROLL</div>
+  </div>
+
+  <!-- ── PROBLEM ── -->
+  <section id="problem">
+    <div class="section-label">01 // ISSUE</div>
+    <h2>「もっともらしいが、筋が通っていない」を見つけたい</h2>
+    <p class="lead reveal">
+      LLM の誤りには、単語レベルでは正しく見えるのに、<strong>文章全体としては両立しない</strong>種類のものがあります。
+      1文ずつ検査しても引っかからず、通しで読むと矛盾している——実務で最も厄介なのがこのタイプです。
+    </p>
+
+    <div class="problems reveal">
+      <div class="problem">
+        <span class="problem-icon">🪜</span>
+        <h4>上下関係が崩れる</h4>
+        <p>「この部品は装置の一種です」と「この装置は部品の一種です」を、モデルが同じ強さで書いてしまう</p>
+      </div>
+      <div class="problem">
+        <span class="problem-icon">🧭</span>
+        <h4>話が横に逸れる</h4>
+        <p>長い回答の途中で論旨が別方向へ移り、最後の段落が最初の問いに答えていない</p>
+      </div>
+      <div class="problem">
+        <span class="problem-icon">🔁</span>
+        <h4>多段でだけ矛盾する</h4>
+        <p>A→B、B→C、C→A の各ステップは正しく見えるのに、3つを合わせると成立しない</p>
+      </div>
+    </div>
+
+    <p class="reveal">
+      3つ目が特に重要です。局所的な含意判定をいくら積み上げても、
+      <strong>「一周して戻ってきたときに辻褄が合うか」は見えません</strong>。
+      ModularPhaseNet は、この「一周」を数えられる形にすることを狙っています。
+    </p>
+  </section>
+
+  <!-- ── IDEA ── -->
+  <section id="idea">
+    <div class="section-label">02 // IDEA</div>
+    <h2>意味に「時計の目盛り」を与える</h2>
+
+    <div class="analogy reveal">
+      <div class="analogy-num">01</div>
+      <div>
+        <div class="kicker">FINITE DIAL</div>
+        <h3>連続の針を、目盛りのある文字盤に置き換える</h3>
+        <p>
+          前作では、言葉の意味に連続的な「位相（波の位置）」を持たせていました。
+          本作はこれを、たとえば256個の目盛りしかない文字盤の上に丸めます。
+          目盛りに落とすと、位相の足し算・引き算が<strong>誤差ゼロの整数演算</strong>になります。
+        </p>
+        <div class="like">
+          連続の角度は足すたびに誤差が乗りますが、時計の目盛りなら「3時＋4時間＝7時」がいつでも正確。
+          同じ入力からは必ず同じ答えが再現されます。
+        </div>
+      </div>
+    </div>
+
+    <div class="analogy reveal">
+      <div class="analogy-num">02</div>
+      <div>
+        <div class="kicker">NESTED ADDRESS</div>
+        <h3>粗い目盛りが、そのまま上位概念になる</h3>
+        <p>
+          256目盛りの文字盤を128、64、32…と粗くしていくと、細かい概念がだんだん同じ区画にまとまります。
+          この「まとまり方」が<strong>そのまま概念の階層</strong>になります。
+          犬とオオカミは粗い目盛りでは同じ区画、細かい目盛りでは別の区画、という具合です。
+        </p>
+        <div class="like">
+          郵便番号に似ています。上3桁で都道府県、下まで見れば町名。
+          桁を落とすほど広い括りになる、という関係が数学的に保証されています。
+        </div>
+      </div>
+    </div>
+
+    <div class="analogy reveal">
+      <div class="analogy-num">03</div>
+      <div>
+        <div class="kicker">CLOSING THE LOOP</div>
+        <h3>一周して元に戻るかで、矛盾を検出する</h3>
+        <p>
+          文と文のつながりごとに「ここでどれだけ意味が回転したか」を予測します。
+          A→B→C→A と一周したときに、回転量の合計が<strong>ちょうど元に戻れば整合、ずれていれば矛盾</strong>。
+          判定は掛け算3回の整数計算で終わります。
+        </p>
+        <div class="like">
+          測量の閉合誤差と同じ発想です。一周して元の杭に戻らなければ、どこかの測定が間違っている。
+          どの一歩が悪いかは分からなくても、「両立しない」ことは確実に分かります。
+        </div>
+      </div>
+    </div>
+
+    <p class="reveal">
+      重要なのは、つながりの回転量を<strong>各辺ごとに独立に予測する</strong>点です。
+      もし各点の値の差から自動計算してしまうと、一周は必ずゼロになり、検査が意味を持ちません。
+      論文はこの落とし穴を明示して、独立予測を設計の必須条件としています。
+    </p>
+  </section>
+
+  <!-- ── HOW ── -->
+  <section id="how">
+    <div class="section-label">03 // HOW</div>
+    <h2>1つの文章が処理される流れ</h2>
+
+    <div class="flow reveal">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <div class="flow-title">位相を割り当てる</div>
+          <div class="flow-desc">各トークンに、文字盤上の目盛り（群の要素）と「深さ」を割り当てる。既存モデルの上位2〜4層にアダプタを挿すだけで足りる</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <div class="flow-title">階層を読む</div>
+          <div class="flow-desc">目盛りを粗くしていったときのまとまり方から、どちらが上位概念かを判定する</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <div class="flow-title">向きを測る</div>
+          <div class="flow-desc">文と文のつながりごとに回転量を予測し、文章全体が進むべき方向とどれだけ揃っているかを見る</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-body">
+          <div class="flow-title">一周を検査する</div>
+          <div class="flow-desc">三角形のループを選び、回転量の積が元に戻るかを整数演算で確認する</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-body">
+          <div class="flow-title">Attention に戻す</div>
+          <div class="flow-desc">階層・向き・矛盾・根拠の4つを、実数の加点／減点として通常の Attention に足す。既存の実装を書き換える必要はない</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">6</div>
+        <div class="flow-body">
+          <div class="flow-title">危うさを校正する</div>
+          <div class="flow-desc">4つの指標に「根拠の薄さ」と「意味の曖昧さ」を足してリスクを算出し、正解ラベル付きデータで確率に較正する。閾値を超えたら、答える／調べ直す／作り直す／黙るを選ぶ</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── LINEAGE ── -->
+  <section id="lineage">
+    <div class="section-label">04 // LINEAGE</div>
+    <h2>3本の論文のどこに位置するか</h2>
+
+    <div class="lineage reveal">
+      <div class="lineage-cell">
+        <div class="lineage-name">WavePhaseNet</div>
+        <div class="lineage-desc">意味を周波数に分解し、低周波を全体の主題、高周波を局所的な表現として扱う。ハルシネーションが構造的に避けられない理由を定式化した</div>
+        <div class="lineage-year">arXiv:2602.14419</div>
+      </div>
+      <div class="lineage-cell">
+        <div class="lineage-name">QuantumPhaseNet</div>
+        <div class="lineage-desc">同じ着想を、複素ベクトル束・ゲージ接続として書き直した。連続的で表現力は高いが、複素演算と量子アルゴリズムを含む</div>
+        <div class="lineage-year">arXiv:2608.15820</div>
+      </div>
+      <div class="lineage-cell">
+        <div class="lineage-name">ModularPhaseNet</div>
+        <div class="lineage-desc">その位相チャネルだけを有限の目盛りに落とし、整数演算で厳密計算できるようにした。量子ハードウェア・複素行列積・離散対数計算はいずれも不要</div>
+        <div class="lineage-year">2026.08.11 ／ arXiv 投稿準備中</div>
+      </div>
+    </div>
+
+    <p class="reveal">
+      つまり本作は「軽くて動く版」です。ただし論文は、
+      <strong>離散化しても表現力が増えるわけではない</strong>ことを明記しています。
+      得られるのは表現力ではなく、<strong>厳密さ・再現性・検査可能性</strong>です。
+    </p>
+  </section>
+
+  <!-- ── STATUS ── -->
+  <section id="status">
+    <div class="section-label">05 // STATUS</div>
+    <h2>いまどこまで確かめられているか</h2>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ 最初に断っておくこと</div>
+      <ul>
+        <li>この論文は<strong>理論編であり、実験はまだ実施されていません</strong>。性能の実測値は一切報告されていません。</li>
+        <li>前作 QuantumPhaseNet には試作検証がありましたが、本作にはありません。論文はこれを Abstract と投稿コメントの両方で先に宣言しています。</li>
+        <li>代わりに、<strong>実験を始める前に</strong>評価計画・データセット・比較対象・反証条件を固定して公開しています（事前登録）。</li>
+      </ul>
+    </div>
+
+    <div class="split reveal">
+      <div class="split-cell yes">
+        <h4>PROVEN — 数学的に示されていること</h4>
+        <ul>
+          <li>目盛りを細かくするほど、連続版とのずれが小さくなる（上界が明示されている）</li>
+          <li>目盛りを粗くしたときのまとまりは、必ず入れ子になる（階層が壊れない）</li>
+          <li>整合スコアは、座標の取り方を変えても値が変わらない</li>
+          <li>すべてのループで矛盾がなければ、全体として一貫した意味の割り当てが存在する</li>
+          <li>Attention の出力は発散しない（有界性）</li>
+        </ul>
+      </div>
+      <div class="split-cell not">
+        <h4>NOT YET — これから検証すること</h4>
+        <ul>
+          <li>実データで階層復元・矛盾検出・リスク校正が既存手法を上回るか</li>
+          <li>「回転が小さい＝上位概念」という対応が本当に成り立つか</li>
+          <li>目盛りの数をいくつにすれば精度とコストが釣り合うか</li>
+          <li>改善が、単なるパラメータ増加や検索強化で説明できてしまわないか</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── VALUE ── -->
+  <section id="value">
+    <div class="section-label">06 // USE CASES</div>
+    <h2>どんな業務に効きそうか</h2>
+
+    <div class="cases reveal">
+      <div class="case">
+        <h4>長い技術文書の整合チェック</h4>
+        <p>仕様書・報告書の中で、離れた箇所どうしが矛盾していないかを、一周検査で機械的に洗い出す</p>
+        <div class="why">→ 局所検査では見えない多段矛盾に効く</div>
+      </div>
+      <div class="case">
+        <h4>社内用語の階層整理</h4>
+        <p>装置・部品・工程などの上下関係を、粗い目盛りから細かい目盛りへの分岐として保持する</p>
+        <div class="why">→ 階層の一貫性が構造から保証される</div>
+      </div>
+      <div class="case">
+        <h4>RAG の回答ゲート</h4>
+        <p>根拠の薄さと文脈の矛盾を合わせたリスクを較正し、閾値を超えたら再検索または「わかりません」を返す</p>
+        <div class="why">→ 誤答より棄権が望ましい業務に適合</div>
+      </div>
+      <div class="case">
+        <h4>オンプレ・閉域での運用</h4>
+        <p>整数演算とテーブル参照だけで推論が完結し、専用ハードウェアも外部APIも不要</p>
+        <div class="why">→ 機微データを外に出せない環境向き</div>
+      </div>
+    </div>
+
+    <p class="reveal">
+      いずれも<strong>これから検証する用途</strong>であり、現時点で実測に裏づけられた効果ではありません。
+      導入を検討する場合は、後述の順序で小さく試すことを想定しています。
+    </p>
+  </section>
+
+  <!-- ── SCOPE ── -->
+  <section id="scope">
+    <div class="section-label">07 // SCOPE</div>
+    <h2>できること／できないこと</h2>
+
+    <div class="split reveal">
+      <div class="split-cell yes">
+        <h4>できること</h4>
+        <ul>
+          <li>階層・方向・矛盾・根拠・不確実性を、同じモデルの中で数値として観測する</li>
+          <li>同じ入力に対して必ず同じ判定を返す（再現性）</li>
+          <li>既存 Transformer のカーネルを書き換えずに組み込む</li>
+          <li>危ういときに答えを止める（棄権）判断の材料を出す</li>
+        </ul>
+      </div>
+      <div class="split-cell not">
+        <h4>できないこと</h4>
+        <ul>
+          <li>ハルシネーションをゼロにすること。知識欠落・検索失敗・引用誤りは別問題として残る</li>
+          <li>計算を速くすること。Attention の二次コストは解消されない</li>
+          <li>不規則なオントロジー（多重継承）をそのまま表現すること</li>
+          <li>量子計算の優位性を古典で再現すること（本作はそもそも量子を使わない）</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ADOPTION ── -->
+  <section id="steps">
+    <div class="section-label">08 // ADOPTION</div>
+    <h2>試すなら、この順番で</h2>
+
+    <div class="flow reveal">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <div class="flow-title">小さい文字盤から始める</div>
+          <div class="flow-desc">目盛り数は32か64程度から。いきなり256にしない。学習コストを抑えて挙動を見る</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <div class="flow-title">上位層だけにアダプタを挿す</div>
+          <div class="flow-desc">事前学習済みモデルの本体は凍結し、アダプタのみ学習する。効果が見えてから範囲を広げる</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <div class="flow-title">一周検査を三角形に限定する</div>
+          <div class="flow-desc">すべてのループを見ると計算が膨らむ。まず三角形と短い基本サイクルだけに絞る</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-body">
+          <div class="flow-title">校正データを分ける</div>
+          <div class="flow-desc">リスク較正に使うデータと最終評価データは必ず分離する。ここを混ぜると数字が信用できなくなる</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-body">
+          <div class="flow-title">対照実験を先に決める</div>
+          <div class="flow-desc">単純なカテゴリ符号、位相をシャッフルした対照、目盛り数を変えた比較。効果が本物かを切り分ける設計を先に置く</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FAQ ── -->
+  <section id="faq">
+    <div class="section-label">09 // FAQ</div>
+    <h2>よくある質問</h2>
+
+    <div class="faq reveal">
+      <div class="faq-q">量子コンピュータは必要ですか。</div>
+      <p class="faq-a">不要です。前作 QuantumPhaseNet に含まれていた量子フーリエ変換・位相推定・振幅増幅は、本作ではすべて取り除かれています。動くのは通常の GPU・CPU です。</p>
+    </div>
+    <div class="faq reveal">
+      <div class="faq-q">「冪剰余」を使う意味は何ですか。単なる番号でよいのでは。</div>
+      <p class="faq-a">表現力の観点では同等であり、論文もそれを認めています。冪剰余を使う理由は、合成が厳密であること、部分群への射影が同じ演算で書けること、チェックサムとして機能すること、そして再現性が保証されることです。比較のため、単純な剰余を使うベースラインが必ず実験に含まれます。</p>
+    </div>
+    <div class="faq reveal">
+      <div class="faq-q">目盛りに丸めると情報が落ちませんか。</div>
+      <p class="faq-a">落ちます。ただし落ちる量の上限が数学的に示されており、目盛りを増やせば単調に小さくなります。どこで精度とコストが釣り合うかは、評価計画の RQ5 として検証対象になっています。</p>
+    </div>
+    <div class="faq reveal">
+      <div class="faq-q">推論は遅くなりますか。</div>
+      <p class="faq-a">追加コストは発生します。ただし推論時の位相計算は事前計算したテーブルの参照で済むため、実装上の負荷は小さく設計されています。一方で、Attention 全体の計算量が減るわけではありません。速度改善は本作の主張ではありません。</p>
+    </div>
+    <div class="faq reveal">
+      <div class="faq-q">既存の学習済みモデルに後付けできますか。</div>
+      <p class="faq-a">想定されている使い方がまさにそれです。上位2〜4層に位相アダプタを挿し、本体を凍結したまま学習を始める形が初期実装として示されています。</p>
+    </div>
+    <div class="faq reveal">
+      <div class="faq-q">実験結果はいつ出ますか。</div>
+      <p class="faq-a">本稿には含まれていません。評価計画・データセット・比較対象・反証条件が先に固定されているため、実験が行われた際には、この計画に対する答え合わせとして読むことができます。</p>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section id="cta" style="border-top:none; padding-top:2rem;">
+    <div class="cta reveal">
+      <div class="section-label" style="text-align:center;">NEXT</div>
+      <h2>定義と証明まで確認したい方へ</h2>
+      <p>
+        量子化歪みの上界、商群フィルトレーションの入れ子性、ゲージ不変性、
+        平坦な接続の大域可積分性、Attention の有界性——
+        5つの定理と、事前登録された評価計画の全体を詳細解説にまとめています。
+      </p>
+      <a href="modularphasenet_ja.html" class="cta-btn">詳細解説を読む →</a>
+      <a href="index_ja.html" class="cta-btn">論文一覧へ</a>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrapper" style="padding-top:0; padding-bottom:0;">
+    <a href="index_ja.html" style="color:inherit;">目次</a> &nbsp;|&nbsp; ModularPhaseNet かんたん解説 &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp; <a href="modularphasenet_ja.html" style="color:inherit;">詳細解説</a> &nbsp;|&nbsp; <a href="relation_ja.html" style="color:inherit;">3つの論文の関係</a> &nbsp;|&nbsp; <a href="quantumphasenet_intro_ja.html" style="color:inherit;">QuantumPhaseNet</a> &nbsp;|&nbsp; <a href="wavephasenet_intro_ja.html" style="color:inherit;">WavePhaseNet</a>
+  </div>
+</footer>
+
+<script>
+// ── Finite cyclic phase lattice ──
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, frame = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const RINGS = [
+  { cx: 0.20, cy: 0.30, r: 0.15, q: 16, dir:  1 },
+  { cx: 0.80, cy: 0.66, r: 0.20, q: 32, dir: -1 }
+];
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  const S = Math.min(W, H);
+
+  RINGS.forEach((rg, idx) => {
+    const cx = rg.cx * W, cy = rg.cy * H, rad = rg.r * S;
+    ctx.beginPath();
+    ctx.strokeStyle = '#15803d';
+    ctx.globalAlpha = 0.07;
+    ctx.lineWidth = 1;
+    ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+    ctx.stroke();
+
+    const rot = rg.dir * frame * 0.004 + idx;
+    for (let a = 0; a < rg.q; a++) {
+      const th = (2 * Math.PI * a) / rg.q + rot;
+      const x = cx + Math.cos(th) * rad;
+      const y = cy + Math.sin(th) * rad;
+      const lit = 0.5 + 0.5 * Math.cos(th * 3 - frame * 0.02);
+      ctx.beginPath();
+      ctx.fillStyle = lit > 0.6 ? '#15803d' : '#0891b2';
+      ctx.globalAlpha = 0.09 + 0.20 * lit;
+      ctx.arc(x, y, 1.5 + 1.3 * lit, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const base = rot * 1.3;
+    const pts = [0, 1, 2].map(k => {
+      const th = base + (2 * Math.PI * k) / 3;
+      return [cx + Math.cos(th) * rad, cy + Math.sin(th) * rad];
+    });
+    ctx.beginPath();
+    ctx.strokeStyle = '#15803d';
+    ctx.globalAlpha = 0.09;
+    ctx.lineWidth = 1;
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    ctx.lineTo(pts[1][0], pts[1][1]);
+    ctx.lineTo(pts[2][0], pts[2][1]);
+    ctx.closePath();
+    ctx.stroke();
+  });
+
+  ctx.globalAlpha = 1;
+  frame++;
+  if (!reduceMotion && running) requestAnimationFrame(draw);
+}
+
+// 非表示タブ・画面外スクロール時は描画を止めて CPU を解放する
+let running = true;
+function setRunning(v) {
+  if (v === running) return;
+  running = v;
+  if (running && !reduceMotion) requestAnimationFrame(draw);
+}
+document.addEventListener('visibilitychange', () => setRunning(!document.hidden));
+window.addEventListener('scroll', () => setRunning(window.scrollY < window.innerHeight * 1.5), { passive: true });
+setRunning(window.scrollY < window.innerHeight * 1.5);
+if (running) draw();
+
+// ── Scroll reveal ──
+const reveals = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+reveals.forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

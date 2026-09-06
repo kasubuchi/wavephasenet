@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ModularPhaseNet — Paper Explainer (Detailed)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f3faf6;
+    --surface2: #e4f3ea;
+    --border: #c9e3d4;
+    --accent: #15803d;
+    --accent2: #0891b2;
+    --accent3: #d97706;
+    --text: #0f1c15;
+    --text-muted: #3f5a49;
+    --text-dim: #6b8577;
+    --glow: rgba(21,128,61,0.12);
+    --font-serif: 'Noto Serif JP', serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-sans: 'Noto Sans JP', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--font-sans); font-weight: 300;
+    line-height: 1.8; overflow-x: hidden;
+  }
+
+  #bg-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; opacity: 0.5; pointer-events: none;
+  }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem; height: 56px;
+    display: flex; align-items: center; gap: 0;
+  }
+  .nav-logo {
+    font-family: var(--font-mono); font-size: 0.85rem;
+    color: var(--accent); letter-spacing: 0.1em; white-space: nowrap;
+  }
+  .nav-links { display: flex; gap: 1.6rem; list-style: none; margin-left: 2rem; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none;
+    font-size: 0.78rem; letter-spacing: 0.08em; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-right { display: flex; align-items: center; gap: 1.4rem; margin-left: auto; }
+  .nav-lang {
+    display: flex; align-items: center; border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden; flex-shrink: 0;
+  }
+  .nav-lang a {
+    font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em;
+    padding: 0.28em 0.75em; color: var(--text-dim);
+    text-decoration: none; transition: all 0.2s; line-height: 1;
+  }
+  .nav-lang a.current { background: var(--accent); color: #fff; }
+  .nav-lang a:not(.current):hover { color: var(--accent); }
+  .nav-page-tab {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em;
+    color: var(--text-muted); text-decoration: none; padding-bottom: 2px;
+    border-bottom: 2px solid transparent; transition: all 0.2s;
+    flex-shrink: 0; white-space: nowrap;
+  }
+  .nav-page-tab:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 900px; margin: 0 auto; padding: 0 2rem 6rem;
+  }
+
+  .hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding-top: 80px; position: relative;
+  }
+  .hero-tag {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.2em;
+    color: var(--accent); border: 1px solid var(--accent);
+    padding: 0.3em 0.9em; display: inline-block; margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.2s forwards;
+  }
+  .hero-title {
+    font-family: var(--font-serif); font-size: clamp(2.2rem, 5.6vw, 4rem);
+    font-weight: 700; line-height: 1.15; letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.35s forwards;
+  }
+  .hero-title .wave {
+    color: var(--accent); display: inline-block;
+    animation: pulse 3s ease-in-out infinite;
+  }
+  .hero-subtitle {
+    font-family: var(--font-mono); font-size: 0.8rem;
+    color: var(--accent2); letter-spacing: 0.05em; margin-bottom: 2rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.45s forwards;
+  }
+  .hero-meta {
+    display: flex; gap: 2rem; flex-wrap: wrap;
+    font-size: 0.78rem; color: var(--text-muted); margin-bottom: 2.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.55s forwards;
+  }
+  .hero-meta span { display: flex; align-items: center; gap: 0.4rem; }
+  .hero-desc {
+    font-size: 1.05rem; color: var(--text-muted);
+    max-width: 640px; line-height: 1.9; margin-bottom: 3rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.65s forwards;
+  }
+  .scroll-hint {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--text-dim); letter-spacing: 0.15em;
+    display: flex; align-items: center; gap: 0.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.8s forwards;
+  }
+  .scroll-hint::after {
+    content: ''; display: block; width: 40px; height: 1px;
+    background: var(--text-dim); animation: expandLine 1.5s ease infinite;
+  }
+
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.25em;
+    color: var(--accent); margin-bottom: 0.6rem; opacity: 0.8;
+  }
+  h2 {
+    font-family: var(--font-serif); font-size: 1.9rem;
+    font-weight: 700; margin-bottom: 2rem; line-height: 1.3;
+  }
+  h3 {
+    font-family: var(--font-serif); font-size: 1.2rem;
+    font-weight: 600; margin-bottom: 1rem; color: var(--text);
+  }
+  p { margin-bottom: 1.2rem; color: var(--text-muted); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 2px; padding: 2rem; margin-bottom: 1.5rem;
+    position: relative; overflow: hidden; transition: border-color 0.3s;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%; background: var(--accent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .card:hover { border-color: rgba(21,128,61,0.4); }
+  .card:hover::before { opacity: 1; }
+
+  .abstract-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 2.5rem; margin-bottom: 2rem; position: relative;
+  }
+  .abstract-box::before {
+    content: '"'; position: absolute; top: 1rem; left: 2rem;
+    font-family: var(--font-serif); font-size: 5rem;
+    color: var(--accent); opacity: 0.08; line-height: 1;
+  }
+
+  .concept-flow { display: flex; align-items: center; gap: 0; margin: 2rem 0; flex-wrap: wrap; }
+  .concept-node {
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 0.9rem 1.4rem; font-size: 0.82rem;
+    font-family: var(--font-mono); color: var(--text);
+    position: relative; white-space: nowrap; transition: all 0.2s; cursor: default;
+  }
+  .concept-node:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 20px var(--glow); }
+  .concept-arrow { color: var(--accent); font-size: 1.2rem; padding: 0 0.5rem; opacity: 0.6; }
+
+  .math-box {
+    background: #0f1c15; border: 1px solid var(--border);
+    border-radius: 1px; padding: 1.8rem 2rem; margin: 1.5rem 0;
+    font-family: var(--font-mono); font-size: 0.85rem;
+    overflow-x: auto; position: relative;
+  }
+  .math-box .math-label {
+    position: absolute; top: 0.6rem; right: 1rem;
+    font-size: 0.62rem; color: #8fbfa4; letter-spacing: 0.1em;
+  }
+  .math-box mjx-container, .math-box mjx-container * { color: #e9f5ee !important; }
+
+  .energy-table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
+  .energy-table th {
+    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em;
+    color: var(--accent); text-align: left; padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .energy-table td {
+    padding: 0.8rem 1rem; font-size: 0.85rem;
+    border-bottom: 1px solid rgba(190,220,202,0.7);
+    color: var(--text-muted); vertical-align: top;
+  }
+  .energy-table tr:hover td { background: var(--surface); }
+  .table-scroll { overflow-x: auto; }
+  .mono { font-family: var(--font-mono); font-size: 0.8rem; }
+
+  .badge {
+    font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em;
+    padding: 0.15em 0.55em; border: 1px solid; white-space: nowrap;
+  }
+  .badge.thm { border-color: var(--accent); color: var(--accent); }
+  .badge.emp { border-color: var(--accent3); color: var(--accent3); }
+  .badge.open { border-color: var(--text-dim); color: var(--text-dim); }
+
+  .pillars { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin: 2rem 0; }
+  .pillar {
+    border: 1px solid var(--border); padding: 1.8rem 1.4rem;
+    position: relative; background: var(--surface); transition: all 0.3s;
+  }
+  .pillar:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(21,128,61,0.1); }
+  .pillar-num {
+    font-family: var(--font-mono); font-size: 2.5rem; font-weight: 700;
+    color: var(--border); line-height: 1; margin-bottom: 0.8rem; transition: color 0.3s;
+  }
+  .pillar:hover .pillar-num { color: var(--accent); opacity: 0.4; }
+  .pillar h4 { font-family: var(--font-serif); font-size: 0.95rem; font-weight: 600; margin-bottom: 0.6rem; color: var(--text); }
+  .pillar p { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem 0; }
+  .split-cell { border: 1px solid var(--border); background: var(--surface); padding: 1.6rem 1.5rem; }
+  .split-cell.hot { border-color: rgba(21,128,61,0.45); }
+  .split-cell h4 {
+    font-family: var(--font-mono); font-size: 0.74rem;
+    letter-spacing: 0.1em; color: var(--accent); margin-bottom: 0.7rem;
+  }
+  .split-cell.cool h4 { color: var(--accent2); }
+  .split-cell p { font-size: 0.82rem; margin: 0; }
+  .split-cell ul { margin: 0; padding-left: 1.1rem; }
+  .split-cell li { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.45rem; }
+
+  .arch-flow { margin: 2rem 0; display: flex; flex-direction: column; gap: 0; }
+  .arch-step { display: flex; align-items: stretch; gap: 0; }
+  .arch-step-num {
+    font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent);
+    width: 36px; min-width: 36px;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; position: relative;
+  }
+  .arch-step-num::after {
+    content: ''; position: absolute; bottom: 0; left: 50%;
+    width: 1px; height: 100%; background: var(--border); top: 50%;
+  }
+  .arch-step:last-child .arch-step-num::after { display: none; }
+  .arch-step-body {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    padding: 1.2rem 1.5rem; margin: 4px 0 4px 1rem; transition: border-color 0.2s;
+  }
+  .arch-step-body:hover { border-color: rgba(21,128,61,0.35); }
+  .arch-step-title {
+    font-family: var(--font-mono); font-size: 0.78rem;
+    color: var(--accent); letter-spacing: 0.1em; margin-bottom: 0.4rem;
+  }
+  .arch-step-desc { font-size: 0.82rem; color: var(--text-muted); }
+
+  .ref-card {
+    border: 1px solid var(--border); padding: 1.5rem;
+    background: var(--surface); margin-bottom: 1rem;
+    display: grid; grid-template-columns: auto 1fr; gap: 1.2rem;
+    align-items: start; transition: border-color 0.2s;
+  }
+  .ref-card:hover { border-color: rgba(21,128,61,0.35); }
+  .ref-tag {
+    font-family: var(--font-mono); font-size: 0.65rem;
+    padding: 0.2em 0.6em; border: 1px solid; white-space: nowrap;
+    align-self: start; margin-top: 0.1rem;
+  }
+  .ref-tag.warn { border-color: var(--accent3); color: var(--accent3); }
+  .ref-name { font-weight: 500; font-size: 0.88rem; margin-bottom: 0.4rem; }
+  .ref-desc { font-size: 0.78rem; color: var(--text-muted); }
+
+  .caution {
+    border: 1px dashed var(--accent3); background: rgba(217,119,6,0.04);
+    padding: 1.5rem 1.8rem; margin: 1.5rem 0;
+  }
+  .caution-title {
+    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em;
+    color: var(--accent3); margin-bottom: 0.8rem;
+  }
+  .caution ul { margin: 0; padding-left: 1.2rem; }
+  .caution li { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+
+  .conclusion-box {
+    background: linear-gradient(135deg, rgba(21,128,61,0.06), rgba(8,145,178,0.06));
+    border: 1px solid rgba(21,128,61,0.2);
+    padding: 3rem; text-align: center; position: relative; overflow: hidden;
+  }
+  .conclusion-box::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(21,128,61,0.07), transparent 70%);
+  }
+  .conclusion-box h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+  .conclusion-box p { max-width: 620px; margin: 0 auto; font-size: 0.92rem; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; }
+  .chip {
+    font-family: var(--font-mono); font-size: 0.65rem;
+    padding: 0.25em 0.75em; border: 1px solid var(--border);
+    color: var(--text-dim); letter-spacing: 0.08em;
+  }
+
+  footer {
+    border-top: 1px solid var(--border); padding: 3rem 0 2rem; text-align: center;
+    font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim);
+    letter-spacing: 0.08em; position: relative; z-index: 1;
+  }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse {
+    0%,100% { text-shadow: 0 0 20px rgba(21,128,61,0.25); }
+    50% { text-shadow: 0 0 40px rgba(21,128,61,0.55); }
+  }
+  @keyframes expandLine {
+    0% { width: 20px; opacity: 0.3; }
+    50% { width: 60px; opacity: 0.8; }
+    100% { width: 20px; opacity: 0.3; }
+  }
+
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 420px) {
+    nav { padding: 0 0.7rem; gap: 0.5rem; }
+    .nav-logo { font-size: 0.68rem; letter-spacing: 0.04em; }
+    .nav-right { gap: 0.6rem; }
+    .nav-page-tab { font-size: 0.62rem; }
+    .nav-lang a { padding: 0.28em 0.55em; font-size: 0.6rem; }
+  }
+  @media (max-width: 760px) {
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 640px) {
+    .pillars { grid-template-columns: 1fr; }
+    .split { grid-template-columns: 1fr; }
+    .concept-flow { gap: 0.3rem; }
+    .concept-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<nav>
+  <div class="nav-logo">ModularPhaseNet // Detailed</div>
+  <ul class="nav-links">
+    <li><a href="#abstract">Abstract</a></li>
+    <li><a href="#group">Group</a></li>
+    <li><a href="#hierarchy">Hierarchy</a></li>
+    <li><a href="#holonomy">Holonomy</a></li>
+    <li><a href="#attention">Attention</a></li>
+    <li><a href="#plan">Plan</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="modularphasenet_intro_en.html" class="nav-page-tab">Plain-language →</a>
+    <div class="nav-lang">
+      <a href="modularphasenet_ja.html">JA</a>
+      <a href="modularphasenet_en.html" class="current">EN</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrapper">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-tag">2026.08.11 · English source 2026.09.05 · arXiv submission pending</div>
+    <h1 class="hero-title">
+      <span class="wave">Modular</span>PhaseNet
+    </h1>
+    <div class="hero-subtitle">Finite-Cyclic Phase Geometry for Computable Semantic Hierarchy, Direction,<br>and Context Consistency in Standard Transformers</div>
+    <div class="hero-meta">
+      <span>👤 Kiyotaka Kasubuchi, Kazuo Fukiya</span>
+      <span>📅 August 11, 2026</span>
+      <span>📄 16 pages, 1 figure</span>
+    </div>
+    <p class="hero-desc">
+      A classical, integer-computable discretization of the continuous complex phase geometry of
+      QuantumPhaseNet. The real-valued hidden states of a standard Transformer are kept untouched;
+      only an <strong>auxiliary phase channel</strong> is quantized into a finite cyclic group
+      \(G=\langle g\rangle\subset\mathbb{F}_p^{\times}\).
+      Concept hierarchy comes from a quotient filtration, semantic direction from oriented group elements,
+      and contextual consistency from <strong>cycle holonomy</strong> — all computed exactly in integer arithmetic.
+      No quantum hardware, no complex matrix multiplication, no discrete-logarithm computation.
+    </p>
+    <div class="chips">
+      <span class="chip">finite cyclic group</span><span class="chip">g^a mod p</span><span class="chip">Cayley metric</span>
+      <span class="chip">quotient filtration</span><span class="chip">gauge connection</span><span class="chip">holonomy</span>
+      <span class="chip">ModPhase Attention</span><span class="chip">calibration</span><span class="chip">pre-registered</span>
+    </div>
+    <div class="scroll-hint">SCROLL TO EXPLORE</div>
+  </div>
+
+  <!-- ── ABSTRACT ── -->
+  <section id="abstract">
+    <div class="section-label">01 // ABSTRACT</div>
+    <h2>What the paper claims</h2>
+
+    <div class="abstract-box reveal">
+      <p>
+        ModularPhaseNet discretizes the continuous complex phase geometry introduced in QuantumPhaseNet
+        into a form that runs in <strong>classical integer arithmetic</strong>.
+        The real-valued hidden states of a standard Transformer are retained; what is quantized is only
+        an auxiliary phase channel. A continuous phase \(e^{i\phi}\) is represented as \(z=g^{a}\bmod p\),
+        so phase composition becomes group multiplication and relative phase becomes group division.
+      </p>
+      <p>
+        This substitution turns three structures into <strong>exactly computable discrete invariants</strong>:
+        conceptual hierarchy from a filtration of cyclic quotients, semantic direction from oriented group
+        elements attached to ordered pairs, and contextual consistency from gauge-invariant cycle holonomy.
+        Three components are added — a finite-phase encoder, a quotient-filtration hierarchy module, and a
+        group-valued connection module — and their outputs enter self-attention as
+        <strong>real-valued bias terms</strong>.
+      </p>
+      <p>
+        What is proved: quantization-distortion bounds, nesting of the quotient-induced partitions, gauge
+        invariance, a discrete integrability result for flat connections, and boundedness of the attention
+        output. What is hypothesized: that these invariants improve hierarchy recovery, discourse alignment,
+        contradiction detection and calibrated hallucination-risk prediction. That hypothesis comes with a
+        pre-registered evaluation plan and explicit falsification criteria.
+        <strong>No experiments have been carried out at this stage, and no empirical result is claimed.</strong>
+      </p>
+    </div>
+
+    <div class="pillars reveal">
+      <div class="pillar">
+        <div class="pillar-num">01</div>
+        <h4>Phase becomes finite</h4>
+        <p>A continuous phase is rounded onto \(q\) ticks and stored as the group element \(g^a \bmod p\). Composition, inversion and relative phase become exact integer operations that reproduce identically on the same input</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">02</div>
+        <h4>Hierarchy is nested quotients</h4>
+        <p>Quotient maps along a chain of orders \(q_0\mid q_1\mid\cdots\mid q_L\) give a monotone refinement from coarse to fine concepts. Combined with a depth variable, they define an asymmetric ancestor relation</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">03</div>
+        <h4>Consistency is "does it return to 1"</h4>
+        <p>Independently predicted edge connections are multiplied along a cycle. If the product is not the identity, the local inferences cannot be reconciled globally</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── GROUP ── -->
+  <section id="group">
+    <div class="section-label">02 // FINITE PHASE</div>
+    <h2>Quantizing a continuous phase into a finite cyclic group</h2>
+
+    <div class="card reveal">
+      <h3>Group parameters</h3>
+      <p>
+        Take a prime \(p\), an order \(q\mid(p-1)\), and an element \(g\in\mathbb{F}_p^{\times}\) of order \(q\).
+        That such an element exists is the classical fact that \(\mathbb{F}_p^{\times}\) is cyclic
+        (Ireland and Rosen 1990), and the resulting group is \(G\cong C_q\cong\mathbb{Z}/q\mathbb{Z}\).
+      </p>
+      <div class="math-box">
+        <span class="math-label">group and quantization</span>
+        \[ G=\langle g\rangle=\{1,g,g^{2},\dots,g^{q-1}\}\subset\mathbb{F}_p^{\times} \]
+        \[ Q_{q}(\phi)=\mathrm{round}\!\left(\frac{q\phi}{2\pi}\right)\bmod q,
+           \qquad \eta_{q}(\phi)=g^{\,Q_{q}(\phi)}\bmod p \]
+      </div>
+      <p>
+        The implementation keeps <strong>the exponent label \(a\in\{0,\dots,q-1\}\) and the group element
+        \(z=g^{a}\bmod p\) together as a pair</strong>. This is the decisive design choice: the discrete
+        logarithm \(a=\log_g z\) never has to be solved at inference time. Composition, inversion and
+        relative phase all close within integer multiplication and division.
+      </p>
+      <div class="concept-flow reveal">
+        <div class="concept-node">continuous \(e^{i\phi}\)</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">rounding \(Q_q(\phi)\)</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">group element \(z=g^{a}\bmod p\)</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">relative phase \(z_i^{-1}z_j\)</div>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h3><span class="badge thm">THEOREM 1</span> &nbsp;Distortion of finite phase quantization</h3>
+      <p>
+        The gap between geodesic distance on the circle and the distance recovered from the group word
+        metric is bounded by one tick width, and the rounding defect of composition takes only three values.
+      </p>
+      <div class="math-box">
+        <span class="math-label">distortion and composition defect</span>
+        \[ \left| d_{S^{1}}(\phi,\psi)-\frac{2\pi}{q}\,d_{G}\!\left(\eta_{q}(\phi),\eta_{q}(\psi)\right)\right|\le\frac{2\pi}{q} \]
+        \[ \delta_{Q}=Q_{q}(\phi+\psi)-Q_{q}(\phi)-Q_{q}(\psi)\ (\mathrm{mod}\ q)\in\{-1,0,1\} \]
+      </div>
+      <p>
+        So the construction approaches the continuous version monotonically as \(q\) grows.
+        How fast it does so is itself an object of study: it appears below as RQ5 of the evaluation plan.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>Why this deserves the name "discrete phase geometry"</h3>
+      <p>
+        Endowing a finite set with the discrete topology yields an almost trivial structure.
+        What is non-trivial here are three ingredients, and the paper explicitly limits its novelty claim to them.
+      </p>
+      <div class="split">
+        <div class="split-cell hot">
+          <h4>NON-TRIVIAL</h4>
+          <ul>
+            <li>the Cayley graph generated by \(S=\{g,g^{-1}\}\)</li>
+            <li>the word metric on that graph (shortest number of ticks on the circle)</li>
+            <li>the subgroup/quotient filtration together with a group-valued connection on the token graph</li>
+          </ul>
+        </div>
+        <div class="split-cell cool">
+          <h4>DISCRETE WAVELENGTH</h4>
+          <p>
+            Since \(q\) ticks correspond to one full revolution, a smaller phase change yields a longer
+            wavelength. The word metric changes with the generator, so the model specification fixes \(g\)
+            and <strong>generator sensitivity is reported as an ablation</strong>.
+          </p>
+        </div>
+      </div>
+      <div class="math-box">
+        <span class="math-label">word metric and discrete semantic wavelength</span>
+        \[ d_{q}(a,b)=\min\{|a-b|,\;q-|a-b|\},\qquad d_{G}(g^{a},g^{b})=d_{q}(a,b) \]
+        \[ \lambda_{t}^{(q)}=\frac{q\,c_{s}(t)}{d_{G}(z_{t},z_{t+1})+\varepsilon_{q}} \]
+      </div>
+      <p>
+        As in QuantumPhaseNet, the correspondence "long wavelength = higher-level concept" is stated as an
+        <strong>empirical hypothesis, not a theorem</strong>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── HIERARCHY ── -->
+  <section id="hierarchy">
+    <div class="section-label">03 // HIERARCHY</div>
+    <h2>A concept hierarchy from a quotient filtration</h2>
+
+    <div class="card reveal">
+      <h3>Nested quotient maps</h3>
+      <p>
+        Choose orders \(1=q_{0}\mid q_{1}\mid\cdots\mid q_{L}=q\) and set \(g_{\ell}=g^{\,q/q_{\ell}}\), so that
+        \(G_{\ell}=\langle g_{\ell}\rangle\) is cyclic of order \(q_\ell\). The projections are modular
+        exponentiations.
+      </p>
+      <div class="math-box">
+        <span class="math-label">quotient projection</span>
+        \[ \pi_{\ell}\colon G\to G_{\ell},\qquad \pi_{\ell}(z)=z^{\,q/q_{\ell}}\bmod p,
+           \qquad \pi_{\ell}(g^{a})=g_{\ell}^{\,a\bmod q_{\ell}} \]
+      </div>
+      <h3><span class="badge thm">THEOREM 2</span> &nbsp;Nesting of the hierarchical partition</h3>
+      <p>
+        If \(q_{\ell}\mid q_{m}\) with \(\ell\le m\), then \(\pi_{m}(x)=\pi_{m}(y)\) implies
+        \(\pi_{\ell}(x)=\pi_{\ell}(y)\). The partitions generated by \(\pi_{0},\dots,\pi_{L}\) are therefore
+        <strong>monotonically refined</strong> from coarse to fine concepts. The proof takes two lines.
+        The point is that hierarchical consistency is guaranteed by the <strong>group structure itself</strong>,
+        not by training.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>Depth makes the relation asymmetric</h3>
+      <p>
+        A group phase alone can say that two concepts lie on the same branch, but not which one is
+        superordinate. Each concept \(c\) therefore carries both a phase \(z_c\) and a depth \(\ell_c\).
+      </p>
+      <div class="math-box">
+        <span class="math-label">address and ancestor relation</span>
+        \[ A(c)=\pi_{\ell_{c}}(z_{c})\in G_{\ell_{c}} \]
+        \[ u\preceq v \iff \ell_{u}\le\ell_{v}\ \ \text{and}\ \ \pi_{\ell_{u}}(z_{v})=A(u) \]
+      </div>
+      <p>
+        During training each token emits a phase distribution \(\mathbf{p}_i\in\Delta^{q-1}\) and a depth
+        distribution \(\mathbf{r}_i\in\Delta^{L}\); folding to level \(\ell\) then gives a differentiable
+        <strong>soft ancestor score</strong> \(H(u\to v)\in[0,1]\) that coincides with the indicator above
+        in the hard one-hot limit.
+      </p>
+      <div class="math-box">
+        <span class="math-label">folding and soft ancestor score</span>
+        \[ (P_{\ell}\mathbf{p}_{i})(s)=\sum_{a\equiv s\ (\mathrm{mod}\ q_{\ell})}\mathbf{p}_{i}(a) \]
+        \[ H(u\to v)=\sum_{\ell\le m}\mathbf{r}_{u}(\ell)\,\mathbf{r}_{v}(m)\,
+           \bigl\langle P_{\ell}\mathbf{p}_{u},\,P_{\ell}\mathbf{p}_{v}\bigr\rangle\in[0,1] \]
+      </div>
+      <p>
+        Axes such as <em>is-a</em>, <em>part-of</em>, causal abstraction, function and attribute are assigned to
+        <strong>separate heads carrying different cyclic groups</strong> and combined with weights \(w_h\).
+        Each axis is identified through supervision, contrastive learning or sparsity regularization.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── CONNECTION ── -->
+  <section id="connection">
+    <div class="section-label">04 // CONNECTION</div>
+    <h2>Semantic direction and the finite-group gauge connection</h2>
+
+    <div class="card reveal">
+      <h3>Edge connections must be predicted independently</h3>
+      <p>
+        Build a directed graph \(\mathcal{G}=(V,E)\) over tokens, sentences or propositions. Vertices carry a
+        phase \(z_i\in G\); each edge \((j\to i)\) carries a connection \(U_{ij}\in G\) with
+        \(U_{ji}=U_{ij}^{-1}\) representing parallel transport.
+      </p>
+      <div class="caution">
+        <div class="caution-title">⚠ THE DESIGN FORK</div>
+        <ul>
+          <li>\(U_{ij}\) must <strong>not</strong> be defined as \(z_i z_j^{-1}\). If it were, every cycle product would be identically the identity and the consistency loss would carry no information.</li>
+          <li>So \(U_{ij}\) is predicted <strong>independently</strong> by an edge encoder. Trivial node-derived edges are reported as a negative control.</li>
+        </ul>
+      </div>
+      <div class="math-box">
+        <span class="math-label">gauge transformation and covariant residual</span>
+        \[ z_{i}\mapsto h_{i}z_{i},\qquad U_{ij}\mapsto h_{i}U_{ij}h_{j}^{-1} \]
+        \[ r_{ij}=z_{i}^{-1}U_{ij}z_{j}\in G,\qquad
+           C^{G}_{ij}=\exp\!\left[-\frac{d_{G}(r_{ij},1)^{2}}{\sigma_{c}^{2}}\right]\in(0,1] \]
+      </div>
+      <h3><span class="badge thm">THEOREM 3</span> &nbsp;Local gauge invariance of the covariant residual</h3>
+      <p>
+        A cyclic group is abelian, so \((h_i z_i)^{-1}(h_i U_{ij}h_j^{-1})(h_j z_j)=z_i^{-1}U_{ij}z_j\).
+        The residual, and therefore the consistency score \(C^G_{ij}\), is
+        <strong>independent of the local choice of basis</strong> — the same discipline of never using
+        coordinate-dependent quantities as observables that the previous paper adopted.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>Where the text is going</h3>
+      <p>
+        A target direction \(D_S\in G\) is obtained from the prompt, summary supervision, an evidence graph,
+        or a pooling head. Alignment with the edge direction is normalized to \([-1,1]\), and since
+        \(U_{ij}\) is oriented, in general \(A^{\mathrm{dir}}_{ij}\neq A^{\mathrm{dir}}_{ji}\).
+      </p>
+      <div class="math-box">
+        <span class="math-label">direction alignment and group Fréchet medoid</span>
+        \[ A^{\mathrm{dir}}_{ij}=1-\frac{2\,d_{G}(U_{ij},D_{S})}{\lfloor q/2\rfloor}\in[-1,1] \]
+        \[ D_{S}=\arg\min_{d\in G}\sum_{(i,j)\in E_{S}}\alpha_{ij}\,d_{G}(U_{ij},d)^{2} \]
+      </div>
+      <p>
+        The overall direction is a <strong>medoid on the group</strong>, not a mean angle.
+        The group is finite, so it is found exactly by exhaustive search or histogram aggregation.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── HOLONOMY ── -->
+  <section id="holonomy">
+    <div class="section-label">05 // HOLONOMY</div>
+    <h2>Does the loop return to the identity?</h2>
+
+    <div class="card reveal">
+      <h3>Wilson loops and cycle risk</h3>
+      <p>
+        For a directed cycle \(C=(i_0,i_1,\dots,i_m=i_0)\), the holonomy is the product of the connections
+        along it. Because the group is abelian, this is invariant under local gauge transformations.
+      </p>
+      <div class="math-box">
+        <span class="math-label">holonomy and cycle risk</span>
+        \[ W_{C}=\prod_{t=0}^{m-1}U_{i_{t}i_{t+1}}\bmod p,\qquad
+           R^{\mathrm{cyc}}_{C}=\left(\frac{2\,d_{G}(W_{C},1)}{q}\right)^{2} \]
+      </div>
+      <p>
+        A triangular cycle is the smallest possible test of
+        <strong>whether three local inferences can hold at once</strong>.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3><span class="badge thm">THEOREM 4</span> &nbsp;Global integrability of a flat connection (the core result)</h3>
+      <p>
+        On a connected graph with \(U_{ji}=U_{ij}^{-1}\), if <strong>\(W_C=1\) for every cycle</strong>, then
+        there exist vertex phases \(\{\zeta_i\in G\}\) with \(U_{ij}=\zeta_i\zeta_j^{-1}\) on every edge, and
+        the family is unique up to a common left multiplication.
+      </p>
+      <p>
+        The proof fixes a root, defines \(\zeta_i\) as the product along any path to \(i\), and uses
+        \(W_C=1\) to show path-independence. Read semantically:
+        <strong>if local semantic transitions contradict each other on no cycle, they can be integrated into
+        a single global assignment of semantic phases</strong>.
+        This is the finite-cyclic-group counterpart of the connection, curvature and cohomological
+        consistency of QuantumPhaseNet.
+      </p>
+      <div class="split">
+        <div class="split-cell hot">
+          <h4>TRAINING — SOFT</h4>
+          <p>Edge phase distributions \(\mathbf{u}_e\) are composed by cyclic convolution on the group, making \(\mathcal{L}_{\mathrm{cyc}}\) differentiable in the real group algebra</p>
+        </div>
+        <div class="split-cell cool">
+          <h4>INFERENCE — HARD</h4>
+          <p>\(W_C\) is the modular-exponential product of hard group elements, and equality with the identity is an exact integer comparison</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ATTENTION ── -->
+  <section id="attention">
+    <div class="section-label">06 // ATTENTION</div>
+    <h2>ModPhase Attention</h2>
+
+    <div class="card reveal">
+      <h3>Everything enters as a real-valued bias</h3>
+      <p>
+        Each phase head emits phase logits from the hidden state. Training uses a straight-through
+        Gumbel-Softmax; inference takes the arg-max and looks the group element up in a precomputed table of
+        \(\mathrm{pow}(g_h,a,p_h)\), so run time costs an <strong>\(O(1)\) integer lookup</strong>.
+      </p>
+      <div class="math-box">
+        <span class="math-label">the ModPhase logit</span>
+        \[ \ell^{\mathrm{base}}_{ij}=\frac{\mathbf{q}_{i}^{\top}\mathbf{k}_{j}}{\sqrt{d_{k}}}+M_{ij} \]
+        \[ \ell^{\mathrm{MP}}_{ij}=\ell^{\mathrm{base}}_{ij}
+           +\alpha_{c}C^{G}_{ij}+\alpha_{h}H(i\to j)+\alpha_{d}A^{\mathrm{dir}}_{ij}
+           -\alpha_{r}R^{\mathrm{ctx}}_{ij}+\alpha_{e}E^{\mathrm{evid}}_{ij} \]
+      </div>
+      <p>
+        \(R^{\mathrm{ctx}}_{ij}\) is the mean risk over short cycles containing the edge, and
+        \(E^{\mathrm{evid}}_{ij}\in[0,1]\) is evidence support from retrieved documents, citations or a
+        knowledge graph. Each \(\alpha_\bullet\ge0\) is parameterized through a softplus.
+        Because every quantity computed in the phase group arrives as a
+        <strong>real-valued scalar bias</strong>, no kernel of an existing Transformer implementation has to
+        be modified — the main practical advantage of the design.
+      </p>
+      <h3><span class="badge thm">THEOREMS 5 &amp; 6</span> &nbsp;Gauge invariance and boundedness</h3>
+      <p>
+        If the consistency, hierarchy, direction, cycle-risk and evidence scores are built only from
+        gauge-invariant quantities, the whole logit is gauge invariant. And if \(\lVert v_j\rVert_2\le B_V\),
+        the softmax weights are nonnegative and sum to one, so the output is a convex combination and
+        \(\lVert Y_i\rVert_2\le B_V\).
+      </p>
+      <div class="caution">
+        <div class="caution-title">⚠ WHAT IS NOT CLAIMED</div>
+        <ul>
+          <li>Hard quantization is discontinuous at cell boundaries, so <strong>no global Lipschitz continuity is claimed</strong> for the model as a whole.</li>
+          <li>A local Lipschitz estimate is available only for the relaxed model: soft distributions with \(\tau>0\), bounded logits, finite-distance kernels.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── RISK ── -->
+  <section id="risk">
+    <div class="section-label">07 // RISK</div>
+    <h2>Connection to hallucination risk</h2>
+
+    <div class="card reveal">
+      <p>
+        QuantumPhaseNet's decomposition into directional deviation, path deviation, curvature deviation,
+        insufficient evidence and semantic uncertainty becomes concrete in the finite-group version below.
+        The entropy \(\mathbb{H}(\mathbf{p}_t)\) is taken over
+        <strong>semantic classes or the phase group, not over token strings</strong>.
+      </p>
+      <div class="math-box">
+        <span class="math-label">risk score and calibration</span>
+        \[ \mathcal{R}^{\mathrm{MP}}_{t}=\beta_{h}(1-H_{t})+\beta_{d}(1-A^{\mathrm{dir}}_{t})
+           +\beta_{c}R^{\mathrm{cyc}}_{t}+\beta_{e}R^{\mathrm{evid}}_{t}+\beta_{u}\mathbb{H}(\mathbf{p}_{t}) \]
+        \[ \widehat{P}(\mathrm{error}_{t}=1\mid\mathcal{R}_{t})=\sigma(a\mathcal{R}_{t}+b) \]
+      </div>
+      <p>
+        By definition \(\mathcal{R}^{\mathrm{MP}}_t\) is <strong>a score, not an error probability</strong>.
+        A probabilistic reading is granted only after fitting a sigmoid or an isotonic regression on a
+        calibration set, evaluated by Brier score, ECE, AUROC, AUPRC and risk–coverage curves.
+        Above threshold, the system chooses among answering, re-retrieving, regenerating and abstaining.
+        Any guarantee requires stating the assumptions of conformal abstention separately
+        (Abbasi-Yadkori et al. 2024).
+      </p>
+    </div>
+  </section>
+
+  <!-- ── TWO LAYER ── -->
+  <section id="training">
+    <div class="section-label">08 // TRAINING &amp; INFERENCE</div>
+    <h2>The two-layer structure</h2>
+
+    <p class="reveal">
+      Modular exponentiation, arg-max and equality comparison are all non-differentiable. Leaving this vague
+      would be a fatal weakness at review time, so the paper states the two-layer structure explicitly.
+    </p>
+
+    <div class="arch-flow reveal">
+      <div class="arch-step">
+        <div class="arch-step-num">T1</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">SOFT PHASE</div>
+          <div class="arch-step-desc">Phases are kept soft as \(\mathbf{p}_i(a)\) and depths as \(\mathbf{r}_i(\ell)\)</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">T2</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">STRAIGHT-THROUGH</div>
+          <div class="arch-step-desc">Hard one-hot forward, soft probabilities backward — the default gradient estimator</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">T3</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">FOLDING &amp; CONVOLUTION</div>
+          <div class="arch-step-desc">Quotient projection via the folding matrix; cycle products via cyclic convolution of group distributions</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">T4</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">ANNEALING</div>
+          <div class="arch-step-desc">The temperature \(\tau\) is annealed downward in stages while code usage is monitored</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">I1</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">HARD LOOKUP</div>
+          <div class="arch-step-desc">Fix \(a=\arg\max\mathbf{p}(a)\) and look up \(z=\mathrm{pow}(g,a,p)\)</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">I2</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">INTEGER ARITHMETIC</div>
+          <div class="arch-step-desc">Relative phases, quotient projections and cycle products are computed exactly in integers</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">I3</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">RISK GATE</div>
+          <div class="arch-step-desc">Group kernels become real-valued biases; the calibrated risk selects answer / re-retrieve / regenerate / abstain</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h3>The NTT is an implementation device, not a semantics</h3>
+      <p>
+        When \(N\mid(p-1)\), an \(N\)-th primitive root allows the number theoretic transform over the finite
+        field, computing the cyclic convolution of quantized group distributions in \(O(q\log q)\).
+        But the paper is explicit that <strong>coefficients over \(\mathbb{F}_p\) are not given the energy
+        interpretation of complex amplitudes</strong>: a finite field has no order or absolute value, so
+        "a small index \(k\) is semantically low-frequency" does not follow automatically.
+        Low-frequency semantics are established by supervision or by a spectral module on the real-valued side.
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>Complexity: it does not get faster</h3>
+      <div class="math-box">
+        <span class="math-label">additional cost</span>
+        \[ T_{\mathrm{MP}}=O(NHd_{\phi})+O(NHL)+O(N^{2}H)+O(|\mathcal{C}|H) \]
+      </div>
+      <p>
+        Dense attention is \(O(N^2 d)\), and ModularPhaseNet <strong>does not improve that complexity</strong>.
+        The claim is only that the pair-bias term \(O(N^2H)\) is of lower order when \(H\ll d\).
+        The value lies not in acceleration but in the inductive bias of
+        <strong>exact discrete composition, reproducibility, quotient projection and cycle checking</strong>.
+        The recommended minimum setting is \(p=257,\ q=256,\ g=3\) (so \(q_\ell=2^\ell,\ \ell=0..8\)), starting
+        from \(q=32\) or \(64\) to keep training cheap, with phase adapters inserted into the
+        <strong>top two to four layers</strong> of a pretrained Transformer.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── NUMERIC ── -->
+  <section id="numeric">
+    <div class="section-label">09 // NUMERICAL EXAMPLE</div>
+    <h2>A worked example: \(p=17,\ q=16,\ g=3\)</h2>
+
+    <p class="reveal">
+      With \(q_1=2,\ q_2=4,\ q_3=8,\ q_4=16\), the quotient projections act directly as a "concept address".
+    </p>
+
+    <div class="table-scroll reveal">
+      <table class="energy-table">
+        <thead>
+          <tr><th>concept</th><th>exponent a</th><th>element z</th><th>q=2</th><th>q=4</th><th>q=8</th><th>q=16</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>dog</td><td class="mono">5</td><td class="mono">5</td><td class="mono">16</td><td class="mono">13</td><td class="mono">8</td><td class="mono">5</td></tr>
+          <tr><td>wolf</td><td class="mono">13</td><td class="mono">12</td><td class="mono">16</td><td class="mono">13</td><td class="mono">8</td><td class="mono">12</td></tr>
+          <tr><td>cat</td><td class="mono">9</td><td class="mono">14</td><td class="mono">16</td><td class="mono">13</td><td class="mono">9</td><td class="mono">14</td></tr>
+          <tr><td>lion</td><td class="mono">1</td><td class="mono">3</td><td class="mono">16</td><td class="mono">13</td><td class="mono">9</td><td class="mono">3</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="reveal">
+      At \(q=2\) all four fall into the same <em>animal</em> class; at \(q=4\) the same <em>mammal</em> class;
+      at \(q=8\) they split into \(\{\)dog, wolf\(\}\) and \(\{\)cat, lion\(\}\); at \(q=16\) they become
+      individual concepts. Recording depth alongside the address expresses
+      animal \(\preceq\) mammal \(\preceq\) canine \(\preceq\) dog as an asymmetric relation.
+    </p>
+
+    <div class="card reveal">
+      <h3>A consistent and an inconsistent triangle</h3>
+      <div class="math-box">
+        <span class="math-label">consistent / inconsistent</span>
+        \[ U_{12}=3^{2}=9,\quad U_{23}=3^{3}=10,\quad U_{31}=3^{11}=7
+           \ \Longrightarrow\ W_{C}=9\cdot10\cdot7\equiv1 \pmod{17} \]
+        \[ \text{mispredicting } U_{31}=3^{12}=4\ \Longrightarrow\ W_{C}=9\cdot10\cdot4\equiv3\not\equiv1 \pmod{17} \]
+      </div>
+      <p>
+        In the second case, three integer multiplications establish that
+        <strong>no global phase assignment satisfies all three local inferences at once</strong>.
+        That is the whole of the cycle-consistency test.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── PLAN ── -->
+  <section id="plan">
+    <div class="section-label">10 // EVALUATION PLAN</div>
+    <h2>A pre-registered plan — not yet carried out</h2>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ NO EXPERIMENTS HAVE BEEN RUN</div>
+      <ul>
+        <li>This paper contains <strong>theory and a pre-registered plan only</strong>. No measured result is reported.</li>
+        <li>Research questions, datasets, baselines, ablations and statistical design are fixed before any result is observed.</li>
+        <li>Because the previous paper did include measurements, hiding the absence of experiments in a sequel would mislead readers — so it is declared in both the abstract and the submission comments.</li>
+      </ul>
+    </div>
+
+    <div class="table-scroll reveal">
+      <table class="energy-table">
+        <thead><tr><th>RQ</th><th>Question</th><th>Metrics</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">RQ1</td><td>Can the quotient filtration recover hypernym–hyponym relations and conceptual depth?</td><td>Spearman ρ, ancestor F1, depth MAE, transitivity violations (HyperLex, WordNet)</td></tr>
+          <tr><td class="mono">RQ2</td><td>Do oriented group elements predict sentence order, instruction following and argument maintenance better than cosine similarity?</td><td>ordering accuracy, discourse retention</td></tr>
+          <tr><td class="mono">RQ3</td><td>Does cycle risk detect multi-hop contradictions that local entailment alone misses?</td><td>AUROC, macro-F1, cycle-risk separation (FEVER, NLI, synthetic multi-hop)</td></tr>
+          <tr><td class="mono">RQ4</td><td>Does the geometric risk calibrate error better than MSP, entropy, SelfCheckGPT and semantic entropy?</td><td>Brier, ECE, AUPRC, risk–coverage (TruthfulQA, FActScore, LongFact/SAFE)</td></tr>
+          <tr><td class="mono">RQ5</td><td>Does the gap to continuous QuantumPhaseNet narrow as \(q\) grows, and where is the accuracy/cost elbow?</td><td>accuracy–cost curve over \(q\in\{8,16,32,64,128,256\}\)</td></tr>
+          <tr><td class="mono">RQ6</td><td>Is there any difference among angle binning, a learned categorical code, and a modular-exponentiation checksum?</td><td>comparison under an equal budget</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="split reveal">
+      <div class="split-cell hot">
+        <h4>REQUIRED ABLATIONS</h4>
+        <ul>
+          <li>sweeping \(q\); single vs multi-axis group heads</li>
+          <li>hard / soft / straight-through gradient estimators</li>
+          <li>node-derived edges vs independently predicted edges</li>
+          <li>no cycle loss; no quotient hierarchy</li>
+          <li>change of generator \(g\mapsto g^{u}\); random permutation of phase labels</li>
+          <li>direction reversal \(U_{ij}\mapsto U_{ij}^{-1}\); removal of evidence and calibration terms</li>
+        </ul>
+      </div>
+      <div class="split-cell cool">
+        <h4>STATISTICAL DESIGN</h4>
+        <ul>
+          <li>identical tokenizer, data order, parameter budget and training tokens</li>
+          <li>at least five seeds; paired bootstrap intervals and effect sizes</li>
+          <li>multiple comparisons corrected by Holm or an equivalent</li>
+          <li>additional FLOPs, memory and latency reported alongside performance</li>
+          <li>the risk calibrator's training split kept separate from final evaluation</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CLAIMS ── -->
+  <section id="claims">
+    <div class="section-label">11 // CLAIMS MAP</div>
+    <h2>Proved, hypothesized, and deliberately not claimed</h2>
+
+    <div class="table-scroll reveal">
+      <table class="energy-table">
+        <thead><tr><th>Type</th><th>Statement</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge thm">THM</span></td><td>Quantization distortion at most \(2\pi/q\); composition defect in \(\{-1,0,1\}\)</td><td>proved</td></tr>
+          <tr><td><span class="badge thm">THM</span></td><td>Nesting of quotient-induced partitions (monotone coarse-to-fine refinement)</td><td>proved</td></tr>
+          <tr><td><span class="badge thm">THM</span></td><td>Local gauge invariance of the covariant residual and consistency score</td><td>proved</td></tr>
+          <tr><td><span class="badge thm">THM</span></td><td>Global integrability of a flat connection (unique up to common left multiplication)</td><td>proved</td></tr>
+          <tr><td><span class="badge thm">THM</span></td><td>Boundedness of the ModPhase Attention output norm</td><td>proved</td></tr>
+          <tr><td><span class="badge emp">EMP</span></td><td>The discrete invariants improve hierarchy recovery, discourse alignment, contradiction detection and risk calibration</td><td>hypothesis, untested</td></tr>
+          <tr><td><span class="badge emp">EMP</span></td><td>Long wavelength corresponds to a higher-level concept</td><td>hypothesis, untested</td></tr>
+          <tr><td><span class="badge open">NOT CLAIMED</span></td><td>Making the phase finite by itself eliminates hallucination</td><td>not claimed</td></tr>
+          <tr><td><span class="badge open">NOT CLAIMED</span></td><td>Modular exponentiation has more representational power than a plain residue index</td><td>not claimed</td></tr>
+          <tr><td><span class="badge open">NOT CLAIMED</span></td><td>A small NTT index automatically represents a higher-level concept</td><td>not claimed</td></tr>
+          <tr><td><span class="badge open">NOT CLAIMED</span></td><td>Quantum-equivalent amplitude amplification has been realized classically</td><td>not claimed</td></tr>
+          <tr><td><span class="badge open">NOT CLAIMED</span></td><td>The method is asymptotically faster than dense attention</td><td>not claimed</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">Falsification criteria</h3>
+    <p class="reveal">
+      The paper declares in advance that reproducibly observing any of the following rejects or narrows the
+      corresponding part of the central hypothesis.
+    </p>
+    <div class="caution reveal">
+      <div class="caution-title">FALSIFICATION CRITERIA</div>
+      <ul>
+        <li>The quotient hierarchy fails to outperform a plain categorical embedding or an Order Embedding.</li>
+        <li>Performance varies substantially with a change of generator, so coordinate dependence cannot be controlled.</li>
+        <li>Cycle risk fails to correlate with contradiction labels and cannot be distinguished from a phase-shuffled control.</li>
+        <li>Increasing \(q\) fails to improve the approximation to the continuous version.</li>
+        <li>Brier score and ECE of the risk fail to beat an entropy baseline.</li>
+        <li>The improvement is explained entirely by more parameters or stronger retrieval.</li>
+        <li>Factuality gained per unit of extra compute is smaller than that of a verifier or reranker.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── LIMITS ── -->
+  <section id="limits">
+    <div class="section-label">12 // LIMITS &amp; REVIEWS</div>
+    <h2>Limitations and anticipated reviewer comments</h2>
+
+    <div class="ref-card reveal">
+      <div class="ref-tag warn">Q1</div>
+      <div>
+        <div class="ref-name">"The topology of a finite group is discrete and therefore trivial."</div>
+        <div class="ref-desc">The novelty claim is restricted: it lies in the integration of the Cayley metric, the quotient filtration, the group-valued connection and cycle holonomy — not in the topology alone.</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <div class="ref-tag warn">Q2</div>
+      <div>
+        <div class="ref-name">"\(C_q\cong\mathbb{Z}/q\mathbb{Z}\), so modular exponentiation is unnecessary."</div>
+        <div class="ref-desc">No increase in representational power is claimed. Modular exponentiation is an implementation representation giving exact composition, subgroup projection, NTT compatibility, checksums and reproducibility. A plain residue baseline is always included.</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <div class="ref-tag warn">Q3</div>
+      <div>
+        <div class="ref-name">"Modular exponentiation is not differentiable."</div>
+        <div class="ref-desc">Training-time group-algebra distributions with straight-through estimation are separated from hard inference-time operations, and the gradient estimator itself is ablated.</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <div class="ref-tag warn">Q4</div>
+      <div>
+        <div class="ref-name">"If the cycle product is built from node differences it is always the identity."</div>
+        <div class="ref-desc">Edge connections are predicted independently; trivial node-derived edges are reported as a negative control.</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <div class="ref-tag warn">Q5</div>
+      <div>
+        <div class="ref-name">"A regular cyclic quotient cannot represent an irregular ontology."</div>
+        <div class="ref-desc">Multiple heads, unused codes, depth masks and product codes are used, with comparison against Order and Poincaré baselines. No universal representability is claimed.</div>
+      </div>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">Limitations stated in the paper</h3>
+    <div class="split reveal">
+      <div class="split-cell hot">
+        <h4>STRUCTURAL</h4>
+        <ul>
+          <li>The modular-exponential representation is isomorphic to the exponent-residue one and creates no new capacity by itself</li>
+          <li>Small \(q\) causes aliasing at phase boundaries and code collisions</li>
+          <li>The word metric and the signed direction depend on the generator</li>
+          <li>A single chain of cyclic quotients assumes regular branching; multiple inheritance needs several heads or another geometry</li>
+        </ul>
+      </div>
+      <div class="split-cell cool">
+        <h4>PRACTICAL</h4>
+        <ul>
+          <li>Hard codes, temperature annealing and codebook collapse can destabilize training</li>
+          <li>A dense pair bias does not remove the quadratic complexity of attention</li>
+          <li>Group-code values carry no intrinsic natural-language meaning; they are identified only through supervision and invariants</li>
+          <li>Missing knowledge, retrieval failure and citation error are not explained by group consistency; evidence and calibration remain necessary</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CONCLUSION ── -->
+  <section id="conclusion">
+    <div class="conclusion-box reveal">
+      <div class="section-label" style="text-align:center;">13 // CONCLUSION</div>
+      <h2>Conclusion</h2>
+      <p>
+        ModularPhaseNet discretizes the continuous complex phase of QuantumPhaseNet into a
+        <strong>finite cyclic group channel</strong> that coexists with a real-valued Transformer.
+        Concept hierarchy is the nested partition of quotient groups together with depth, semantic direction
+        is an oriented edge group element, and contextual consistency is cycle holonomy.
+      </p>
+      <p style="margin-top:1rem;">
+        The theoretical value is that
+        <strong>whether local semantic transitions integrate into a single global assignment becomes checkable
+        on a finite group</strong>. The practical value is that hierarchy, direction, contradiction, evidence
+        and uncertainty become <strong>observable within one and the same model</strong>, with no complex-valued
+        model and no quantum hardware.
+      </p>
+      <p style="margin-top:1rem;">
+        Reduction of hallucination is not a theorem but a
+        <strong>calibratable empirical hypothesis whose inputs are exact invariants</strong> —
+        and this paper fixes the plan and the falsification criteria before testing it.
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrapper" style="padding-top:0; padding-bottom:0;">
+    <a href="index.html" style="color:inherit;">Index</a> &nbsp;|&nbsp; ModularPhaseNet explainer (detailed) &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp; <a href="modularphasenet_intro_en.html" style="color:inherit;">Plain-language</a> &nbsp;|&nbsp; <a href="relation_en.html" style="color:inherit;">How the papers relate</a> &nbsp;|&nbsp; <a href="quantumphasenet_en.html" style="color:inherit;">QuantumPhaseNet</a> &nbsp;|&nbsp; <a href="wavephasenet_en.html" style="color:inherit;">WavePhaseNet</a>
+  </div>
+</footer>
+
+<script>
+// ── Finite cyclic phase lattice ──
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, frame = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const RINGS = [
+  { cx: 0.24, cy: 0.32, r: 0.16, q: 16, dir:  1 },
+  { cx: 0.76, cy: 0.62, r: 0.22, q: 32, dir: -1 },
+  { cx: 0.50, cy: 0.88, r: 0.13, q: 8,  dir:  1 }
+];
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  const S = Math.min(W, H);
+
+  RINGS.forEach((rg, idx) => {
+    const cx = rg.cx * W, cy = rg.cy * H, rad = rg.r * S;
+    ctx.beginPath();
+    ctx.strokeStyle = '#15803d';
+    ctx.globalAlpha = 0.08;
+    ctx.lineWidth = 1;
+    ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+    ctx.stroke();
+
+    const rot = rg.dir * frame * 0.004 + idx;
+    for (let a = 0; a < rg.q; a++) {
+      const th = (2 * Math.PI * a) / rg.q + rot;
+      const x = cx + Math.cos(th) * rad;
+      const y = cy + Math.sin(th) * rad;
+      const lit = 0.5 + 0.5 * Math.cos(th * 3 - frame * 0.02);
+      ctx.beginPath();
+      ctx.fillStyle = lit > 0.6 ? '#15803d' : '#0891b2';
+      ctx.globalAlpha = 0.10 + 0.22 * lit;
+      ctx.arc(x, y, 1.6 + 1.4 * lit, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const base = rot * 1.3;
+    const pts = [0, 1, 2].map(k => {
+      const th = base + (2 * Math.PI * k) / 3;
+      return [cx + Math.cos(th) * rad, cy + Math.sin(th) * rad];
+    });
+    ctx.beginPath();
+    ctx.strokeStyle = '#15803d';
+    ctx.globalAlpha = 0.10;
+    ctx.lineWidth = 1;
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    ctx.lineTo(pts[1][0], pts[1][1]);
+    ctx.lineTo(pts[2][0], pts[2][1]);
+    ctx.closePath();
+    ctx.stroke();
+  });
+
+  ctx.globalAlpha = 1;
+  frame++;
+  if (!reduceMotion && running) requestAnimationFrame(draw);
+}
+
+// Pause drawing when the tab is hidden or the canvas is scrolled away.
+let running = true;
+function setRunning(v) {
+  if (v === running) return;
+  running = v;
+  if (running && !reduceMotion) requestAnimationFrame(draw);
+}
+document.addEventListener('visibilitychange', () => setRunning(!document.hidden));
+window.addEventListener('scroll', () => setRunning(window.scrollY < window.innerHeight * 1.5), { passive: true });
+setRunning(window.scrollY < window.innerHeight * 1.5);
+if (running) draw();
+
+// ── Scroll reveal ──
+const reveals = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+reveals.forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

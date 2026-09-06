@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ModularPhaseNet — 論文解説（詳細）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f3faf6;
+    --surface2: #e4f3ea;
+    --border: #c9e3d4;
+    --accent: #15803d;
+    --accent2: #0891b2;
+    --accent3: #d97706;
+    --text: #0f1c15;
+    --text-muted: #3f5a49;
+    --text-dim: #6b8577;
+    --glow: rgba(21,128,61,0.12);
+    --font-serif: 'Noto Serif JP', serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-sans: 'Noto Sans JP', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    line-height: 1.8;
+    overflow-x: hidden;
+  }
+
+  #bg-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex; align-items: center; gap: 0;
+  }
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+  .nav-links { display: flex; gap: 1.6rem; list-style: none; margin-left: 2rem; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none;
+    font-size: 0.78rem; letter-spacing: 0.08em; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-right { display: flex; align-items: center; gap: 1.4rem; margin-left: auto; }
+  .nav-lang {
+    display: flex; align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden; flex-shrink: 0;
+  }
+  .nav-lang a {
+    font-family: var(--font-mono); font-size: 0.65rem;
+    letter-spacing: 0.1em; padding: 0.28em 0.75em;
+    color: var(--text-dim); text-decoration: none;
+    transition: all 0.2s; line-height: 1;
+  }
+  .nav-lang a.current { background: var(--accent); color: #fff; }
+  .nav-lang a:not(.current):hover { color: var(--accent); }
+  .nav-page-tab {
+    font-family: var(--font-mono); font-size: 0.72rem;
+    letter-spacing: 0.08em; color: var(--text-muted);
+    text-decoration: none; padding-bottom: 2px;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s; flex-shrink: 0; white-space: nowrap;
+  }
+  .nav-page-tab:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 900px; margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding-top: 80px; position: relative;
+  }
+  .hero-tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem; letter-spacing: 0.2em;
+    color: var(--accent); border: 1px solid var(--accent);
+    padding: 0.3em 0.9em; display: inline-block;
+    margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.2s forwards;
+  }
+  .hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(2.2rem, 5.6vw, 4rem);
+    font-weight: 700; line-height: 1.15;
+    letter-spacing: -0.01em; margin-bottom: 0.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.35s forwards;
+  }
+  .hero-title .wave {
+    color: var(--accent); display: inline-block;
+    animation: pulse 3s ease-in-out infinite;
+  }
+  .hero-subtitle {
+    font-family: var(--font-mono); font-size: 0.8rem;
+    color: var(--accent2); letter-spacing: 0.05em;
+    margin-bottom: 2rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.45s forwards;
+  }
+  .hero-meta {
+    display: flex; gap: 2rem; flex-wrap: wrap;
+    font-size: 0.78rem; color: var(--text-muted);
+    margin-bottom: 2.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.55s forwards;
+  }
+  .hero-meta span { display: flex; align-items: center; gap: 0.4rem; }
+  .hero-desc {
+    font-size: 1.05rem; color: var(--text-muted);
+    max-width: 640px; line-height: 1.9;
+    opacity: 0; animation: fadeUp 0.6s ease 0.65s forwards;
+    margin-bottom: 3rem;
+  }
+  .scroll-hint {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--text-dim); letter-spacing: 0.15em;
+    display: flex; align-items: center; gap: 0.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.8s forwards;
+  }
+  .scroll-hint::after {
+    content: ''; display: block; width: 40px; height: 1px;
+    background: var(--text-dim); animation: expandLine 1.5s ease infinite;
+  }
+
+  /* ── Sections ── */
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    letter-spacing: 0.25em; color: var(--accent);
+    margin-bottom: 0.6rem; opacity: 0.8;
+  }
+  h2 {
+    font-family: var(--font-serif); font-size: 1.9rem;
+    font-weight: 700; margin-bottom: 2rem; line-height: 1.3;
+  }
+  h3 {
+    font-family: var(--font-serif); font-size: 1.2rem;
+    font-weight: 600; margin-bottom: 1rem; color: var(--text);
+  }
+  p { margin-bottom: 1.2rem; color: var(--text-muted); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 2px; padding: 2rem; margin-bottom: 1.5rem;
+    position: relative; overflow: hidden; transition: border-color 0.3s;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%; background: var(--accent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .card:hover { border-color: rgba(21,128,61,0.4); }
+  .card:hover::before { opacity: 1; }
+
+  .abstract-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 2.5rem; margin-bottom: 2rem; position: relative;
+  }
+  .abstract-box::before {
+    content: '"'; position: absolute; top: 1rem; left: 2rem;
+    font-family: var(--font-serif); font-size: 5rem;
+    color: var(--accent); opacity: 0.08; line-height: 1;
+  }
+
+  .concept-flow { display: flex; align-items: center; gap: 0; margin: 2rem 0; flex-wrap: wrap; }
+  .concept-node {
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 0.9rem 1.4rem; font-size: 0.82rem;
+    font-family: var(--font-mono); color: var(--text);
+    position: relative; white-space: nowrap;
+    transition: all 0.2s; cursor: default;
+  }
+  .concept-node:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 20px var(--glow); }
+  .concept-arrow { color: var(--accent); font-size: 1.2rem; padding: 0 0.5rem; opacity: 0.6; }
+
+  .math-box {
+    background: #0f1c15; border: 1px solid var(--border);
+    border-radius: 1px; padding: 1.8rem 2rem; margin: 1.5rem 0;
+    font-family: var(--font-mono); font-size: 0.85rem;
+    overflow-x: auto; position: relative;
+  }
+  .math-box .math-label {
+    position: absolute; top: 0.6rem; right: 1rem;
+    font-size: 0.62rem; color: #8fbfa4; letter-spacing: 0.1em;
+  }
+  .math-box mjx-container, .math-box mjx-container * { color: #e9f5ee !important; }
+
+  .energy-table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
+  .energy-table th {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    letter-spacing: 0.12em; color: var(--accent);
+    text-align: left; padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .energy-table td {
+    padding: 0.8rem 1rem; font-size: 0.85rem;
+    border-bottom: 1px solid rgba(190,220,202,0.7);
+    color: var(--text-muted); vertical-align: top;
+  }
+  .energy-table tr:hover td { background: var(--surface); }
+  .table-scroll { overflow-x: auto; }
+  .mono { font-family: var(--font-mono); font-size: 0.8rem; }
+
+  .badge {
+    font-family: var(--font-mono); font-size: 0.62rem;
+    letter-spacing: 0.08em; padding: 0.15em 0.55em;
+    border: 1px solid; white-space: nowrap;
+  }
+  .badge.thm { border-color: var(--accent); color: var(--accent); }
+  .badge.emp { border-color: var(--accent3); color: var(--accent3); }
+  .badge.open { border-color: var(--text-dim); color: var(--text-dim); }
+
+  .pillars { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin: 2rem 0; }
+  .pillar {
+    border: 1px solid var(--border); padding: 1.8rem 1.4rem;
+    position: relative; background: var(--surface); transition: all 0.3s;
+  }
+  .pillar:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(21,128,61,0.1); }
+  .pillar-num {
+    font-family: var(--font-mono); font-size: 2.5rem; font-weight: 700;
+    color: var(--border); line-height: 1; margin-bottom: 0.8rem; transition: color 0.3s;
+  }
+  .pillar:hover .pillar-num { color: var(--accent); opacity: 0.4; }
+  .pillar h4 { font-family: var(--font-serif); font-size: 0.95rem; font-weight: 600; margin-bottom: 0.6rem; color: var(--text); }
+  .pillar p { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem 0; }
+  .split-cell { border: 1px solid var(--border); background: var(--surface); padding: 1.6rem 1.5rem; }
+  .split-cell.hot { border-color: rgba(21,128,61,0.45); }
+  .split-cell h4 {
+    font-family: var(--font-mono); font-size: 0.74rem;
+    letter-spacing: 0.1em; color: var(--accent); margin-bottom: 0.7rem;
+  }
+  .split-cell.cool h4 { color: var(--accent2); }
+  .split-cell p { font-size: 0.82rem; margin: 0; }
+  .split-cell ul { margin: 0; padding-left: 1.1rem; }
+  .split-cell li { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.45rem; }
+
+  .arch-flow { margin: 2rem 0; display: flex; flex-direction: column; gap: 0; }
+  .arch-step { display: flex; align-items: stretch; gap: 0; }
+  .arch-step-num {
+    font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent);
+    width: 36px; min-width: 36px;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; position: relative;
+  }
+  .arch-step-num::after {
+    content: ''; position: absolute; bottom: 0; left: 50%;
+    width: 1px; height: 100%; background: var(--border); top: 50%;
+  }
+  .arch-step:last-child .arch-step-num::after { display: none; }
+  .arch-step-body {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    padding: 1.2rem 1.5rem; margin: 4px 0; margin-left: 1rem;
+    transition: border-color 0.2s;
+  }
+  .arch-step-body:hover { border-color: rgba(21,128,61,0.35); }
+  .arch-step-title {
+    font-family: var(--font-mono); font-size: 0.78rem;
+    color: var(--accent); letter-spacing: 0.1em; margin-bottom: 0.4rem;
+  }
+  .arch-step-desc { font-size: 0.82rem; color: var(--text-muted); }
+
+  .ref-card {
+    border: 1px solid var(--border); padding: 1.5rem;
+    background: var(--surface); margin-bottom: 1rem;
+    display: grid; grid-template-columns: auto 1fr; gap: 1.2rem;
+    align-items: start; transition: border-color 0.2s;
+  }
+  .ref-card:hover { border-color: rgba(21,128,61,0.35); }
+  .ref-tag {
+    font-family: var(--font-mono); font-size: 0.65rem;
+    padding: 0.2em 0.6em; border: 1px solid; white-space: nowrap;
+    align-self: start; margin-top: 0.1rem;
+  }
+  .ref-tag.sim { border-color: var(--accent2); color: var(--accent2); }
+  .ref-tag.diff { border-color: var(--accent); color: var(--accent); }
+  .ref-tag.warn { border-color: var(--accent3); color: var(--accent3); }
+  .ref-name { font-weight: 500; font-size: 0.88rem; margin-bottom: 0.4rem; }
+  .ref-desc { font-size: 0.78rem; color: var(--text-muted); }
+
+  .caution {
+    border: 1px dashed var(--accent3);
+    background: rgba(217,119,6,0.04);
+    padding: 1.5rem 1.8rem; margin: 1.5rem 0;
+  }
+  .caution-title {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    letter-spacing: 0.12em; color: var(--accent3); margin-bottom: 0.8rem;
+  }
+  .caution ul { margin: 0; padding-left: 1.2rem; }
+  .caution li { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+
+  .conclusion-box {
+    background: linear-gradient(135deg, rgba(21,128,61,0.06), rgba(8,145,178,0.06));
+    border: 1px solid rgba(21,128,61,0.2);
+    padding: 3rem; text-align: center; position: relative; overflow: hidden;
+  }
+  .conclusion-box::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(21,128,61,0.07), transparent 70%);
+  }
+  .conclusion-box h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+  .conclusion-box p { max-width: 620px; margin: 0 auto; font-size: 0.92rem; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; }
+  .chip {
+    font-family: var(--font-mono); font-size: 0.65rem;
+    padding: 0.25em 0.75em; border: 1px solid var(--border);
+    color: var(--text-dim); letter-spacing: 0.08em;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 0 2rem; text-align: center;
+    font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--text-dim); letter-spacing: 0.08em;
+    position: relative; z-index: 1;
+  }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse {
+    0%,100% { text-shadow: 0 0 20px rgba(21,128,61,0.25); }
+    50% { text-shadow: 0 0 40px rgba(21,128,61,0.55); }
+  }
+  @keyframes expandLine {
+    0% { width: 20px; opacity: 0.3; }
+    50% { width: 60px; opacity: 0.8; }
+    100% { width: 20px; opacity: 0.3; }
+  }
+
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 420px) {
+    nav { padding: 0 0.7rem; gap: 0.5rem; }
+    .nav-logo { font-size: 0.68rem; letter-spacing: 0.04em; }
+    .nav-right { gap: 0.6rem; }
+    .nav-page-tab { font-size: 0.62rem; }
+    .nav-lang a { padding: 0.28em 0.55em; font-size: 0.6rem; }
+  }
+  @media (max-width: 760px) {
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 640px) {
+    .pillars { grid-template-columns: 1fr; }
+    .split { grid-template-columns: 1fr; }
+    .concept-flow { gap: 0.3rem; }
+    .concept-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<nav>
+  <div class="nav-logo">ModularPhaseNet // 詳細解説</div>
+  <ul class="nav-links">
+    <li><a href="#abstract">概要</a></li>
+    <li><a href="#group">有限群</a></li>
+    <li><a href="#hierarchy">階層</a></li>
+    <li><a href="#holonomy">整合性</a></li>
+    <li><a href="#attention">Attention</a></li>
+    <li><a href="#plan">評価計画</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="modularphasenet_intro_ja.html" class="nav-page-tab">かんたん解説 →</a>
+    <div class="nav-lang">
+      <a href="modularphasenet_ja.html" class="current">JA</a>
+      <a href="modularphasenet_en.html">EN</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrapper">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-tag">2026.08.11 · 英語版 2026.09.05 · arXiv 投稿準備中</div>
+    <h1 class="hero-title">
+      <span class="wave">Modular</span>PhaseNet
+    </h1>
+    <div class="hero-subtitle">Finite-Cyclic Phase Geometry for Computable Semantic Hierarchy, Direction,<br>and Context Consistency in Standard Transformers</div>
+    <div class="hero-meta">
+      <span>👤 Kiyotaka Kasubuchi, Kazuo Fukiya</span>
+      <span>📅 2026年8月11日</span>
+      <span>📄 16ページ・図1点</span>
+    </div>
+    <p class="hero-desc">
+      QuantumPhaseNet の<strong>連続な複素位相</strong>を、有限巡回群
+      \(G=\langle g\rangle\subset\mathbb{F}_p^{\times}\) へ量子化した古典版。
+      Transformer の実数側は一切変えず、<strong>補助的な位相チャネルだけ</strong>を離散化する。
+      概念階層は商群のフィルトレーション、意味の方向は向き付き群要素、文脈整合性は
+      <strong>サイクルホロノミー</strong>として、すべて整数演算で厳密に計算できる。
+      量子ハードウェア・複素行列積・離散対数計算はいずれも不要。
+    </p>
+    <div class="chips">
+      <span class="chip">有限巡回群 C_q</span><span class="chip">冪剰余 g^a mod p</span><span class="chip">Cayley距離</span>
+      <span class="chip">商群フィルトレーション</span><span class="chip">ゲージ接続</span><span class="chip">ホロノミー</span>
+      <span class="chip">ModPhase Attention</span><span class="chip">リスク校正</span><span class="chip">事前登録</span>
+    </div>
+    <div class="scroll-hint">SCROLL TO EXPLORE</div>
+  </div>
+
+  <!-- ── ABSTRACT ── -->
+  <section id="abstract">
+    <div class="section-label">01 // ABSTRACT</div>
+    <h2>この論文が主張していること</h2>
+
+    <div class="abstract-box reveal">
+      <p>
+        ModularPhaseNet は、QuantumPhaseNet が導入した連続な複素位相幾何を、
+        <strong>古典計算・整数演算で扱える形へ離散化</strong>した枠組みである。
+        標準的な Transformer の実数隠れ状態はそのまま保持し、量子化するのは
+        補助的な位相チャネルだけ。連続位相 \(e^{i\phi}\) は
+        \(z=g^{a}\bmod p\) として表され、位相の合成は群の乗算に、相対位相は群の除算になる。
+      </p>
+      <p>
+        この置き換えによって、3つの構造が<strong>厳密に計算可能な離散不変量</strong>になる。
+        概念階層は巡回群の商のフィルトレーションから、意味の方向は順序対に付いた向き付き群要素から、
+        文脈整合性はゲージ不変なサイクルホロノミーから得られる。
+        追加されるモジュールは有限位相エンコーダ・商フィルトレーション階層モジュール・群値接続モジュールの3つで、
+        その出力は<strong>実数のバイアス項</strong>として self-attention に入る。
+      </p>
+      <p>
+        証明されるのは、量子化歪みの上界、商が生成する分割の入れ子性、ゲージ不変性、
+        平坦な接続に対する離散可積分性、そして Attention 出力の有界性である。
+        一方「これらの不変量がハルシネーションのリスク予測を改善する」ことは<strong>経験仮説</strong>として明示され、
+        事前登録された評価計画と反証条件が書き下されている。
+        <strong>本稿の時点で実験は実施されておらず、実測結果は一切主張されていない。</strong>
+      </p>
+    </div>
+
+    <div class="pillars reveal">
+      <div class="pillar">
+        <div class="pillar-num">01</div>
+        <h4>位相を有限群へ落とす</h4>
+        <p>連続位相を \(q\) 個の目盛りに丸め、群要素 \(g^a \bmod p\) として保持する。合成・逆元・相対位相が丸め誤差なしの整数演算になり、同じ入力からは必ず同じ値が再現される</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">02</div>
+        <h4>階層は商群の入れ子</h4>
+        <p>位数の列 \(q_0\mid q_1\mid\cdots\mid q_L\) に沿った商写像が、粗い概念から細かい概念への単調な細分を自動的に与える。深さ変数と併用して上位・下位の非対称関係を定義する</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">03</div>
+        <h4>整合性は「1に戻るか」</h4>
+        <p>辺ごとに独立予測した接続をサイクルに沿って掛け合わせ、単位元に戻るかを見る。戻らなければ、局所推論の集まりが大域的に両立しないことが検出される</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── GROUP ── -->
+  <section id="group">
+    <div class="section-label">02 // FINITE PHASE</div>
+    <h2>連続位相を有限巡回群に落とす</h2>
+
+    <div class="card reveal">
+      <h3>群パラメータの取り方</h3>
+      <p>
+        素数 \(p\) と \(q\mid(p-1)\) を選び、\(\mathbb{F}_p^{\times}\) の位数 \(q\) の元 \(g\) をとる。
+        \(\mathbb{F}_p^{\times}\) が巡回群であることは古典的事実（Ireland–Rosen 1990）であり、
+        得られる群は \(G\cong C_q\cong\mathbb{Z}/q\mathbb{Z}\) である。
+      </p>
+      <div class="math-box">
+        <span class="math-label">群と量子化</span>
+        \[ G=\langle g\rangle=\{1,g,g^{2},\dots,g^{q-1}\}\subset\mathbb{F}_p^{\times} \]
+        \[ Q_{q}(\phi)=\mathrm{round}\!\left(\frac{q\phi}{2\pi}\right)\bmod q,
+           \qquad \eta_{q}(\phi)=g^{\,Q_{q}(\phi)}\bmod p \]
+      </div>
+      <p>
+        実装では<strong>指数ラベル \(a\in\{0,\dots,q-1\}\) と群要素 \(z=g^{a}\bmod p\) を対で保持する</strong>。
+        これが決定的に重要で、推論時に離散対数 \(a=\log_g z\) を解く必要が一度も生じない。
+        合成・逆元・相対位相は、いずれも整数の乗除算で閉じる。
+      </p>
+      <div class="concept-flow reveal">
+        <div class="concept-node">連続位相 \(e^{i\phi}\)</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">丸め \(Q_q(\phi)\)</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">群要素 \(z=g^{a}\bmod p\)</div>
+        <span class="concept-arrow">→</span>
+        <div class="concept-node">相対位相 \(z_i^{-1}z_j\)</div>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h3><span class="badge thm">THEOREM 1</span> &nbsp;量子化歪みの上界</h3>
+      <p>
+        円周上の測地距離 \(d_{S^1}\) と、群の語距離から復元した距離のずれは、目盛り幅で上から抑えられる。
+        さらに合成の丸め欠損は \(\{-1,0,1\}\) の3値しか取らない。
+      </p>
+      <div class="math-box">
+        <span class="math-label">歪みと合成欠損</span>
+        \[ \left| d_{S^{1}}(\phi,\psi)-\frac{2\pi}{q}\,d_{G}\!\left(\eta_{q}(\phi),\eta_{q}(\psi)\right)\right|\le\frac{2\pi}{q} \]
+        \[ \delta_{Q}=Q_{q}(\phi+\psi)-Q_{q}(\phi)-Q_{q}(\psi)\ (\mathrm{mod}\ q)\in\{-1,0,1\} \]
+      </div>
+      <p>
+        つまり \(q\) を大きくすれば連続版に単調に近づく。
+        この「近づき方」自体が、後述の評価計画で RQ5 として検証対象になっている。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>「離散位相幾何」と呼べる理由</h3>
+      <p>
+        有限集合に離散位相を入れただけでは、位相構造としてはほぼ自明である。
+        非自明なのは次の3点であり、論文はこれを新規性の範囲として明示的に限定している。
+      </p>
+      <div class="split">
+        <div class="split-cell hot">
+          <h4>NON-TRIVIAL</h4>
+          <ul>
+            <li>生成系 \(S=\{g,g^{-1}\}\) が生む Cayley グラフ</li>
+            <li>その上の語距離（円周上の最短ステップ数）</li>
+            <li>部分群・商群によるフィルトレーションと、トークングラフ上の群値接続</li>
+          </ul>
+        </div>
+        <div class="split-cell cool">
+          <h4>DISCRETE WAVELENGTH</h4>
+          <p>
+            \(q\) ティックが1回転 \(2\pi\) に対応するため、位相変化が小さいほど波長は長くなる。
+            ただし語距離は生成元の取り替えで変わるため、モデル仕様で \(g\) を固定し、
+            <strong>生成元感度はアブレーションとして報告する</strong>。
+          </p>
+        </div>
+      </div>
+      <div class="math-box">
+        <span class="math-label">語距離と離散意味波長</span>
+        \[ d_{q}(a,b)=\min\{|a-b|,\;q-|a-b|\},\qquad d_{G}(g^{a},g^{b})=d_{q}(a,b) \]
+        \[ \lambda_{t}^{(q)}=\frac{q\,c_{s}(t)}{d_{G}(z_{t},z_{t+1})+\varepsilon_{q}} \]
+      </div>
+      <p>
+        なお「長波長＝上位概念」という対応は、ここでも<strong>定理ではなく経験仮説</strong>として置かれている。
+        前作 QuantumPhaseNet と同じ扱いである。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── HIERARCHY ── -->
+  <section id="hierarchy">
+    <div class="section-label">03 // HIERARCHY</div>
+    <h2>商群フィルトレーションで概念階層をつくる</h2>
+
+    <div class="card reveal">
+      <h3>入れ子になった商写像</h3>
+      <p>
+        位数の列 \(1=q_{0}\mid q_{1}\mid\cdots\mid q_{L}=q\) を選び、\(g_{\ell}=g^{\,q/q_{\ell}}\) とおくと、
+        \(G_{\ell}=\langle g_{\ell}\rangle\) は位数 \(q_\ell\) の巡回群になる。射影は冪剰余そのものである。
+      </p>
+      <div class="math-box">
+        <span class="math-label">商射影</span>
+        \[ \pi_{\ell}\colon G\to G_{\ell},\qquad \pi_{\ell}(z)=z^{\,q/q_{\ell}}\bmod p,
+           \qquad \pi_{\ell}(g^{a})=g_{\ell}^{\,a\bmod q_{\ell}} \]
+      </div>
+      <h3><span class="badge thm">THEOREM 2</span> &nbsp;階層分割の入れ子性</h3>
+      <p>
+        \(q_{\ell}\mid q_{m}\)（\(\ell\le m\)）のとき、\(\pi_{m}(x)=\pi_{m}(y)\) ならば \(\pi_{\ell}(x)=\pi_{\ell}(y)\)。
+        したがって \(\pi_{0},\dots,\pi_{L}\) が生む分割は、粗い概念から細かい概念へ<strong>単調に細分される</strong>。
+        証明は \(a\equiv b \pmod{q_m}\) と \(q_\ell\mid q_m\) から2行で済む。
+        階層の一貫性が、学習ではなく<strong>群構造そのものから保証される</strong>点がこの構成の要である。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>深さを足して「どちらが上位か」を言えるようにする</h3>
+      <p>
+        群の位相だけでは、2つの概念が同じ枝に属することは言えても、どちらが上位かは言えない。
+        そこで概念 \(c\) に位相 \(z_c\) と深さ \(\ell_c\) を併せて持たせ、階層アドレスと祖先関係を定義する。
+      </p>
+      <div class="math-box">
+        <span class="math-label">アドレスと非対称な祖先関係</span>
+        \[ A(c)=\pi_{\ell_{c}}(z_{c})\in G_{\ell_{c}} \]
+        \[ u\preceq v \iff \ell_{u}\le\ell_{v}\ \ \text{かつ}\ \ \pi_{\ell_{u}}(z_{v})=A(u) \]
+      </div>
+      <p>
+        学習時は位相分布 \(\mathbf{p}_i\in\Delta^{q-1}\) と深さ分布 \(\mathbf{r}_i\in\Delta^{L}\) を出力し、
+        レベル \(\ell\) への畳み込み（folding）を経由して<strong>ソフト祖先スコア</strong> \(H(u\to v)\in[0,1]\) を作る。
+        ハードな one-hot 極限では、上の指示関数に一致する。
+      </p>
+      <div class="math-box">
+        <span class="math-label">folding とソフト祖先スコア</span>
+        \[ (P_{\ell}\mathbf{p}_{i})(s)=\sum_{a\equiv s\ (\mathrm{mod}\ q_{\ell})}\mathbf{p}_{i}(a) \]
+        \[ H(u\to v)=\sum_{\ell\le m}\mathbf{r}_{u}(\ell)\,\mathbf{r}_{v}(m)\,
+           \bigl\langle P_{\ell}\mathbf{p}_{u},\,P_{\ell}\mathbf{p}_{v}\bigr\rangle\in[0,1] \]
+      </div>
+      <p>
+        is-a・part-of・因果的抽象・機能・属性といった軸は、<strong>異なる巡回群を持つ複数ヘッド</strong>に割り当て、
+        重み \(w_h\) で統合する。各軸の意味は教師ラベル・対照学習・スパース正則化によって同定される。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── CONNECTION ── -->
+  <section id="connection">
+    <div class="section-label">04 // CONNECTION</div>
+    <h2>意味の方向とゲージ接続</h2>
+
+    <div class="card reveal">
+      <h3>辺の接続は「独立に」予測しなければならない</h3>
+      <p>
+        トークン・文・命題を頂点とする有向グラフ \(\mathcal{G}=(V,E)\) を作り、頂点に位相 \(z_i\in G\)、
+        辺 \((j\to i)\) に平行移動を表す接続 \(U_{ij}\in G\)（\(U_{ji}=U_{ij}^{-1}\)）を与える。
+      </p>
+      <div class="caution">
+        <div class="caution-title">⚠ 設計上の分岐点</div>
+        <ul>
+          <li>\(U_{ij}\) を \(z_i z_j^{-1}\) と定義してはならない。そうするとサイクル積は<strong>恒等的に単位元</strong>になり、文脈整合性の損失が情報を持たなくなる。</li>
+          <li>したがって \(U_{ij}\) は辺エンコーダによって<strong>独立に予測</strong>する。頂点差から自動生成した辺は、負のコントロールとして報告される。</li>
+        </ul>
+      </div>
+      <div class="math-box">
+        <span class="math-label">局所ゲージ変換と共変残差</span>
+        \[ z_{i}\mapsto h_{i}z_{i},\qquad U_{ij}\mapsto h_{i}U_{ij}h_{j}^{-1} \]
+        \[ r_{ij}=z_{i}^{-1}U_{ij}z_{j}\in G,\qquad
+           C^{G}_{ij}=\exp\!\left[-\frac{d_{G}(r_{ij},1)^{2}}{\sigma_{c}^{2}}\right]\in(0,1] \]
+      </div>
+      <h3><span class="badge thm">THEOREM 3</span> &nbsp;共変残差の局所ゲージ不変性</h3>
+      <p>
+        巡回群は可換なので \((h_i z_i)^{-1}(h_i U_{ij}h_j^{-1})(h_j z_j)=z_i^{-1}U_{ij}z_j\)。
+        つまり \(r_{ij}\)、したがって整合スコア \(C^G_{ij}\) は<strong>局所的な基底の取り替えに依らない</strong>。
+        座標依存の量を観測量として使わない、という前作からの方針がここでも保たれている。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>文章の進む向き</h3>
+      <p>
+        プロンプト・要約教師・根拠グラフ・プーリングヘッドから、文章が進むべき目標方向 \(D_S\in G\) を得る。
+        辺方向との整合は \([-1,1]\) に正規化され、\(U_{ij}\) が向き付きであるため一般に
+        \(A^{\mathrm{dir}}_{ij}\neq A^{\mathrm{dir}}_{ji}\) となる。
+      </p>
+      <div class="math-box">
+        <span class="math-label">方向整合と群 Fréchet メドイド</span>
+        \[ A^{\mathrm{dir}}_{ij}=1-\frac{2\,d_{G}(U_{ij},D_{S})}{\lfloor q/2\rfloor}\in[-1,1] \]
+        \[ D_{S}=\arg\min_{d\in G}\sum_{(i,j)\in E_{S}}\alpha_{ij}\,d_{G}(U_{ij},d)^{2} \]
+      </div>
+      <p>
+        全体方向は「平均角度」ではなく<strong>群上のメドイド</strong>として定める。
+        群が有限なので、全探索またはヒストグラム集約で厳密に求まる。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── HOLONOMY ── -->
+  <section id="holonomy">
+    <div class="section-label">05 // HOLONOMY</div>
+    <h2>サイクルが1に戻るか——文脈整合性</h2>
+
+    <div class="card reveal">
+      <h3>Wilson ループとサイクルリスク</h3>
+      <p>
+        有向サイクル \(C=(i_0,i_1,\dots,i_m=i_0)\) に沿って接続を掛け合わせたものがホロノミーである。
+        巡回群は可換なので、これは局所ゲージ変換の下で不変な観測量になる。
+      </p>
+      <div class="math-box">
+        <span class="math-label">ホロノミーとサイクルリスク</span>
+        \[ W_{C}=\prod_{t=0}^{m-1}U_{i_{t}i_{t+1}}\bmod p,\qquad
+           R^{\mathrm{cyc}}_{C}=\left(\frac{2\,d_{G}(W_{C},1)}{q}\right)^{2} \]
+      </div>
+      <p>
+        三角サイクルは、<strong>3つの局所推論が同時に成り立つかを最小単位で試す</strong>テストになっている。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3><span class="badge thm">THEOREM 4</span> &nbsp;平坦な接続の大域可積分性（本稿の中核）</h3>
+      <p>
+        連結グラフ上で \(U_{ji}=U_{ij}^{-1}\) とし、<strong>すべてのサイクルで \(W_C=1\)</strong> ならば、
+        頂点位相 \(\{\zeta_i\in G\}\) が存在して全辺で \(U_{ij}=\zeta_i\zeta_j^{-1}\) が成り立つ。
+        しかも \(\{\zeta_i\}\) は全頂点への共通の左乗算を除いて一意である。
+      </p>
+      <p>
+        証明は、根を固めて経路に沿う積で \(\zeta_i\) を定義し、2経路の差がサイクルであることから
+        経路非依存性を出す、という標準的な議論である。意味としては——
+        <strong>局所的な意味遷移がどのサイクル上でも矛盾していなければ、それらは1つの大域的な意味位相の割り当てに統合できる</strong>。
+        QuantumPhaseNet の接続・曲率・コホモロジー的整合性の、有限巡回群における対応物である。
+      </p>
+      <div class="split">
+        <div class="split-cell hot">
+          <h4>TRAINING — SOFT</h4>
+          <p>辺位相の分布 \(\mathbf{u}_e\) を群上の巡回畳み込みで合成し、\(\mathcal{L}_{\mathrm{cyc}}\) を実群環の中で微分可能に計算する</p>
+        </div>
+        <div class="split-cell cool">
+          <h4>INFERENCE — HARD</h4>
+          <p>ハードな群要素の冪剰余積として \(W_C\) を求め、単位元との一致を整数比較で厳密に判定する</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ATTENTION ── -->
+  <section id="attention">
+    <div class="section-label">06 // ATTENTION</div>
+    <h2>ModPhase Attention</h2>
+
+    <div class="card reveal">
+      <h3>すべては実数バイアスとして入る</h3>
+      <p>
+        各位相ヘッドは隠れ状態から位相ロジットを出し、学習時は straight-through Gumbel-Softmax、
+        推論時は arg-max と冪剰余テーブルの参照で群要素を確定する。
+        \(\mathrm{pow}(g_h,a,p_h)\) を事前計算しておけば、実行時は<strong>整数の表引き \(O(1)\)</strong> で済む。
+      </p>
+      <div class="math-box">
+        <span class="math-label">ModPhase ロジット</span>
+        \[ \ell^{\mathrm{base}}_{ij}=\frac{\mathbf{q}_{i}^{\top}\mathbf{k}_{j}}{\sqrt{d_{k}}}+M_{ij} \]
+        \[ \ell^{\mathrm{MP}}_{ij}=\ell^{\mathrm{base}}_{ij}
+           +\alpha_{c}C^{G}_{ij}+\alpha_{h}H(i\to j)+\alpha_{d}A^{\mathrm{dir}}_{ij}
+           -\alpha_{r}R^{\mathrm{ctx}}_{ij}+\alpha_{e}E^{\mathrm{evid}}_{ij} \]
+      </div>
+      <p>
+        \(R^{\mathrm{ctx}}_{ij}\) はその辺を含む短いサイクルの平均リスク、
+        \(E^{\mathrm{evid}}_{ij}\in[0,1]\) は検索文書・引用・知識グラフ由来の根拠支持。
+        係数 \(\alpha_\bullet\ge0\) は softplus でパラメータ化される。
+        位相群で計算された量が<strong>すべて実数のスカラーバイアスとして入る</strong>ため、
+        既存 Transformer 実装のカーネルを改変する必要がない——これが実装上の最大の利点である。
+      </p>
+      <h3><span class="badge thm">THEOREM 5・6</span> &nbsp;ゲージ不変性と出力の有界性</h3>
+      <p>
+        整合スコア・階層スコア・方向スコア・サイクルリスク・根拠スコアをゲージ不変量だけから構成すれば、
+        ロジット全体もゲージ不変である。また値ベクトルが \(\lVert v_j\rVert_2\le B_V\) を満たせば、
+        softmax 重みは非負で総和1だから、出力は凸結合として \(\lVert Y_i\rVert_2\le B_V\) を満たす。
+      </p>
+      <div class="caution">
+        <div class="caution-title">⚠ 主張していないこと</div>
+        <ul>
+          <li>ハード量子化はセル境界で不連続なので、モデル全体の<strong>大域 Lipschitz 連続性は主張しない</strong>。</li>
+          <li>局所 Lipschitz 評価が得られるのは、\(\tau>0\) のソフト分布・有界ロジット・有限距離カーネルの範囲に限られる。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── RISK ── -->
+  <section id="risk">
+    <div class="section-label">07 // RISK</div>
+    <h2>ハルシネーションリスクへの接続</h2>
+
+    <div class="card reveal">
+      <p>
+        QuantumPhaseNet の「方向偏差・経路偏差・曲率偏差・根拠不足・意味的不確実性」という分解を、
+        有限群版で具体化したものが次式である。ここでのエントロピー \(\mathbb{H}(\mathbf{p}_t)\) は
+        <strong>トークン列ではなく意味クラス／位相群の上</strong>で取る。
+      </p>
+      <div class="math-box">
+        <span class="math-label">リスクスコアと校正</span>
+        \[ \mathcal{R}^{\mathrm{MP}}_{t}=\beta_{h}(1-H_{t})+\beta_{d}(1-A^{\mathrm{dir}}_{t})
+           +\beta_{c}R^{\mathrm{cyc}}_{t}+\beta_{e}R^{\mathrm{evid}}_{t}+\beta_{u}\mathbb{H}(\mathbf{p}_{t}) \]
+        \[ \widehat{P}(\mathrm{error}_{t}=1\mid\mathcal{R}_{t})=\sigma(a\mathcal{R}_{t}+b) \]
+      </div>
+      <p>
+        定義上 \(\mathcal{R}^{\mathrm{MP}}_t\) は<strong>スコアであって誤り確率ではない</strong>。
+        確率としての解釈は、校正集合の上でシグモイド適合または等調回帰を当てて初めて与えられる。
+        評価は Brier スコア・ECE・AUROC・AUPRC・リスク–カバレッジ曲線で行い、
+        閾値超過時には「回答／再検索／再生成／棄権」を選ぶ。
+        保証を主張する場合は、conformal abstention の仮定を別途明示する必要がある（Abbasi-Yadkori et al. 2024）。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── TWO LAYER ── -->
+  <section id="training">
+    <div class="section-label">08 // TRAINING &amp; INFERENCE</div>
+    <h2>学習と推論の二層構造</h2>
+
+    <p class="reveal">
+      冪剰余・arg-max・等号比較はいずれも微分不可能である。ここを曖昧にすると
+      「end-to-end で学習できるのか」という査読上の致命的な指摘を受ける。論文はこの二層構造を明示的に述べている。
+    </p>
+
+    <div class="arch-flow reveal">
+      <div class="arch-step">
+        <div class="arch-step-num">T1</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">SOFT PHASE</div>
+          <div class="arch-step-desc">位相は \(\mathbf{p}_i(a)\)、深さは \(\mathbf{r}_i(\ell)\) としてソフトに保持する</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">T2</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">STRAIGHT-THROUGH</div>
+          <div class="arch-step-desc">順伝播はハード one-hot、逆伝播はソフト確率。既定は straight-through 推定器</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">T3</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">FOLDING &amp; CONVOLUTION</div>
+          <div class="arch-step-desc">商射影は folding 行列で、サイクル積は群分布の巡回畳み込みで計算する</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">T4</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">ANNEALING</div>
+          <div class="arch-step-desc">温度 \(\tau\) を段階的に下げ、コード使用率を監視して崩壊を防ぐ</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">I1</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">HARD LOOKUP</div>
+          <div class="arch-step-desc">\(a=\arg\max\mathbf{p}(a)\) を確定し、\(z=\mathrm{pow}(g,a,p)\) をテーブル参照する</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">I2</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">INTEGER ARITHMETIC</div>
+          <div class="arch-step-desc">相対位相・商射影・サイクル積をすべて整数演算で厳密に求める</div>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-step-num">I3</div>
+        <div class="arch-step-body">
+          <div class="arch-step-title">RISK GATE</div>
+          <div class="arch-step-desc">群カーネルを実数バイアスへ変換し、校正済みリスクに従って回答・再検索・再生成・棄権を選ぶ</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h3>NTT は「実装手段」であって意味論ではない</h3>
+      <p>
+        系列長が \(N\mid(p-1)\) を満たすとき、\(N\) 次の原始根を使って有限体上の数論変換（NTT）が使え、
+        量子化された群分布の巡回畳み込みを \(O(q\log q)\) で計算できる。
+        ただし論文は、<strong>\(\mathbb{F}_p\) 上の係数に複素振幅と同じエネルギー解釈を与えない</strong>ことを明言している。
+        有限体には順序も絶対値もないため、「小さい添字 \(k\) は意味的に低周波」とは自動的には言えないからである。
+        低周波の意味論は、教師付き学習か実数側のスペクトルモジュールで別途検証される。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>計算量：速くはならない</h3>
+      <div class="math-box">
+        <span class="math-label">追加コスト</span>
+        \[ T_{\mathrm{MP}}=O(NHd_{\phi})+O(NHL)+O(N^{2}H)+O(|\mathcal{C}|H) \]
+      </div>
+      <p>
+        標準の密な attention は \(O(N^2 d)\)。ModularPhaseNet は<strong>この計算量を自動的に改善しない</strong>。
+        ペアバイアス項 \(O(N^2H)\) は \(H\ll d\) のとき低次に収まる、という主張に留まる。
+        価値は高速化ではなく、<strong>厳密な離散合成・再現性・商射影・サイクル検査という帰納バイアス</strong>にある。
+        最小構成の推奨設定は \(p=257,\ q=256,\ g=3\)（\(q_\ell=2^\ell,\ \ell=0..8\)）、
+        学習コストを抑えるなら \(q=32\) や \(64\) から始める。
+        既存の事前学習済みモデルの<strong>上位2〜4層に位相アダプタを挿す</strong>のが初期実装の形である。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── NUMERIC ── -->
+  <section id="numeric">
+    <div class="section-label">09 // NUMERICAL EXAMPLE</div>
+    <h2>数値例：\(p=17,\ q=16,\ g=3\)</h2>
+
+    <p class="reveal">
+      商射影がそのまま「概念の住所」になる様子は、小さな群で手計算できる。
+      \(q_1=2,\ q_2=4,\ q_3=8,\ q_4=16\) としたときの4概念の射影は次のとおり。
+    </p>
+
+    <div class="table-scroll reveal">
+      <table class="energy-table">
+        <thead>
+          <tr><th>概念</th><th>指数 a</th><th>群要素 z</th><th>q=2</th><th>q=4</th><th>q=8</th><th>q=16</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>dog</td><td class="mono">5</td><td class="mono">5</td><td class="mono">16</td><td class="mono">13</td><td class="mono">8</td><td class="mono">5</td></tr>
+          <tr><td>wolf</td><td class="mono">13</td><td class="mono">12</td><td class="mono">16</td><td class="mono">13</td><td class="mono">8</td><td class="mono">12</td></tr>
+          <tr><td>cat</td><td class="mono">9</td><td class="mono">14</td><td class="mono">16</td><td class="mono">13</td><td class="mono">9</td><td class="mono">14</td></tr>
+          <tr><td>lion</td><td class="mono">1</td><td class="mono">3</td><td class="mono">16</td><td class="mono">13</td><td class="mono">9</td><td class="mono">3</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="reveal">
+      \(q=2\) では4概念が同じ「動物」クラスに、\(q=4\) では同じ「哺乳類」クラスに落ちる。
+      \(q=8\) で \(\{\)dog, wolf\(\}\) と \(\{\)cat, lion\(\}\) に分かれ、\(q=16\) で個別概念になる。
+      深さを併記すれば、animal \(\preceq\) mammal \(\preceq\) canine \(\preceq\) dog という非対称関係が式で表される。
+    </p>
+
+    <div class="card reveal">
+      <h3>三角サイクルの整合と不整合</h3>
+      <div class="math-box">
+        <span class="math-label">整合する場合／しない場合</span>
+        \[ U_{12}=3^{2}=9,\quad U_{23}=3^{3}=10,\quad U_{31}=3^{11}=7
+           \ \Longrightarrow\ W_{C}=9\cdot10\cdot7\equiv1 \pmod{17} \]
+        \[ U_{31}=3^{12}=4\ \text{と誤予測}\ \Longrightarrow\ W_{C}=9\cdot10\cdot4\equiv3\not\equiv1 \pmod{17} \]
+      </div>
+      <p>
+        後者では、3つの局所推論を同時に満たす大域的な位相割り当てが<strong>存在しない</strong>ことが、
+        整数の掛け算3回だけで検出される。これがサイクル整合性検査の実体である。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── PLAN ── -->
+  <section id="plan">
+    <div class="section-label">10 // EVALUATION PLAN</div>
+    <h2>事前登録された評価計画（未実施）</h2>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ 実験はまだ行われていない</div>
+      <ul>
+        <li>本稿は<strong>理論と事前登録計画のみ</strong>であり、実測結果は一切報告されていない。</li>
+        <li>結果を見る前にリサーチクエスチョン・データセット・ベースライン・アブレーション・統計設計を固定する、という趣旨で先に公開している。</li>
+        <li>前作 QuantumPhaseNet が実測込みだったため、続編で実験がないことを伏せると読者の期待を裏切る——という判断から、Abstract と Comments の両方で明示している。</li>
+      </ul>
+    </div>
+
+    <div class="table-scroll reveal">
+      <table class="energy-table">
+        <thead><tr><th>RQ</th><th>問い</th><th>主な指標</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">RQ1</td><td>商群フィルトレーションは上位語–下位語関係と概念深さを復元できるか</td><td>Spearman ρ／祖先F1／深さMAE／推移律違反率（HyperLex, WordNet）</td></tr>
+          <tr><td class="mono">RQ2</td><td>向き付き群要素は文順序・指示追従・論旨保持を cos 類似度より良く予測するか</td><td>順序予測精度／論旨保持</td></tr>
+          <tr><td class="mono">RQ3</td><td>サイクルリスクは、局所含意スコアだけでは見逃す多段矛盾を検出できるか</td><td>AUROC／macro-F1／サイクルリスク分離（FEVER, NLI, 合成多段）</td></tr>
+          <tr><td class="mono">RQ4</td><td>幾何リスクは MSP・エントロピー・SelfCheckGPT・意味エントロピーより良く校正されるか</td><td>Brier／ECE／AUPRC／リスク–カバレッジ（TruthfulQA, FActScore, LongFact/SAFE）</td></tr>
+          <tr><td class="mono">RQ5</td><td>\(q\) を増やすと連続版 QuantumPhaseNet との差は縮まるか。精度と計算コストの肘はどこか</td><td>\(q\in\{8,16,32,64,128,256\}\) の精度–コスト曲線</td></tr>
+          <tr><td class="mono">RQ6</td><td>単純な角度ビニング・学習カテゴリコード・冪剰余チェックサムに差はあるか</td><td>同一予算下での比較</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="split reveal">
+      <div class="split-cell hot">
+        <h4>REQUIRED ABLATIONS</h4>
+        <ul>
+          <li>\(q\) の掃引、単一ヘッド vs 多軸ヘッド</li>
+          <li>hard / soft / straight-through の勾配推定器</li>
+          <li>頂点位相から自動生成した辺 vs 独立予測した辺</li>
+          <li>サイクル損失なし／商階層なし</li>
+          <li>生成元の取り替え \(g\mapsto g^{u}\)、位相ラベルのランダム置換</li>
+          <li>方向反転 \(U_{ij}\mapsto U_{ij}^{-1}\)、根拠・校正項の除去</li>
+        </ul>
+      </div>
+      <div class="split-cell cool">
+        <h4>STATISTICAL DESIGN</h4>
+        <ul>
+          <li>トークナイザ・データ順序・パラメータ予算・学習トークン数を揃える</li>
+          <li>最低5シード、対応ありブートストラップ信頼区間と効果量を報告</li>
+          <li>多重比較は Holm 法等で補正</li>
+          <li>性能だけでなく追加 FLOPs・メモリ・レイテンシを併記</li>
+          <li>リスク校正器の学習集合と最終評価集合を分離</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CLAIMS ── -->
+  <section id="claims">
+    <div class="section-label">11 // CLAIMS MAP</div>
+    <h2>証明済み・経験仮説・意図的に避けた主張</h2>
+
+    <div class="table-scroll reveal">
+      <table class="energy-table">
+        <thead><tr><th>区分</th><th>内容</th><th>状態</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge thm">THM</span></td><td>量子化歪みが \(2\pi/q\) 以下、合成欠損が \(\{-1,0,1\}\)</td><td>証明済み</td></tr>
+          <tr><td><span class="badge thm">THM</span></td><td>商写像が生む分割の入れ子性（粗→細の単調細分）</td><td>証明済み</td></tr>
+          <tr><td><span class="badge thm">THM</span></td><td>共変残差・整合スコアの局所ゲージ不変性</td><td>証明済み</td></tr>
+          <tr><td><span class="badge thm">THM</span></td><td>平坦な接続の大域可積分性（共通左乗算を除いて一意）</td><td>証明済み</td></tr>
+          <tr><td><span class="badge thm">THM</span></td><td>ModPhase Attention 出力ノルムの有界性</td><td>証明済み</td></tr>
+          <tr><td><span class="badge emp">EMP</span></td><td>離散不変量が階層復元・論旨整合・矛盾検出・リスク校正を改善する</td><td>経験仮説・未検証</td></tr>
+          <tr><td><span class="badge emp">EMP</span></td><td>長波長が上位概念に対応する</td><td>経験仮説・未検証</td></tr>
+          <tr><td><span class="badge open">NOT CLAIMED</span></td><td>位相を有限にすること自体がハルシネーションを消す</td><td>主張しない</td></tr>
+          <tr><td><span class="badge open">NOT CLAIMED</span></td><td>冪剰余が単なる剰余インデックスより表現力が高い</td><td>主張しない</td></tr>
+          <tr><td><span class="badge open">NOT CLAIMED</span></td><td>NTT の小さい添字が自動的に上位概念を表す</td><td>主張しない</td></tr>
+          <tr><td><span class="badge open">NOT CLAIMED</span></td><td>量子計算相当の振幅増幅を古典で実現した</td><td>主張しない</td></tr>
+          <tr><td><span class="badge open">NOT CLAIMED</span></td><td>密な attention より漸近的に高速である</td><td>主張しない</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">反証条件</h3>
+    <p class="reveal">
+      次のいずれかが再現的に観測されれば、対応する中心仮説は棄却または縮小される——と論文は先に宣言している。
+    </p>
+    <div class="caution reveal">
+      <div class="caution-title">FALSIFICATION CRITERIA</div>
+      <ul>
+        <li>商群階層が、単純なカテゴリ埋め込みや Order Embedding を上回らない</li>
+        <li>生成元を変えると性能が大きく変動し、座標依存性を制御できない</li>
+        <li>サイクルリスクが矛盾ラベルと相関せず、位相シャッフル対照と区別できない</li>
+        <li>\(q\) を増やしても連続版への近似が改善しない</li>
+        <li>リスクの Brier / ECE がエントロピーベースラインを上回らない</li>
+        <li>改善がパラメータ増加や検索強化だけで説明できてしまう</li>
+        <li>同一計算予算での事実性改善が、verifier や reranker に及ばない</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── LIMITS ── -->
+  <section id="limits">
+    <div class="section-label">12 // LIMITS &amp; REVIEWS</div>
+    <h2>限界と、想定される査読コメント</h2>
+
+    <div class="ref-card reveal">
+      <div class="ref-tag warn">Q1</div>
+      <div>
+        <div class="ref-name">「有限群の位相は離散だから自明では」</div>
+        <div class="ref-desc">新規性の主張範囲を限定する。位相構造単体ではなく、Cayley 計量・商フィルトレーション・群値接続・サイクルホロノミーを統合した点にある。</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <div class="ref-tag warn">Q2</div>
+      <div>
+        <div class="ref-name">「\(C_q\cong\mathbb{Z}/q\mathbb{Z}\) なら冪剰余は不要では」</div>
+        <div class="ref-desc">表現力の増加は主張しない。冪剰余は、厳密な合成・部分群射影・NTT 互換性・チェックサム・再現性を与える実装表現である。単純な剰余ベースラインを常に含める。</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <div class="ref-tag warn">Q3</div>
+      <div>
+        <div class="ref-name">「冪剰余は微分不可能」</div>
+        <div class="ref-desc">学習時の群環分布＋straight-through と、推論時のハード演算を分離し、勾配推定器自体もアブレーション対象にしている。</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <div class="ref-tag warn">Q4</div>
+      <div>
+        <div class="ref-name">「サイクル積が頂点差から作られていれば常に単位元では」</div>
+        <div class="ref-desc">辺接続は独立に予測する。頂点由来の自明な辺は負のコントロールとして報告する。</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <div class="ref-tag warn">Q5</div>
+      <div>
+        <div class="ref-name">「正則な巡回商では不規則なオントロジーを表せない」</div>
+        <div class="ref-desc">複数ヘッド・未使用コード・深さマスク・積符号を使い、Order / Poincaré ベースラインと比較する。普遍的表現可能性は主張しない。</div>
+      </div>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">論文が挙げる限界</h3>
+    <div class="split reveal">
+      <div class="split-cell hot">
+        <h4>STRUCTURAL</h4>
+        <ul>
+          <li>冪剰余表現は指数剰余表現と同型で、それ自体は新しい表現能力を生まない</li>
+          <li>小さい \(q\) では位相境界のエイリアシングとコード衝突が起きる</li>
+          <li>語距離と符号付き方向は生成元に依存する</li>
+          <li>単一の巡回商の鎖は正則な分岐を仮定する。多重継承には複数ヘッドや別の幾何が要る</li>
+        </ul>
+      </div>
+      <div class="split-cell cool">
+        <h4>PRACTICAL</h4>
+        <ul>
+          <li>ハードコード・温度アニーリング・コードブック崩壊により学習が不安定になりうる</li>
+          <li>密なペアバイアスは attention の二次計算量を解消しない</li>
+          <li>群コードの数値自体に自然言語的な意味はなく、教師と不変量を通じてのみ同定される</li>
+          <li>知識欠落・検索失敗・引用誤りは群整合性だけでは説明できず、根拠と校正が引き続き必要</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CONCLUSION ── -->
+  <section id="conclusion">
+    <div class="conclusion-box reveal">
+      <div class="section-label" style="text-align:center;">13 // CONCLUSION</div>
+      <h2>結論</h2>
+      <p>
+        ModularPhaseNet は、QuantumPhaseNet の連続な複素位相を、
+        実数の Transformer と共存できる<strong>有限巡回群のチャネル</strong>へ離散化する。
+        概念階層は商群の入れ子分割と深さで、意味の方向は向き付き辺の群要素で、
+        文脈整合性はサイクルホロノミーで表される。
+      </p>
+      <p style="margin-top:1rem;">
+        理論的な価値は、<strong>局所的な意味遷移が1つの大域的な意味割り当てに統合できるかどうかが、有限群の上で検査可能になる</strong>点にある。
+        実務的な価値は、複素モデルも量子ハードウェアも要求せずに、
+        階層・方向・矛盾・根拠・不確実性を<strong>同一モデルの中で観測可能にする</strong>点にある。
+      </p>
+      <p style="margin-top:1rem;">
+        そしてハルシネーションの低減は定理ではなく、
+        <strong>厳密な不変量を入力とする、校正可能な経験仮説</strong>である。
+        本稿はその仮説を検証する前の段階として、計画と反証条件を先に固定して公開している。
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrapper" style="padding-top:0; padding-bottom:0;">
+    <a href="index_ja.html" style="color:inherit;">目次</a> &nbsp;|&nbsp; ModularPhaseNet 論文解説（詳細） &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp; <a href="modularphasenet_intro_ja.html" style="color:inherit;">かんたん解説</a> &nbsp;|&nbsp; <a href="relation_ja.html" style="color:inherit;">3つの論文の関係</a> &nbsp;|&nbsp; <a href="quantumphasenet_ja.html" style="color:inherit;">QuantumPhaseNet</a> &nbsp;|&nbsp; <a href="wavephasenet_ja.html" style="color:inherit;">WavePhaseNet</a>
+  </div>
+</footer>
+
+<script>
+// ── Finite cyclic phase lattice ──
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, frame = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// q discrete ticks on each ring: a visual stand-in for the cyclic group C_q
+const RINGS = [
+  { cx: 0.24, cy: 0.32, r: 0.16, q: 16, dir:  1 },
+  { cx: 0.76, cy: 0.62, r: 0.22, q: 32, dir: -1 },
+  { cx: 0.50, cy: 0.88, r: 0.13, q: 8,  dir:  1 }
+];
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  const S = Math.min(W, H);
+
+  RINGS.forEach((rg, idx) => {
+    const cx = rg.cx * W, cy = rg.cy * H, rad = rg.r * S;
+    ctx.beginPath();
+    ctx.strokeStyle = '#15803d';
+    ctx.globalAlpha = 0.08;
+    ctx.lineWidth = 1;
+    ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // discrete ticks of the cyclic group
+    const rot = rg.dir * frame * 0.004 + idx;
+    for (let a = 0; a < rg.q; a++) {
+      const th = (2 * Math.PI * a) / rg.q + rot;
+      const x = cx + Math.cos(th) * rad;
+      const y = cy + Math.sin(th) * rad;
+      const lit = 0.5 + 0.5 * Math.cos(th * 3 - frame * 0.02);
+      ctx.beginPath();
+      ctx.fillStyle = lit > 0.6 ? '#15803d' : '#0891b2';
+      ctx.globalAlpha = 0.10 + 0.22 * lit;
+      ctx.arc(x, y, 1.6 + 1.4 * lit, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // a closing triangle: the holonomy test W_C = 1
+    const base = rot * 1.3;
+    const pts = [0, 1, 2].map(k => {
+      const th = base + (2 * Math.PI * k) / 3;
+      return [cx + Math.cos(th) * rad, cy + Math.sin(th) * rad];
+    });
+    ctx.beginPath();
+    ctx.strokeStyle = '#15803d';
+    ctx.globalAlpha = 0.10;
+    ctx.lineWidth = 1;
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    ctx.lineTo(pts[1][0], pts[1][1]);
+    ctx.lineTo(pts[2][0], pts[2][1]);
+    ctx.closePath();
+    ctx.stroke();
+  });
+
+  ctx.globalAlpha = 1;
+  frame++;
+  if (!reduceMotion && running) requestAnimationFrame(draw);
+}
+
+// 非表示タブ・画面外スクロール時は描画を止めて CPU を解放する
+let running = true;
+function setRunning(v) {
+  if (v === running) return;
+  running = v;
+  if (running && !reduceMotion) requestAnimationFrame(draw);
+}
+document.addEventListener('visibilitychange', () => setRunning(!document.hidden));
+window.addEventListener('scroll', () => setRunning(window.scrollY < window.innerHeight * 1.5), { passive: true });
+setRunning(window.scrollY < window.innerHeight * 1.5);
+if (running) draw();
+
+// ── Scroll reveal ──
+const reveals = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+reveals.forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
