@@ -3,28 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="From a continuous Fourier phase to a gauge-covariant complex geometry, then to a finite cyclic group: what runs through all three papers, and which claims carried over, returned in another form, or were deliberately dropped.">
+<meta name="description" content="From a continuous Fourier phase to a gauge-covariant complex geometry, to a finite cyclic group, and then to a discrete Hodge decomposition that takes all three as edge features: what runs through the four papers, and which claims carried over, returned in another form, or were deliberately dropped.">
 <link rel="canonical" href="https://kasubuchi.github.io/wavephasenet/relation_en.html">
 <link rel="alternate" hreflang="ja" href="https://kasubuchi.github.io/wavephasenet/relation_ja.html">
 <link rel="alternate" hreflang="en" href="https://kasubuchi.github.io/wavephasenet/relation_en.html">
 <link rel="alternate" hreflang="x-default" href="https://kasubuchi.github.io/wavephasenet/relation_en.html">
 <meta property="og:type" content="article">
-<meta property="og:site_name" content="WavePhaseNet / QuantumPhaseNet / ModularPhaseNet — Paper Explainers">
+<meta property="og:site_name" content="WavePhaseNet / QuantumPhaseNet / ModularPhaseNet / HodgePhaseNet — Paper Explainers">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="ja_JP">
 <meta property="og:url" content="https://kasubuchi.github.io/wavephasenet/relation_en.html">
-<meta property="og:title" content="How the Three Papers Relate — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet">
-<meta property="og:description" content="From a continuous Fourier phase to a gauge-covariant complex geometry, then to a finite cyclic group: what runs through all three papers, and which claims carried over, returned in another form, or were deliberately dropped.">
+<meta property="og:title" content="How the Four Papers Relate — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet / HodgePhaseNet">
+<meta property="og:description" content="From a continuous Fourier phase to a gauge-covariant complex geometry, to a finite cyclic group, and then to a discrete Hodge decomposition that takes all three as edge features: what runs through the four papers, and which claims carried over, returned in another form, or were deliberately dropped.">
 <meta property="og:image" content="https://kasubuchi.github.io/wavephasenet/og/og-relation.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="How the Three Papers Relate paper explainer (Kasubuchi &amp; Fukiya)">
+<meta property="og:image:alt" content="How the Four Papers Relate paper explainer (Kasubuchi &amp; Fukiya)">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="How the Three Papers Relate — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet">
-<meta name="twitter:description" content="From a continuous Fourier phase to a gauge-covariant complex geometry, then to a finite cyclic group: what runs through all three papers, and which claims carried over, returned in another form, or were deliberately dropped.">
+<meta name="twitter:title" content="How the Four Papers Relate — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet / HodgePhaseNet">
+<meta name="twitter:description" content="From a continuous Fourier phase to a gauge-covariant complex geometry, to a finite cyclic group, and then to a discrete Hodge decomposition that takes all three as edge features: what runs through the four papers, and which claims carried over, returned in another form, or were deliberately dropped.">
 <meta name="twitter:image" content="https://kasubuchi.github.io/wavephasenet/og/og-relation.png">
-<title>How the Three Papers Relate — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet</title>
+<title>How the Four Papers Relate — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet / HodgePhaseNet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
@@ -366,6 +366,17 @@
     .tl-item { grid-template-columns: 1fr; gap: 0.3rem; }
     .tl-date { text-align: left; }
   }
+
+  /* ── HodgePhaseNet (4th paper) ── */
+  :root { --hodge: #c2410c; }
+  .nav-logo .h, .hero-title .h, .strip-cell.h .strip-name, .tl-item.h .tl-name,
+  .vs-cell.h .vs-label, table.cmp th.h { color: var(--hodge); }
+  .tl-item.h .tl-body::before { border-color: var(--hodge); }
+  .vs-cell.h { border-top: 3px solid var(--hodge); }
+  .guide-links a.h:hover { background: var(--hodge); border-color: var(--hodge); color: #fff; }
+  .strip { grid-template-columns: repeat(2,1fr); }
+  table.cmp { min-width: 900px; }
+  @media (max-width: 640px) { .strip { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -373,13 +384,14 @@
 <canvas id="bg-canvas"></canvas>
 
 <nav>
-  <div class="nav-logo"><span class="w">Wave</span> × <span class="q">Quantum</span> × <span class="m">Modular</span></div>
+  <div class="nav-logo"><span class="w">Wave</span> × <span class="q">Quantum</span> × <span class="m">Modular</span> × <span class="h">Hodge</span></div>
   <ul class="nav-links">
     <li><a href="#timeline">Timeline</a></li>
     <li><a href="#shared">Shared</a></li>
     <li><a href="#changed">Changed</a></li>
     <li><a href="#core">Core</a></li>
     <li><a href="#continuity">Continuity</a></li>
+    <li><a href="#hodge">Fourth</a></li>
   </ul>
   <div class="nav-right">
     <a href="index.html" class="nav-page-tab">← Index</a>
@@ -394,16 +406,18 @@
 
   <!-- ── HERO ── -->
   <div class="hero">
-    <div class="hero-tag">2026.01 → 2026.08</div>
+    <div class="hero-tag">2026.01 → 2026.10</div>
     <h1 class="hero-title">
       From <span class="w">WavePhaseNet</span> to
       <span class="q">QuantumPhaseNet</span>,<br>
-      then <span class="m">ModularPhaseNet</span>
+      <span class="m">ModularPhaseNet</span>,<br>
+      then <span class="h">HodgePhaseNet</span>
     </h1>
     <p class="hero-desc">
-      Three papers by the same authors. The intuition is continuous, but the mathematical stage was swapped
+      Four papers by the same authors. Across the first three the intuition is continuous, but the mathematical stage was swapped
       out twice: <strong>a continuous Fourier phase → a gauge-covariant complex geometry → a finite cyclic
-      group that closes in integer arithmetic</strong>. What changed, what did not — and,
+      group that closes in integer arithmetic</strong>. The fourth does not swap the stage again; it builds a place that
+      <strong>receives the outputs of all three as a flow on edges and splits that flow into three parts</strong>. What changed, what did not — and,
       just as importantly, <strong>what was left behind</strong>.
     </p>
     <div class="scroll-hint">SCROLL</div>
@@ -412,7 +426,7 @@
   <!-- ── STRIP ── -->
   <section id="summary">
     <div class="section-label">00 // IN ONE LINE</div>
-    <h2>One line each</h2>
+    <h2>One line for each of the four</h2>
 
     <div class="strip reveal">
       <div class="strip-cell w">
@@ -430,11 +444,15 @@
         <div class="strip-line">Quantizes just the phase channel into a <strong>finite cyclic group</strong>, so hierarchy, direction and contradiction are computed exactly in integers.</div>
         <div class="strip-year"><a href="https://arxiv.org/abs/2609.06000" style="color:inherit;">arXiv:2609.06000</a> / theory + pre-registered plan</div>
       </div>
+      <div class="strip-cell h">
+        <div class="strip-name">HodgePhaseNet</div>
+        <div class="strip-line">Builds a <strong>semantic flow on edges</strong> from the features of the first three, splits it uniquely into a consistent direction, small local loops and large global loops, and feeds the parts back into attention.</div>
+        <div class="strip-year"><a href="https://arxiv.org/abs/2610.14971" style="color:inherit;">arXiv:2610.14971</a> / theory + evaluation plan</div>
+      </div>
     </div>
-
     <p class="reveal">
-      In a sentence: <strong>the first paper poses the problem, the second rebuilds the stage, and the third
-      makes it runnable</strong>. But the third does not carry everything from the second — and that
+      In a sentence: <strong>the first paper poses the problem, the second rebuilds the stage, the third
+      makes it runnable, and the fourth gathers their outputs into one field and decomposes it</strong>. But the third does not carry everything from the second — and that
       selection is the most interesting part of the sequence.
     </p>
   </section>
@@ -442,7 +460,7 @@
   <!-- ── TIMELINE ── -->
   <section id="timeline">
     <div class="section-label">01 // TIMELINE</div>
-    <h2>Seven months</h2>
+    <h2>Nine months</h2>
 
     <div class="timeline reveal">
       <div class="tl-item w">
@@ -491,20 +509,31 @@
           </div>
         </div>
       </div>
+      <div class="tl-item h">
+        <div class="tl-date">2026.09<br><span style="font-size:0.9em;">(arXiv submitted 10.10)</span></div>
+        <div class="tl-body">
+          <div class="tl-name">HodgePhaseNet (<a href="https://arxiv.org/abs/2610.14971" style="color:inherit;">arXiv:2610.14971</a>)</div>
+          <div class="tl-desc">
+            A relation encoder turns the features of the first three papers into an antisymmetric field \(\Omega\) on the edges of a simplicial complex.
+            A discrete Hodge decomposition splits it uniquely and orthogonally into gradient, local-circulation and harmonic parts, which return to attention as an ordered query–key bias.
+            <strong>No experiments yet; an evaluation plan and rejection criteria are given up front.</strong>
+          </div>
+        </div>
+      </div>
     </div>
-
     <p class="reveal">
       The second move was the same intuition rebuilt on mathematics that breaks less easily.
       The third move has a different motive: <strong>taking that mathematics and landing it on hardware that
       already exists</strong>. One migration was made for <em>correctness</em>, the other for
       <em>executability</em> — reading them that way makes the sequence easier to follow.
+      The fourth has yet another motive: rather than building a new stage, it <strong>sets the outputs of the three stages against each other in one place</strong>, an act of <em>integration</em>.
     </p>
   </section>
 
   <!-- ── SHARED ── -->
   <section id="shared">
     <div class="section-label">02 // SHARED</div>
-    <h2>Foundations that run through all three</h2>
+    <h2>Foundations that run through all four</h2>
 
     <p class="lead reveal">
       The stage changed twice; the roots did not.
@@ -513,7 +542,7 @@
     <div class="shared reveal">
       <div class="shared-item">
         <h4>How the problem is framed</h4>
-        <p>Hallucination follows from the structure of the representation space, not from insufficient training. So rebuild the space, not the dataset. Both the diagnosis and the prescription carry through all three papers.</p>
+        <p>Hallucination follows from the structure of the representation space, not from insufficient training. So rebuild the space, not the dataset. Both the diagnosis and the prescription carry through all four papers.</p>
       </div>
       <div class="shared-item">
         <h4>Frequency and phase map to meaning</h4>
@@ -525,11 +554,11 @@
       </div>
       <div class="shared-item">
         <h4>The Transformer is not replaced</h4>
-        <p>All are designed as correction terms and residuals; zero the coefficients and the original model returns exactly. The third goes further — every added quantity is a <strong>real-valued scalar bias</strong>, so no existing kernel has to be modified.</p>
+        <p>All are designed as correction terms and residuals; zero the coefficients and the original model returns exactly. The third goes further — every added quantity is a <strong>real-valued scalar bias</strong>, so no existing kernel has to be modified. The fourth also enters attention as an additive bias and reduces to the original model when its weights are zero.</p>
       </div>
       <div class="shared-item">
         <h4>Proofs and hypotheses stay separate</h4>
-        <p>Separating what can be proved from what can be refuted on real data became explicit in the second paper; the third organizes it further into five proved theorems, the empirical hypotheses, five claims deliberately avoided, and seven falsification criteria.</p>
+        <p>Separating what can be proved from what can be refuted on real data became explicit in the second paper; the third organizes it further into five proved theorems, the empirical hypotheses, five claims deliberately avoided, and seven falsification criteria. The fourth likewise keeps its three theorems and three propositions apart from a pre-experiment evaluation plan and rejection criteria.</p>
       </div>
       <div class="shared-item">
         <h4>Intrinsic structure first (external evidence divides the labor)</h4>
@@ -551,6 +580,7 @@
           <th class="w">WavePhaseNet</th>
           <th class="q">QuantumPhaseNet</th>
           <th class="m">ModularPhaseNet</th>
+          <th class="h">HodgePhaseNet</th>
         </tr>
       </thead>
       <tbody>
@@ -559,66 +589,77 @@
           <td>Flat embedding space; linear algebra</td>
           <td>Riemannian manifold + complex vector bundle + unitary connection</td>
           <td>Finite cyclic group \(C_q\) and its Cayley graph; integer arithmetic</td>
+          <td>A finite simplicial complex (vertices, edges, triangles); sparse linear algebra</td>
         </tr>
         <tr>
           <td>What "phase" is</td>
           <td>The DFT phase angle \(\Phi_k\) — a <strong>coordinate</strong></td>
           <td>The covariant phase rate \(\Omega_\gamma\) — an <strong>invariant</strong></td>
           <td>The group element \(z=g^{a}\bmod p\) — a <strong>discretized invariant</strong></td>
+          <td>Not phase itself: an <strong>antisymmetric field on edges</strong> \(\Omega\), built from the earlier phases and holonomies</td>
         </tr>
         <tr>
           <td>How hierarchy is built</td>
           <td>Frequency bands are the hierarchy levels</td>
           <td>Semantic wavelength \(\lambda\) → quotient set → distributive lattice</td>
           <td>A quotient filtration \(q_0\mid q_1\mid\cdots\mid q_L\) plus a depth variable</td>
+          <td>No hierarchy is built; the gradient part (a consistent direction) is read as a candidate ordering</td>
         </tr>
         <tr>
           <td>Hierarchical consistency</td>
           <td>Rests on the ordering of frequency bands</td>
           <td>Rests on wavelength ordering and training</td>
           <td><strong>Guaranteed as a theorem by the group structure</strong> (nested partitions)</td>
+          <td>A consistent ordering exists when the circulation and harmonic parts vanish</td>
         </tr>
         <tr>
           <td>Where low frequency comes from</td>
           <td>A DFT along the sequence (assumes an evenly spaced line)</td>
           <td>Low eigenmodes of a graph Laplacian (arbitrary connectivity)</td>
           <td>No low-frequency semantics assumed; direction is an oriented group element</td>
+          <td>None assumed; the edge field is split by the image and kernel of the Hodge Laplacian \(L_1\)</td>
         </tr>
         <tr>
           <td>How consistency is enforced</td>
           <td>Cohomology regularization + Hodge harmonic projection</td>
           <td>Geometric risk combining curvature, evidence and uncertainty</td>
           <td>An exact test of whether the cycle holonomy \(W_C\) returns to the identity</td>
+          <td><strong>Discrete Hodge decomposition</strong> into orthogonal gradient, local-circulation and harmonic parts</td>
         </tr>
         <tr>
           <td>How distance is measured</td>
           <td>Euclidean distance</td>
           <td>Geodesic distance under a learnable metric</td>
           <td>Word metric on the Cayley graph (shortest number of ticks)</td>
+          <td>Norms of each part under an edge-weighted inner product</td>
         </tr>
         <tr>
           <td>Role of "quantum"</td>
           <td>Absent — the DFT is classical</td>
           <td>QFT, QPE, Oracle, amplitude amplification — with no advantage claimed</td>
           <td><strong>All removed</strong>, replaced by a learned discrete selector and a risk gate</td>
+          <td>Absent</td>
         </tr>
         <tr>
           <td>Arithmetic at inference</td>
           <td>Real-valued linear algebra</td>
           <td>Complex arithmetic, sparse graphs, polynomial filters</td>
           <td>Integer modular exponentiation and \(O(1)\) table lookups</td>
+          <td>Two sparse real-valued linear solves</td>
         </tr>
         <tr>
           <td>Headline claim</td>
           <td>Reducing 24,576 → 3,000 dimensions is justified</td>
           <td>RQ1–RQ4 supported; RQ5 a falsification candidate</td>
           <td>Whether local inferences integrate globally is checkable on a finite group</td>
+          <td>The split of semantic flow is unique, orthogonal, and independent of orientation and (conditionally) gauge</td>
         </tr>
         <tr>
           <td>Experiments</td>
           <td><strong>None</strong> (theory only)</td>
           <td>Measured in the Validation Studio (synthetic, five seeds)</td>
           <td><strong>None</strong> (theory + a pre-registered evaluation plan)</td>
+          <td><strong>None</strong> (theory + an evaluation plan with rejection criteria)</td>
         </tr>
       </tbody>
     </table>
@@ -791,6 +832,7 @@
         <strong>disagreement between overlapping windows</strong>; holonomy measures
         <strong>how far phase fails to return after traversing a closed contextual loop</strong>.
         Whether the latter subsumes the former is still not obvious.
+        In the fourth paper, the Hodge decomposition itself returns as the subject (<a href="#hodge" style="color:inherit;">06</a>).
       </p>
     </div>
 
@@ -825,23 +867,77 @@
     </div>
 
     <div class="note reveal">
-      <div class="note-title">⚠ Reading all three together</div>
+      <div class="note-title">⚠ Reading the papers together</div>
       <p>
-        With three papers published side by side, a reader cannot easily tell whether each successor replaces
+        With four papers published side by side, a reader cannot easily tell whether each successor replaces
         its predecessor or complements it. The accurate reading today is that
         <strong>each successor rebuilds part of the earlier work on different mathematics — not all of it</strong>.
       </p>
       <p>
         For cohomology regularization and the dimensionality claim, the first paper remains the reference;
         for quantum spectral selection and measured results, the second. Reading only the third does not give
-        the whole picture.
+        the whole picture. The fourth also takes the features of the first three as input, so it does not stand alone either.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── HODGE ── -->
+  <section id="hodge">
+    <div class="section-label">06 // FOURTH PAPER</div>
+    <h2>The fourth paper keeps the stages and gathers their outputs in one place</h2>
+    <p class="lead reveal">
+      Papers one to three rebuilt the same intuition on different mathematics. HodgePhaseNet does not continue that line.
+      Instead, it <strong>takes the features each of the three stages produces and receives them in one place, as a field on the edges between sentences or claims</strong>.
+    </p>
+    <div class="table-scroll reveal">
+    <table class="cmp" style="min-width:560px;">
+      <thead>
+        <tr><th>Earlier paper</th><th class="h">How HodgePhaseNet uses it</th></tr>
+      </thead>
+      <tbody>
+        <tr><td style="color:var(--wave);">WavePhaseNet</td><td>Band-wise energy and phase become the <strong>scale</strong> part of each edge's features</td></tr>
+        <tr><td style="color:var(--quantum);">QuantumPhaseNet</td><td>Transported phase differences (the connection) become the <strong>comparison</strong> part</td></tr>
+        <tr><td style="color:var(--modular);">ModularPhaseNet</td><td>The holonomy test, whether phase returns after a loop, becomes the <strong>consistency</strong> part</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="math-box reveal">
+      <span class="math-label">Discrete Hodge decomposition (edge field)</span>
+      \[ \Omega = \underbrace{B_1^{\top}\Phi}_{G\ \text{gradient}} + \underbrace{B_2\Psi}_{C\ \text{local circulation}} + \underbrace{H}_{\text{harmonic}},
+         \qquad B_1H=0,\quad B_2^{\top}H=0 \]
+    </div>
+    <p class="reveal">
+      The relation encoder scores both directions of an edge and produces a field \(\Omega\) whose sign flips with the orientation.
+      The gradient part \(G\) is a globally consistent direction, the local circulation \(C\) is swirl inside filled triangles,
+      and the harmonic part \(H\) is circulation around large unfilled loops. The three are mutually orthogonal and the split is unique.
+      ModularPhaseNet's theorem, that trivial holonomy on every cycle gives a global assignment, reappears here over the reals:
+      when the circulation and harmonic parts vanish, the flow is a difference of vertex values.
+    </p>
+    <div class="card reveal">
+      <h3>Hodge decomposition returns head-on in the fourth paper, but "harmonic" points the other way</h3>
+      <p>
+        The Hodge harmonic projection at the heart of the first paper disappeared in the second and came back partly as holonomy in the third.
+        In the fourth, the Hodge decomposition itself is the subject.
+      </p>
+      <p style="margin-bottom:0;">
+        The word "harmonic" names different things, though. In WavePhaseNet, the harmonic part lives <strong>on vertices (a 0-cochain) and is the most consistent glued component</strong>.
+        In HodgePhaseNet it lives <strong>on edges (a 1-cochain) and circulates around unfilled loops</strong>,
+        so it is treated as a candidate for disagreement that local explanations cannot remove. Do not compare the two without translating one into the other.
+      </p>
+    </div>
+    <div class="note reveal">
+      <div class="note-title">⚠ The fourth paper has no experiments yet either</div>
+      <p>
+        What it offers is three theorems, three propositions, a five-vertex example that can be checked by hand, and an evaluation plan with rejection criteria.
+        The paper states plainly that local circulation does not mean contradiction and a global loop does not mean missing knowledge;
+        which part corresponds to which kind of error is left to future validation.
       </p>
     </div>
   </section>
 
   <!-- ── GUIDE ── -->
   <section id="guide">
-    <div class="section-label">06 // WHERE TO START</div>
+    <div class="section-label">07 // WHERE TO START</div>
     <h2>Which one to read first</h2>
 
     <div class="guide reveal">
@@ -882,16 +978,18 @@
       </div>
       <div class="guide-card">
         <div class="who">FOLLOWING THE MATHEMATICS</div>
-        <h4>Read the three detailed pages side by side</h4>
+        <h4>Read the four detailed pages side by side</h4>
         <p>
           Measure theory and cohomology in the first, gauge covariance and quantum spectral selection in the
-          second, finite groups and discrete integrability in the third. They overlap little and complement
+          second, finite groups and discrete integrability in the third, simplicial complexes and the discrete Hodge
+          decomposition in the fourth. They overlap little and complement
           each other.
         </p>
         <div class="guide-links">
           <a class="w" href="wavephasenet_en.html">Wave →</a>
           <a class="q" href="quantumphasenet_en.html">Quantum →</a>
           <a class="m" href="modularphasenet_en.html">Modular →</a>
+          <a class="h" href="hodgephasenet_en.html">Hodge →</a>
         </div>
       </div>
     </div>
@@ -901,10 +999,11 @@
 
 <footer>
   <div class="wrapper" style="padding-top:0; padding-bottom:0;">
-    <a href="index.html">Index</a> &nbsp;|&nbsp; How the three papers relate &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp;
+    <a href="index.html">Index</a> &nbsp;|&nbsp; How the four papers relate &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp;
     <a href="wavephasenet_intro_en.html">WavePhaseNet</a> &nbsp;|&nbsp;
     <a href="quantumphasenet_intro_en.html">QuantumPhaseNet</a> &nbsp;|&nbsp;
-    <a href="modularphasenet_intro_en.html">ModularPhaseNet</a>
+    <a href="modularphasenet_intro_en.html">ModularPhaseNet</a> &nbsp;|&nbsp;
+    <a href="hodgephasenet_intro_en.html">HodgePhaseNet</a>
   </div>
 </footer>
 

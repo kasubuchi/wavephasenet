@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Transformer の中の意味の流れを、辺の上の反対称な場として表し、勾配・局所循環・調和成分の3つに一意に直交分解する。3つの定理・3つの命題・検算済みの数値例・評価計画までを全13節で解説します。arXiv:2610.14971">
+<link rel="canonical" href="https://kasubuchi.github.io/wavephasenet/hodgephasenet_ja.html">
+<link rel="alternate" hreflang="ja" href="https://kasubuchi.github.io/wavephasenet/hodgephasenet_ja.html">
+<link rel="alternate" hreflang="en" href="https://kasubuchi.github.io/wavephasenet/hodgephasenet_en.html">
+<link rel="alternate" hreflang="x-default" href="https://kasubuchi.github.io/wavephasenet/hodgephasenet_en.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="WavePhaseNet / QuantumPhaseNet / ModularPhaseNet / HodgePhaseNet — 論文解説">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:url" content="https://kasubuchi.github.io/wavephasenet/hodgephasenet_ja.html">
+<meta property="og:title" content="HodgePhaseNet — 論文解説（詳細）">
+<meta property="og:description" content="Transformer の中の意味の流れを、辺の上の反対称な場として表し、勾配・局所循環・調和成分の3つに一意に直交分解する。3つの定理・3つの命題・検算済みの数値例・評価計画までを全13節で解説します。arXiv:2610.14971">
+<meta property="og:image" content="https://kasubuchi.github.io/wavephasenet/og/og-hodge.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="HodgePhaseNet の解説ページ（Kasubuchi &amp; Fukiya）">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="HodgePhaseNet — 論文解説（詳細）">
+<meta name="twitter:description" content="Transformer の中の意味の流れを、辺の上の反対称な場として表し、勾配・局所循環・調和成分の3つに一意に直交分解する。3つの定理・3つの命題・検算済みの数値例・評価計画までを全13節で解説します。arXiv:2610.14971">
+<meta name="twitter:image" content="https://kasubuchi.github.io/wavephasenet/og/og-hodge.png">
+<title>HodgePhaseNet — 論文解説（詳細）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #fdf6f2;
+    --surface2: #fbe9df;
+    --border: #efd3c4;
+    --accent: #c2410c;
+    --accent2: #1d4ed8;
+    --accent3: #0f766e;
+    --text: #1d130e;
+    --text-muted: #5a4135;
+    --text-dim: #8a6e61;
+    --glow: rgba(194,65,12,0.12);
+    --font-serif: 'Noto Serif JP', serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-sans: 'Noto Sans JP', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    line-height: 1.8;
+    overflow-x: hidden;
+  }
+
+  #bg-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex; align-items: center; gap: 0;
+  }
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+  .nav-links { display: flex; gap: 1.6rem; list-style: none; margin-left: 2rem; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none;
+    font-size: 0.78rem; letter-spacing: 0.08em; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-right { display: flex; align-items: center; gap: 1.4rem; margin-left: auto; }
+  .nav-lang {
+    display: flex; align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden; flex-shrink: 0;
+  }
+  .nav-lang a {
+    font-family: var(--font-mono); font-size: 0.65rem;
+    letter-spacing: 0.1em; padding: 0.28em 0.75em;
+    color: var(--text-dim); text-decoration: none;
+    transition: all 0.2s; line-height: 1;
+  }
+  .nav-lang a.current { background: var(--accent); color: #fff; }
+  .nav-lang a:not(.current):hover { color: var(--accent); }
+  .nav-page-tab {
+    font-family: var(--font-mono); font-size: 0.72rem;
+    letter-spacing: 0.08em; color: var(--text-muted);
+    text-decoration: none; padding-bottom: 2px;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s; flex-shrink: 0; white-space: nowrap;
+  }
+  .nav-page-tab:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 900px; margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding-top: 80px; position: relative;
+  }
+  .hero-tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem; letter-spacing: 0.2em;
+    color: var(--accent); border: 1px solid var(--accent);
+    padding: 0.3em 0.9em; display: inline-block;
+    margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.2s forwards;
+  }
+  .hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(2.2rem, 5.6vw, 4rem);
+    font-weight: 700; line-height: 1.15;
+    letter-spacing: -0.01em; margin-bottom: 0.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.35s forwards;
+  }
+  .hero-title .wave {
+    color: var(--accent); display: inline-block;
+    animation: pulse 3s ease-in-out infinite;
+  }
+  .hero-subtitle {
+    font-family: var(--font-mono); font-size: 0.8rem;
+    color: var(--accent2); letter-spacing: 0.05em;
+    margin-bottom: 2rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.45s forwards;
+  }
+  .hero-meta {
+    display: flex; gap: 2rem; flex-wrap: wrap;
+    font-size: 0.78rem; color: var(--text-muted);
+    margin-bottom: 2.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.55s forwards;
+  }
+  .hero-meta span { display: flex; align-items: center; gap: 0.4rem; }
+  .hero-desc {
+    font-size: 1.05rem; color: var(--text-muted);
+    max-width: 640px; line-height: 1.9;
+    opacity: 0; animation: fadeUp 0.6s ease 0.65s forwards;
+    margin-bottom: 3rem;
+  }
+  .scroll-hint {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--text-dim); letter-spacing: 0.15em;
+    display: flex; align-items: center; gap: 0.5rem;
+    opacity: 0; animation: fadeUp 0.6s ease 0.8s forwards;
+  }
+  .scroll-hint::after {
+    content: ''; display: block; width: 40px; height: 1px;
+    background: var(--text-dim); animation: expandLine 1.5s ease infinite;
+  }
+
+  /* ── Sections ── */
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    letter-spacing: 0.25em; color: var(--accent);
+    margin-bottom: 0.6rem; opacity: 0.8;
+  }
+  h2 {
+    font-family: var(--font-serif); font-size: 1.9rem;
+    font-weight: 700; margin-bottom: 2rem; line-height: 1.3;
+  }
+  h3 {
+    font-family: var(--font-serif); font-size: 1.2rem;
+    font-weight: 600; margin-bottom: 1rem; color: var(--text);
+  }
+  p { margin-bottom: 1.2rem; color: var(--text-muted); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 2px; padding: 2rem; margin-bottom: 1.5rem;
+    position: relative; overflow: hidden; transition: border-color 0.3s;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%; background: var(--accent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .card:hover { border-color: rgba(194,65,12,0.4); }
+  .card:hover::before { opacity: 1; }
+
+  .abstract-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 2.5rem; margin-bottom: 2rem; position: relative;
+  }
+  .abstract-box::before {
+    content: '"'; position: absolute; top: 1rem; left: 2rem;
+    font-family: var(--font-serif); font-size: 5rem;
+    color: var(--accent); opacity: 0.08; line-height: 1;
+  }
+
+  .concept-flow { display: flex; align-items: center; gap: 0; margin: 2rem 0; flex-wrap: wrap; }
+  .concept-node {
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 0.9rem 1.4rem; font-size: 0.82rem;
+    font-family: var(--font-mono); color: var(--text);
+    position: relative; white-space: nowrap;
+    transition: all 0.2s; cursor: default;
+  }
+  .concept-node:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 20px var(--glow); }
+  .concept-arrow { color: var(--accent); font-size: 1.2rem; padding: 0 0.5rem; opacity: 0.6; }
+
+  .math-box {
+    background: #0f1c15; border: 1px solid var(--border);
+    border-radius: 1px; padding: 1.8rem 2rem; margin: 1.5rem 0;
+    font-family: var(--font-mono); font-size: 0.85rem;
+    overflow-x: auto; position: relative;
+  }
+  .math-box .math-label {
+    position: absolute; top: 0.6rem; right: 1rem;
+    font-size: 0.62rem; color: #8fbfa4; letter-spacing: 0.1em;
+  }
+  .math-box mjx-container, .math-box mjx-container * { color: #e9f5ee !important; }
+
+  .energy-table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
+  .energy-table th {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    letter-spacing: 0.12em; color: var(--accent);
+    text-align: left; padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .energy-table td {
+    padding: 0.8rem 1rem; font-size: 0.85rem;
+    border-bottom: 1px solid rgba(190,220,202,0.7);
+    color: var(--text-muted); vertical-align: top;
+  }
+  .energy-table tr:hover td { background: var(--surface); }
+  .table-scroll { overflow-x: auto; }
+  .mono { font-family: var(--font-mono); font-size: 0.8rem; }
+
+  .badge {
+    font-family: var(--font-mono); font-size: 0.62rem;
+    letter-spacing: 0.08em; padding: 0.15em 0.55em;
+    border: 1px solid; white-space: nowrap;
+  }
+  .badge.thm { border-color: var(--accent); color: var(--accent); }
+  .badge.emp { border-color: var(--accent3); color: var(--accent3); }
+  .badge.open { border-color: var(--text-dim); color: var(--text-dim); }
+
+  .pillars { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin: 2rem 0; }
+  .pillar {
+    border: 1px solid var(--border); padding: 1.8rem 1.4rem;
+    position: relative; background: var(--surface); transition: all 0.3s;
+  }
+  .pillar:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(194,65,12,0.1); }
+  .pillar-num {
+    font-family: var(--font-mono); font-size: 2.5rem; font-weight: 700;
+    color: var(--border); line-height: 1; margin-bottom: 0.8rem; transition: color 0.3s;
+  }
+  .pillar:hover .pillar-num { color: var(--accent); opacity: 0.4; }
+  .pillar h4 { font-family: var(--font-serif); font-size: 0.95rem; font-weight: 600; margin-bottom: 0.6rem; color: var(--text); }
+  .pillar p { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem 0; }
+  .split-cell { border: 1px solid var(--border); background: var(--surface); padding: 1.6rem 1.5rem; }
+  .split-cell.hot { border-color: rgba(194,65,12,0.45); }
+  .split-cell h4 {
+    font-family: var(--font-mono); font-size: 0.74rem;
+    letter-spacing: 0.1em; color: var(--accent); margin-bottom: 0.7rem;
+  }
+  .split-cell.cool h4 { color: var(--accent2); }
+  .split-cell p { font-size: 0.82rem; margin: 0; }
+  .split-cell ul { margin: 0; padding-left: 1.1rem; }
+  .split-cell li { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.45rem; }
+
+  .arch-flow { margin: 2rem 0; display: flex; flex-direction: column; gap: 0; }
+  .arch-step { display: flex; align-items: stretch; gap: 0; }
+  .arch-step-num {
+    font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent);
+    width: 36px; min-width: 36px;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; position: relative;
+  }
+  .arch-step-num::after {
+    content: ''; position: absolute; bottom: 0; left: 50%;
+    width: 1px; height: 100%; background: var(--border); top: 50%;
+  }
+  .arch-step:last-child .arch-step-num::after { display: none; }
+  .arch-step-body {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    padding: 1.2rem 1.5rem; margin: 4px 0; margin-left: 1rem;
+    transition: border-color 0.2s;
+  }
+  .arch-step-body:hover { border-color: rgba(194,65,12,0.35); }
+  .arch-step-title {
+    font-family: var(--font-mono); font-size: 0.78rem;
+    color: var(--accent); letter-spacing: 0.1em; margin-bottom: 0.4rem;
+  }
+  .arch-step-desc { font-size: 0.82rem; color: var(--text-muted); }
+
+  .ref-card {
+    border: 1px solid var(--border); padding: 1.5rem;
+    background: var(--surface); margin-bottom: 1rem;
+    display: grid; grid-template-columns: auto 1fr; gap: 1.2rem;
+    align-items: start; transition: border-color 0.2s;
+  }
+  .ref-card:hover { border-color: rgba(194,65,12,0.35); }
+  .ref-tag {
+    font-family: var(--font-mono); font-size: 0.65rem;
+    padding: 0.2em 0.6em; border: 1px solid; white-space: nowrap;
+    align-self: start; margin-top: 0.1rem;
+  }
+  .ref-tag.sim { border-color: var(--accent2); color: var(--accent2); }
+  .ref-tag.diff { border-color: var(--accent); color: var(--accent); }
+  .ref-tag.warn { border-color: var(--accent3); color: var(--accent3); }
+  .ref-name { font-weight: 500; font-size: 0.88rem; margin-bottom: 0.4rem; }
+  .ref-desc { font-size: 0.78rem; color: var(--text-muted); }
+
+  .caution {
+    border: 1px dashed var(--accent3);
+    background: rgba(217,119,6,0.04);
+    padding: 1.5rem 1.8rem; margin: 1.5rem 0;
+  }
+  .caution-title {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    letter-spacing: 0.12em; color: var(--accent3); margin-bottom: 0.8rem;
+  }
+  .caution ul { margin: 0; padding-left: 1.2rem; }
+  .caution li { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+
+  .conclusion-box {
+    background: linear-gradient(135deg, rgba(194,65,12,0.06), rgba(8,145,178,0.06));
+    border: 1px solid rgba(194,65,12,0.2);
+    padding: 3rem; text-align: center; position: relative; overflow: hidden;
+  }
+  .conclusion-box::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(194,65,12,0.07), transparent 70%);
+  }
+  .conclusion-box h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+  .conclusion-box p { max-width: 620px; margin: 0 auto; font-size: 0.92rem; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; }
+  .chip {
+    font-family: var(--font-mono); font-size: 0.65rem;
+    padding: 0.25em 0.75em; border: 1px solid var(--border);
+    color: var(--text-dim); letter-spacing: 0.08em;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 0 2rem; text-align: center;
+    font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--text-dim); letter-spacing: 0.08em;
+    position: relative; z-index: 1;
+  }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse {
+    0%,100% { text-shadow: 0 0 20px rgba(194,65,12,0.25); }
+    50% { text-shadow: 0 0 40px rgba(194,65,12,0.55); }
+  }
+  @keyframes expandLine {
+    0% { width: 20px; opacity: 0.3; }
+    50% { width: 60px; opacity: 0.8; }
+    100% { width: 20px; opacity: 0.3; }
+  }
+
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 420px) {
+    nav { padding: 0 0.7rem; gap: 0.5rem; }
+    .nav-logo { font-size: 0.68rem; letter-spacing: 0.04em; }
+    .nav-right { gap: 0.6rem; }
+    .nav-page-tab { font-size: 0.62rem; }
+    .nav-lang a { padding: 0.28em 0.55em; font-size: 0.6rem; }
+  }
+  @media (max-width: 760px) {
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 640px) {
+    .pillars { grid-template-columns: 1fr; }
+    .split { grid-template-columns: 1fr; }
+    .concept-flow { gap: 0.3rem; }
+    .concept-arrow { display: none; }
+  }
+
+  /* ── Paper figures ── */
+  .paper-fig { margin: 2rem 0; background: #fff; border: 1px solid var(--border); padding: 1rem; }
+  .paper-fig img { display: block; width: 100%; height: auto; }
+  .paper-fig figcaption { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.8rem; line-height: 1.7; }
+  /* ── Four-paper lineage (2x2) ── */
+  .lineage { grid-template-columns: repeat(2,1fr); }
+  .lineage-cell:nth-child(3) .lineage-name { color: #15803d; }
+  .lineage-cell:nth-child(4) .lineage-name { color: var(--accent); }
+  @media (max-width: 640px) { .lineage { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<nav>
+  <div class="nav-logo">HodgePhaseNet // 詳細解説</div>
+  <ul class="nav-links">
+    <li><a href="#abstract">概要</a></li>
+    <li><a href="#complex">複体</a></li>
+    <li><a href="#decomposition">分解</a></li>
+    <li><a href="#attention">Attention</a></li>
+    <li><a href="#example">数値例</a></li>
+    <li><a href="#plan">評価計画</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="hodgephasenet_intro_ja.html" class="nav-page-tab">かんたん解説 →</a>
+    <div class="nav-lang">
+      <a href="hodgephasenet_ja.html" class="current">JA</a>
+      <a href="hodgephasenet_en.html">EN</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrapper">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-tag">2026.09 · arXiv投稿 2026.10.10 · <a href="https://arxiv.org/abs/2610.14971" style="color:inherit;">arXiv:2610.14971</a></div>
+    <h1 class="hero-title">
+      <span class="wave">Hodge</span>PhaseNet
+    </h1>
+    <div class="hero-subtitle">Discrete Hodge Decomposition of Semantic Flows<br>in Transformer Attention</div>
+    <div class="hero-meta">
+      <span>👤 Kiyotaka Kasubuchi, Kazuo Fukiya</span>
+      <span>📅 2026年9月</span>
+      <span>📄 理論・設計提案（実験なし）</span>
+    </div>
+    <p class="hero-desc">
+      PhaseNet シリーズの4本目。文と文、主張と主張のあいだの「意味の流れ」を、
+      有限の単体複体の<strong>辺の上の反対称な実数場</strong> \(\Omega\) として表し、
+      それを<strong>勾配（一貫した向き）・局所循環（小さな三角の回り込み）・調和成分（大きな穴を回る循環）</strong>の
+      3つに一意かつ直交に分解する。分解結果は、順序付きの query–key 対に対するバイアスとして Attention に戻される。
+      前3作の特徴量はこの辺の場を作るための入力として使われる。
+    </p>
+    <div class="chips">
+      <span class="chip">離散Hodge分解</span><span class="chip">単体複体</span><span class="chip">接続行列 B₁, B₂</span>
+      <span class="chip">1-コチェイン</span><span class="chip">Hodge Laplacian</span><span class="chip">Betti数</span>
+      <span class="chip">ゲージ補償</span><span class="chip">因果プレフィックス</span><span class="chip">校正リスク</span>
+    </div>
+    <div class="scroll-hint">SCROLL TO EXPLORE</div>
+  </div>
+
+  <!-- ── ABSTRACT ── -->
+  <section id="abstract">
+    <div class="section-label">01 // ABSTRACT</div>
+    <h2>この論文が主張していること</h2>
+
+    <div class="abstract-box reveal">
+      <p>
+        WavePhaseNet は周波数で分解した意味表現を、QuantumPhaseNet はゲージ共変な位相接続を、
+        ModularPhaseNet は有限巡回群の位相チャネルとサイクルホロノミーを、通常の Transformer で計算できる形にした。
+        これらは意味の組織化の互いに補い合う側面を記述するが、観測された<strong>二者間の関係の集まり</strong>を、
+        大域的に一貫した向き・局所的な合成のまわりの循環・より大きな埋まっていないサイクルを回り続ける循環、
+        の3つに分けることは、それだけではできない。
+      </p>
+      <p>
+        HodgePhaseNet は意味の遷移を、有限の向き付き単体複体の上の<strong>反対称な実数値1-コチェイン</strong> \(\Omega\) として表す。
+        頂点–辺の接続行列 \(B_1\) と辺–面の接続行列 \(B_2\) を使うと、どんな \(\Omega\) も
+        \(\Omega = B_1^{\top}\Phi + B_2\Psi + H\)（ただし \(B_1H=0,\ B_2^{\top}H=0\)）と<strong>一意に直交分解</strong>される。
+        ポテンシャル \(\Phi,\Psi\) が一意でなくても、3つの成分の<strong>場</strong>は一意である。
+        論文は明示的な射影子、疎な実装、可積分性とゲージに関する結果、検算済みの数値例、そして作り直した Attention インターフェースを与える。
+      </p>
+      <p>
+        Attention のバイアスは許可された<strong>順序付き query–key 対</strong>の上で定義され、辺の向きの選び方に依存せず、
+        デコーダでは複体を<strong>見えているプレフィックスだけ</strong>から作ることで因果的な情報境界を守る。
+        Attention 出力のゲージ不変性は、不変な特徴量または補償された特徴量を使う場合に限って成り立つ。
+        頂点埋め込みの単純な差には局所循環成分も調和成分もないため、<strong>本物の関係エンコーダが不可欠</strong>である。
+        局所循環はそれだけで矛盾を意味せず、調和成分はそれだけで知識の欠落を意味しない。
+        こうした解釈や事実誤りの低減は、統制された実験で確かめる必要がある。
+        <strong>本稿は数学とアーキテクチャの提案であり、自然言語での性能結果は報告していない。</strong>
+      </p>
+    </div>
+
+    <div class="pillars reveal">
+      <div class="pillar">
+        <div class="pillar-num">G</div>
+        <h4>勾配成分（exact）</h4>
+        <p>頂点ポテンシャルの差 \(B_1^{\top}\Phi\) で説明できる部分。全体として一貫した「向き」や上下関係を表しうる。ただし一貫した誤りもここに入る</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">C</div>
+        <h4>局所循環成分（coexact）</h4>
+        <p>宣言した三角形の面の境界 \(B_2\Psi\) で説明できる回り込み。推移律の破れの候補にもなるが、正当な相互定義でも生じる</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">H</div>
+        <h4>調和成分（harmonic）</h4>
+        <p>どの頂点にも溜まらず、どの面でも回らないのに、埋まっていない大きなサイクルを回り続ける流れ。裏付けのない推論ループの候補にも、意図的な話題の回帰にもなる</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── BRIDGE ── -->
+  <section id="bridge">
+    <div class="section-label">02 // FROM THREE PAPERS</div>
+    <h2>前3作から「辺の場」へ</h2>
+
+    <p class="lead reveal">
+      通常の Transformer は query と key の類似度を softmax で混ぜるだけで、
+      「共通のポテンシャルから決まる向き」「局所的な三者の回り込み」「どの局所面にも還元できないサイクル」を明示的には区別しない。
+      階層・推論の連鎖・複数経路で支えられた主張を扱うとき、この区別が効いてくる。
+    </p>
+
+    <figure class="paper-fig reveal">
+      <img src="img/hodge_fig1_roles.jpg" alt="WavePhaseNet・QuantumPhaseNet・ModularPhaseNet の特徴量が関係エンコーダに入り、HodgePhaseNet が Ω = G + C + H に分解して Attention に返す図">
+      <figcaption>図1（論文より）。前3作の特徴量が独立に学習される辺の場の入力になり、Hodge 層がその場を勾配・局所循環・調和成分に分けて Attention に返す。</figcaption>
+    </figure>
+
+    <div class="table-scroll reveal">
+      <table class="energy-table">
+        <thead><tr><th>前作</th><th>与えるもの</th><th>それだけでは言えないこと</th></tr></thead>
+        <tbody>
+          <tr><td>WavePhaseNet</td><td>系列方向の DFT による<strong>スケール</strong>の特徴量（帯域エネルギー・再構成）</td><td>帯域と意味役割の対応は経験的解釈にとどまる</td></tr>
+          <tr><td>QuantumPhaseNet</td><td>局所位相の<strong>比較規則</strong>（共変な接続・共変位相残差）</td><td>辺の場全体のうち、どこがポテンシャル差で、どこが面の境界で、どこが大域サイクルかは言わない</td></tr>
+          <tr><td>ModularPhaseNet</td><td>有限群による<strong>厳密な整合性検査</strong>（サイクルホロノミー）</td><td>「整合か否か」は答えるが、辺のエネルギーを勾配・局所・大域へ実数で直交に配分しない</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="reveal">
+      HodgePhaseNet はこれらを<strong>関係エンコーダの入力</strong>として使い、その出力である実数の反対称な辺の場が、
+      宣言された頂点・辺・合成可能な面の上でどう分解されるかを問う。「境界の境界はゼロ」という恒等式のおかげで、
+      この問いは初等的な有限次元の Hodge 問題になる。
+    </p>
+
+    <div class="caution reveal">
+      <div class="caution-title">解説者注：「調和」の意味が WavePhaseNet と違う</div>
+      <ul>
+        <li>WavePhaseNet の調和射影は、<strong>頂点（0-コチェイン）</strong>の Laplacian の核への射影で、「最も整合した貼り合わせ成分」を取り出す操作だった。</li>
+        <li>本作の調和成分 \(H\) は<strong>辺（1-コチェイン）</strong>の場で、埋まっていないサイクルを回る循環を表す。同じ「harmonic」でも指す対象が違う。</li>
+        <li>論文自身も「調和の考え方を PhaseNet 系列に初めて持ち込んだとは主張しない」と明記し、分解の対象を辺の関係場へ移した点を新しさとしている。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── COMPLEX ── -->
+  <section id="complex">
+    <div class="section-label">03 // SEMANTIC COMPLEX</div>
+    <h2>意味の単体複体と離散作用素</h2>
+
+    <div class="card reveal">
+      <h3>頂点・辺・面</h3>
+      <p>
+        \(K=(V,E,F)\) を、頂点 \(n_0\) 個・辺 \(n_1\) 本・三角形の面 \(n_2\) 枚からなる有限の2次元単体複体とする。
+        頂点はトークン・文・主張・エンティティ・概念のいずれでもよく、粒度は層ごとに固定する。
+        辺は合成可能な関係の候補、面は「3本の境界の関係が局所的に合成可能」と<strong>明示的なタスク規則</strong>で判断されたことを意味する。
+      </p>
+      <div class="split">
+        <div class="split-cell hot">
+          <h4>面を全部外すと</h4>
+          <p>局所循環の部分空間 \(\mathrm{im}\,B_2\) が消える。三角形の回り込みはすべて調和成分か勾配成分に押し出される</p>
+        </div>
+        <div class="split-cell cool">
+          <h4>三角形を全部埋めると</h4>
+          <p>アプリケーションが残したかった大域サイクルまで消えうる。どの三角形を面にするかは<strong>実質的な仮定</strong>であり、アブレーションが必要</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h3>接続行列と鎖条件</h3>
+      <p>
+        各辺・各面に任意の向きを決める。\(B_1\in\mathbb{R}^{n_0\times n_1}\) の列 \(e: i\to j\) は \(i\) に \(-1\)、\(j\) に \(+1\) を持ち、
+        \(B_2\in\mathbb{R}^{n_1\times n_2}\) は各面の向き付き境界を記録する。
+      </p>
+      <div class="math-box">
+        <span class="math-label">鎖条件・余境界・1-Hodge Laplacian</span>
+        \[ B_1B_2=0 \]
+        \[ d_0=B_1^{\top},\quad d_1=B_2^{\top},\quad \delta_1=B_1,\quad \delta_2=B_2,\quad d_1d_0=0 \]
+        \[ L_1=B_1^{\top}B_1+B_2B_2^{\top},\qquad
+           \langle\Omega,L_1\Omega\rangle=\|B_1\Omega\|_F^2+\|B_2^{\top}\Omega\|_F^2 \]
+      </div>
+      <p>
+        \(B_2^{\top}B_1^{\top}\Phi=0\)、つまり<strong>ポテンシャル差は埋めた面のまわりで必ず和がゼロ</strong>になる。
+        Laplacian のエネルギーの2項は、頂点での湧き出し（発散）と、宣言した面のまわりの循環を測る。
+        どちらも代数的な量であって、事実の正しさのラベルではない。向きの選び方は座標の選択にすぎず、
+        関係の真偽や時間的な向きを予測したものではない。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>非自明な辺の場をつくる</h3>
+      <p>
+        層 \(\ell\) の頂点状態 \(x_i^{(\ell)}\) に対し、関係エンコーダは辺の<strong>両方向</strong>を、向きを反転したメタデータとともに評価し、反対称化する。
+      </p>
+      <div class="math-box">
+        <span class="math-label">反対称な関係場</span>
+        \[ R_{ij}=R_\vartheta\bigl(x_i,x_j,r_{ij},c_{ij},f^{W}_{ij},f^{Q}_{ij},f^{M}_{ij},f^{E}_{ij}\bigr),\qquad
+           \Omega_{i\to j}=\frac{R_{ij}-R_{ji}}{2} \]
+      </div>
+      <p>
+        これで \(\Omega_{j\to i}=-\Omega_{i\to j}\) が保証される。
+        \(f^W\) は帯域エネルギーや再構成（Wave）、\(f^Q\) は共変位相残差と実数の接続（Quantum）、
+        \(f^M\) は巡回群の関係と近傍のホロノミー（Modular）、\(f^E\) は検索された根拠と関係タイプ。いずれも任意の、測定可能な入力である。
+        ゲージに関する結果が必要なときは、接続チャネルを \(\Omega=a+\tilde R\)（\(\tilde R\) はゲージ不変・向き同変）と置くことで
+        \(\Omega'=\Omega+B_1^{\top}\chi\) という変換則が成り立つ。制約のないエンコーダには、この変換則は自動的には備わらない。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3><span class="badge thm">PROPOSITION 1</span> &nbsp;単純な差は縮退する</h3>
+      <p>
+        \(X\in C^0(K;\mathbb{R}^r)\) について \(\Omega=B_1^{\top}X\) とすると、局所循環成分と調和成分への射影は<strong>どちらもゼロ</strong>になる。
+        \(\Omega\in\mathrm{im}\,B_1^{\top}\) は鎖条件により \(\mathrm{im}\,B_2\) と直交し、定義により \(\ker L_1\) とも直交するからである。
+      </p>
+      <p>
+        これは設計上の重い制約である。<strong>頂点埋め込みの差だけで作った場は、下流の Hodge 層をどう調整しても循環を表せない</strong>。
+        ModularPhaseNet で「接続を頂点位相の比から作ると、どのサイクル積も恒等的に1になる」とした落とし穴の、実数版にあたる。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── DECOMPOSITION ── -->
+  <section id="decomposition">
+    <div class="section-label">04 // HODGE DECOMPOSITION</div>
+    <h2>直交分解と計算できる射影子</h2>
+
+    <div class="card reveal">
+      <h3><span class="badge thm">THEOREM 1</span> &nbsp;離散意味 Hodge 分解</h3>
+      <p>
+        \(K\) を固定すると、任意の \(\Omega\in C^1(K;\mathbb{R}^r)\) は成分場への<strong>一意な直交分解</strong>を持つ。
+      </p>
+      <div class="math-box">
+        <span class="math-label">3項分解</span>
+        \[ \Omega=G+C+H=B_1^{\top}\Phi+B_2\Psi+H,\qquad B_1H=0,\quad B_2^{\top}H=0 \]
+      </div>
+      <p>
+        ポテンシャル \(\Phi,\Psi\) は一意とは限らないが、\(G,C,H\) は一意。
+        証明は、\(\langle B_1^{\top}\Phi,B_2\Psi\rangle_F=\mathrm{tr}(\Phi^{\top}B_1B_2\Psi)=0\) と、
+        \(\mathrm{im}\,B_1^{\top}\oplus\mathrm{im}\,B_2\) の直交補空間が \(\ker B_1\cap\ker B_2^{\top}=\ker L_1\) であることによる。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>射影子と疎な解法</h3>
+      <div class="math-box">
+        <span class="math-label">Moore–Penrose 擬似逆による射影子</span>
+        \[ P_G=B_1^{\top}(B_1B_1^{\top})^{\dagger}B_1,\qquad P_C=B_2(B_2^{\top}B_2)^{\dagger}B_2^{\top},\qquad P_H=I-P_G-P_C \]
+      </div>
+      <p>
+        大きな疎な複体では密な射影子を作らず、列ごとに次の2つの正規方程式を解く。
+      </p>
+      <div class="math-box">
+        <span class="math-label">実装で解くもの</span>
+        \[ (B_1B_1^{\top})\Phi=B_1\Omega,\qquad (B_2^{\top}B_2)\Psi=B_2^{\top}\Omega,\qquad H=\Omega-B_1^{\top}\Phi-B_2\Psi \]
+      </div>
+      <p>
+        \(\Phi\) は連結成分ごとに平均をゼロにするか1頂点を固定し、面の系の核には最小ノルム解で対処する。
+        前処理付き共役勾配法・LSQR・疎な分解などが使えるが、<strong>許容誤差は記録しなければならず、近似解を厳密な直交射影と呼んではならない</strong>。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>エネルギー・トポロジー・可積分性</h3>
+      <div class="math-box">
+        <span class="math-label">エネルギーの分配</span>
+        \[ \|\Omega\|_F^2=\|G\|_F^2+\|C\|_F^2+\|H\|_F^2,\qquad
+           \rho_s=\frac{\|s\|_F^2}{\|\Omega\|_F^2},\qquad \sum_{s\in\{G,C,H\}}\rho_s=1 \]
+      </div>
+      <p>
+        実係数では \(\dim\ker L_1=\beta_1(K)\)（第1 Betti 数）。調和の<strong>部分空間</strong>はトポロジーが許せば存在するが、
+        ある場がそこへの射影をゼロとして持つこともある。\(\beta_1>0\) も \(\|H\|>0\) も、<strong>それだけでは知識の欠落を証明しない</strong>。
+      </p>
+      <p>
+        <span class="badge thm">THEOREM 2</span>&nbsp; 連結な \(K\) の上で、\(\Omega=B_1^{\top}\Phi\)（\(\Phi\) は定数差を除いて一意）となるのは \(C=H=0\) のときに限る。
+        局所条件 \(B_2^{\top}\Omega=0\) は局所循環成分を消すが \(H\) は消さないので、
+        <strong>埋まっていないサイクルがあるかぎり、局所的に整合していても大域ポテンシャルの存在は言えない</strong>。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>確信度による重み付け</h3>
+      <p>
+        正定値の対角行列 \(W_k\) で内積 \(\langle u,v\rangle_{W_k}=u^{\top}W_kv\) を入れると、重み付きの随伴と Laplacian は次のとおり。
+      </p>
+      <div class="math-box">
+        <span class="math-label">重み付き版</span>
+        \[ \delta_1^{W}=W_0^{-1}B_1W_1,\qquad \delta_2^{W}=W_1^{-1}B_2W_2,\qquad
+           L_1^{W}=B_1^{\top}W_0^{-1}B_1W_1+W_1^{-1}B_2W_2B_2^{\top} \]
+      </div>
+      <p>
+        \(C^1=\mathrm{im}\,d_0\oplus_{W_1}\mathrm{im}\,\delta_2^{W}\oplus_{W_1}\ker L_1^{W}\)。
+        面の重みを<strong>ちょうどゼロにすると階数が変わり \(\beta_1\) が変わりうる</strong>が、小さな正の重みは計量を変えるだけでコホモロジーの次元は変えない。
+        トポロジーを固定したいなら、微分中も候補面の重みを厳密に正に保つ。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── ATTENTION ── -->
+  <section id="attention">
+    <div class="section-label">05 // ATTENTION</div>
+    <h2>分解結果を Attention に戻す</h2>
+
+    <div class="card reveal">
+      <h3>関係複体の組み立て</h3>
+      <p>
+        選んだ層とヘッドで、系列上の隣接・型の合う知識／根拠リンク・<strong>ベース</strong>の attention スコアで選ばれた少数の対から、
+        上限付きの候補辺集合を作る。面は3辺がそろい、明示された合成規則が認めるときだけ加える。
+        この規則は、評価用に伏せた正解のラベルではなく、入力側で使える情報だけで決めなければならない。
+        複体はヘッド間で共有してよいが、\(\Omega^{(\ell,h)}\) とその分解はヘッドごと。
+      </p>
+      <p>
+        面が1枚もなければ \(C=0\)、複体が木なら \(C\) も \(H\) もゼロになる。
+        <strong>この結果を「矛盾が検出されなかった」と読んではならず、そのまま報告する</strong>。
+      </p>
+    </div>
+
+    <figure class="paper-fig reveal">
+      <img src="img/hodge_fig2_pipeline.jpg" alt="可視複体、関係エンコーダ、Hodge 層、順序付き特徴、Attention の5段からなる1ヘッドの計算経路">
+      <figcaption>図2（論文より）。1ヘッドの計算経路。デコーダの特徴量と複体はすべて見えているプレフィックスから作る。辺の向きは順序対ごとに変換し、補償勾配 \(D\) はゲージの仮定が成り立つときだけ使う。学習した辺バイアスは因果マスクと softmax の前に入る。</figcaption>
+    </figure>
+
+    <div class="card reveal">
+      <h3>辺の特徴量と補償勾配</h3>
+      <p>
+        辺 \(e\) の局所特徴として、<strong>向き付き</strong>の局所循環値・調和値 \((C_e,H_e)\) と、その向きに依存しないノルムを使う。
+        面 \(f\) の符号付き局所循環 \(\kappa_f=(B_2^{\top}\Omega)_f\) を辺に集約し、成分の比も特徴にする。
+      </p>
+      <div class="math-box">
+        <span class="math-label">面の集約・成分比・補償勾配</span>
+        \[ t_e=\frac{\sum_{f:\,e\subset\partial f}(B_2)_{ef}\,\kappa_f}{\max\{1,\sum_f|(B_2)_{ef}|\}},\qquad
+           \sigma_s=\frac{\|s\|_F^2}{\|C\|_F^2+\|H\|_F^2+\varepsilon}\quad(s\in\{C,H\}) \]
+        \[ D_e=G_e-(B_1^{\top}\theta)_e \]
+      </div>
+      <p>
+        生の勾配 \(G=P_G\Omega\) は接続のゲージ変換で変わる。トークン位相 \(\theta\) が一貫した実数チャートで得られ \(\theta'=\theta+\chi\) と変換するなら、
+        <strong>補償勾配 \(D\) はゲージ不変</strong>になる。どちらも無いなら、ゲージ不変をうたうバイアスから \(G\) を外す。
+        \(\|G_e\|\) や \(\rho_G\) を使っても<strong>この問題は解決しない</strong>（それらもゲージで変わる）。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>順序付き query–key 対へのバイアス</h3>
+      <p>
+        query \(i\) と key \(j\) に辺 \(e(i,j)\) があるとき、保存されている向きが \(i\to j\) なら \(s_{ij}=+1\)、そうでなければ \(-1\)。
+        符号付きの量には必ず \(s_{ij}\) を掛けてから使う。
+      </p>
+      <div class="math-box">
+        <span class="math-label">順序付き対の特徴とバイアス</span>
+        \[ u_{ij}=\bigl[s_{ij}C_e;\ s_{ij}H_e;\ s_{ij}D_e;\ s_{ij}t_e;\ \|C_e\|_2;\ \|H_e\|_2;\ \sigma_C;\ \sigma_H;\ f^{E}_{ij};\ r_{ij}\bigr] \]
+        \[ b^{H}_{ij}=\begin{cases}\gamma_h\tanh\bigl(f_{\eta,h}(u_{ij})\bigr), & e(i,j)\in E\\ 0, & e(i,j)\notin E\end{cases}\qquad
+           z^{H}_{ij}=\frac{q_i^{\top}k_j}{\sqrt{d_k}}+b^{H}_{ij}+m_{ij} \]
+        \[ \alpha_{ij}=\frac{\exp z^{H}_{ij}}{\sum_{t\in\mathcal{A}_i}\exp z^{H}_{it}},\qquad y_i=\sum_{j\in\mathcal{A}_i}\alpha_{ij}v_j \]
+      </div>
+      <p>
+        自己対は \(b^H_{ii}=0\)。\(\gamma_h=0\) で<strong>元の Attention 層に厳密に戻る</strong>。
+        Hodge の辺集合は選ばれた対に<strong>バイアス</strong>を与えるだけで、Transformer の密な許可パターンを置き換える必要はない（マスクまで疎にするなら、それは別の介入として比較する）。
+        バイアスの符号はタスクの根拠から学習され、正の回転も調和の大きさも、普遍的に負の意味を持つわけではない。
+      </p>
+    </div>
+
+    <div class="split reveal">
+      <div class="split-cell hot">
+        <h4><span class="badge thm">PROP 2</span> 向きに依存しない</h4>
+        <p>
+          辺の向きを反転し、接続行列と辺の場を整合的に変換しても、すべての順序対のバイアスは変わらない。
+          符号行列 \(S_1,S_2\) で \(B_1'=B_1S_1,\ B_2'=S_1B_2S_2,\ \Omega'=S_1\Omega\) とすると \(G,C,H\) も \(S_1\) 倍になり、\(s_{ij}\) の反転と打ち消し合う。
+        </p>
+      </div>
+      <div class="split-cell cool">
+        <h4><span class="badge thm">PROP 3</span> 条件付きゲージ不変性</h4>
+        <p>
+          \(\Omega'=\Omega+B_1^{\top}\chi,\ \theta'=\theta+\chi\) で、それ以外の入力とベースの logit がゲージ不変なら、特徴・バイアス・出力 \(y_i\) は不変。
+          直交性から \(P_C\Omega'=C,\ P_H\Omega'=H,\ P_G\Omega'=G+B_1^{\top}\chi\)、よって \(D'=D\)。
+          <strong>生の \(G\) を使うとこの主張は一般に成り立たない</strong>。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CAUSALITY ── -->
+  <section id="causality">
+    <div class="section-label">06 // CAUSALITY</div>
+    <h2>自己回帰デコーダでの因果性</h2>
+
+    <div class="card reveal">
+      <p>
+        早い位置の query の Hodge 場を<strong>後のトークンも使って</strong>計算していたら、通常の因果マスクだけでは情報漏れを防げない。
+        位置 \(i\) の query には、見えているプレフィックス \(V_i=\{1,\dots,i\}\) から作った複体 \(K_i=(V_i,E_i,F_i)\) だけを使う。
+      </p>
+      <div class="math-box">
+        <span class="math-label">プレフィックス複体</span>
+        \[ E_i\subseteq\binom{V_i}{2},\qquad F_i\subseteq\Bigl\{(a,b,c)\in\binom{V_i}{3}:\partial(a,b,c)\subseteq E_i\Bigr\} \]
+      </div>
+      <p>
+        辺の端点・面・Wave 特徴・位相特徴・剰余特徴・関係ラベルのすべてが、そのプレフィックスから測定可能でなければならない。
+        teacher forcing の学習でも、位置 \(i\) の特徴は \(K_i\) のものを使い、系列全体で計算してマスクで隠したものを使ってはならない。
+        推論時はプレフィックスの解や検証済みの差分更新を再利用できる。
+      </p>
+      <p>
+        この要件は<strong>素朴な実装ではトークンごとの計算コストを押し上げる</strong>。
+        バッチ化・層の限定・主張レベルの粗いグラフ・近似的な差分更新を使う場合は、その近似誤差を実測で報告する。
+        双方向エンコーダは観測済み入力全体を使ってよく、cross-attention も観測済みのソースは全体を使えるが、生成中のターゲット側はプレフィックスに限る。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── LEARNING ── -->
+  <section id="learning">
+    <div class="section-label">07 // LEARNING &amp; COST</div>
+    <h2>学習・リスク校正・計算量</h2>
+
+    <div class="card reveal">
+      <h3>学習目的と微分</h3>
+      <div class="math-box">
+        <span class="math-label">目的関数の一例</span>
+        \[ \mathcal{L}=\mathcal{L}_{\mathrm{task}}+\lambda_r\mathcal{L}_{\mathrm{relation}}+\lambda_q\mathcal{L}_{\mathrm{phase}}
+           +\lambda_m\mathcal{L}_{\mathrm{holonomy}}+\lambda_c\mathcal{L}_{\mathrm{calibration}}+\lambda_b\mathcal{L}_{\mathrm{budget}} \]
+      </div>
+      <p>
+        厳密な Hodge 層では再構成・直交性の損失はソルバ誤差を除いてゼロになるので、学習信号ではなく<strong>診断値</strong>として扱う。
+        \(\|C\|\) や \(\|H\|\) に一律のペナルティを掛けると正当なサイクルまで消してしまうため、<strong>課さない</strong>。
+        収束した疎ソルバは陰関数微分で、固定回数の反復は展開して微分できる（許容誤差に依存する誤差が残る）。
+        離散的な top-\(k\) の所属判定には勾配は流れない。
+      </p>
+      <p>
+        高速な近似版は \(\hat\Phi,\hat\Psi,\hat H\) を学習して \(\hat G=B_1^{\top}\hat\Phi,\ \hat C=B_2\hat\Psi\) とし、厳密解に蒸留する。
+        \(\hat G\) と \(\hat C\) を<strong>接続行列を通して</strong>パラメータ化することが重要で、
+        「\(B_2^{\top}\hat G=0\) を課す」だけでは調和成分の混入を防げない。近似版には、測定誤差が裏付けるまで厳密分解の保証はない。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>校正された誤りリスク</h3>
+      <p>
+        将来の「裏付けのない／誤った出力」ラベルに対し、見えているプレフィックスの特徴
+        (\(\rho_C\), \(\rho_H\), \(\|B_2^{\top}\Omega\|_F^2\), \(\mathrm{Hol}_q\), 根拠支持, 意味的不確実性) を集約し、
+        学習したスコア \(s_t\) を別の校正集合で確率 \(\hat p_t=\mathrm{Calibrate}(s_t)\) に写す。
+        温度スケーリングや等調回帰を Brier スコアと負の対数尤度で評価する。
+        conformal なリスク制御を使う場合、そのカバレッジ保証は別途明示する必要があり、生のスコアを校正済み確率に変えるものではない。
+        <strong>スコアはラベル付けした評価項目に対する経験的予測であって、真偽の神託ではない。</strong>
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3>計算量：速くはならない</h3>
+      <div class="math-box">
+        <span class="math-label">1つの複体あたり</span>
+        \[ O\bigl(T\,r\,[\mathrm{nnz}(B_1)+\mathrm{nnz}(B_2)]\bigr) \]
+      </div>
+      <p>
+        \(r\) はチャネル数、\(T\) は疎反復の回数。これに関係エンコード・複体構築・通常の Attention が加わる。
+        辺を \(O(kn_0)\) 本に絞れば <strong>Hodge の解法</strong>は疎のままだが、密な Attention の2乗コストはそのまま残る。
+        因果デコードで全 \(n_0\) 個のプレフィックスを個別に厳密に解けば、仕事量はさらに掛け算で増える。
+        漸近的な疎行列積の回数ではなく、<strong>実時間とピークメモリ</strong>を報告することが求められている。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── PROPERTIES ── -->
+  <section id="properties">
+    <div class="section-label">08 // FURTHER PROPERTIES</div>
+    <h2>ゲージ・有限ホロノミー・安定性</h2>
+
+    <div class="card reveal">
+      <div class="math-box">
+        <span class="math-label">ゲージ変換に対する射影の振る舞い</span>
+        \[ P_C(\Omega+B_1^{\top}\chi)=P_C\Omega,\qquad P_H(\Omega+B_1^{\top}\chi)=P_H\Omega,\qquad P_G(\Omega+B_1^{\top}\chi)=G+B_1^{\top}\chi \]
+      </div>
+      <p>
+        これは分解についての主張であり、学習したあらゆる意味特徴がゲージ不変だという保証ではない。
+        有限群のホロノミーは厳密な剰余チャネルに残しておく。主値の実数代表
+        \(\tilde a_e=\mathrm{wrap}_{(-1/2,1/2]}(a_e/q)\) を実数チャネルに入れることはできるが、
+        折り返しの境界をまたぐと不連続が生じ、使う実数リフトが変わる。
+        <strong>剰余ホロノミーと実数の成分エネルギーは、並べて評価する</strong>。
+      </p>
+      <div class="math-box">
+        <span class="math-label">射影の非拡大性（固定した重みなし複体）</span>
+        \[ \|P_s(\Omega+\Delta)-P_s\Omega\|_F=\|P_s\Delta\|_F\le\|\Delta\|_F,\qquad s\in\{G,C,H\} \]
+      </div>
+      <p>
+        ただし \(E\) や \(F\) が変わる場合、ソルバを打ち切る場合、非線形モデルを学習する場合の安定性は意味しない。
+        Transformer 全体の大域 Lipschitz 連続性も主張しない。
+      </p>
+    </div>
+
+    <div class="card reveal">
+      <h3><span class="badge thm">THEOREM 3</span> &nbsp;凸結合による有界性</h3>
+      <p>
+        許可された logit が有限で、許可された key すべてで \(\|v_j\|_2\le B_V\) なら \(\|y_i\|_2\le B_V\)。
+        softmax の重みは非負で和が1なので、出力は値ベクトルの凸結合になる。
+        ModularPhaseNet の定理6と同じ論法で、<strong>学習の安定性や意味的妥当性の向上を主張するものではない</strong>。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── EXAMPLE ── -->
+  <section id="example">
+    <div class="section-label">09 // NUMERICAL EXAMPLE</div>
+    <h2>検算済みの5頂点の例</h2>
+
+    <p class="reveal">
+      頂点 \(V=\{1,2,3,4,5\}\)、向き付き辺 \(e_1:1\to2\), \(e_2:2\to3\), \(e_3:3\to1\), \(e_4:1\to4\), \(e_5:4\to5\), \(e_6:5\to1\)。
+      1つ目の三角形 \((1,2,3)\) だけを面として埋め、2つ目の三角形 \((1,4,5)\) は埋めない。
+    </p>
+
+    <figure class="paper-fig reveal">
+      <img src="img/hodge_fig3_example.jpg" alt="頂点1を共有する2つの三角形。左の三角形123は面として埋められ局所循環C=0.5を持ち、右の三角形145は埋められておらず調和成分H=0.25を持つ">
+      <figcaption>図3（論文より）。青の三角形 \((1,2,3)\) は面で局所循環 \(C\) を、オレンジの三角形 \((1,4,5)\) は面を持たず調和サイクル \(H\) を担う。注記の値は成分場で、\(\Omega\) 全体ではない。</figcaption>
+    </figure>
+
+    <div class="card reveal">
+      <div class="math-box">
+        <span class="math-label">接続行列</span>
+        \[ B_1=\begin{bmatrix}-1&0&1&-1&0&1\\1&-1&0&0&0&0\\0&1&-1&0&0&0\\0&0&0&1&-1&0\\0&0&0&0&1&-1\end{bmatrix},\qquad
+           B_2=\begin{bmatrix}1\\1\\1\\0\\0\\0\end{bmatrix} \]
+      </div>
+      <p>
+        \(B_1B_2=0\)。グラフは連結で \(\mathrm{rank}\,B_1=4,\ \mathrm{rank}\,B_2=1\)、よって \(\beta_1=6-4-1=1\)。
+        \(\Phi=(0,1,2,-1,1)^{\top}\), \(\Psi=(0.5)\), \(H=(0,0,0,0.25,0.25,0.25)^{\top}\) と選ぶと次のようになる。
+      </p>
+    </div>
+
+    <div class="table-scroll reveal">
+      <table class="energy-table">
+        <thead><tr><th>成分</th><th>\(e_1\)</th><th>\(e_2\)</th><th>\(e_3\)</th><th>\(e_4\)</th><th>\(e_5\)</th><th>\(e_6\)</th><th>二乗ノルム</th></tr></thead>
+        <tbody>
+          <tr><td>\(G=B_1^{\top}\Phi\)</td><td class="mono">1</td><td class="mono">1</td><td class="mono">−2</td><td class="mono">−1</td><td class="mono">2</td><td class="mono">−1</td><td class="mono">12</td></tr>
+          <tr><td>\(C=B_2\Psi\)</td><td class="mono">0.5</td><td class="mono">0.5</td><td class="mono">0.5</td><td class="mono">0</td><td class="mono">0</td><td class="mono">0</td><td class="mono">0.75</td></tr>
+          <tr><td>\(H\)</td><td class="mono">0</td><td class="mono">0</td><td class="mono">0</td><td class="mono">0.25</td><td class="mono">0.25</td><td class="mono">0.25</td><td class="mono">0.1875</td></tr>
+          <tr><td>\(\Omega=G+C+H\)</td><td class="mono">1.5</td><td class="mono">1.5</td><td class="mono">−1.5</td><td class="mono">−0.75</td><td class="mono">2.25</td><td class="mono">−0.75</td><td class="mono">12.9375</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="reveal">
+      \(B_1H=B_2^{\top}H=0\) で、\(G,C,H\) は互いに直交し、二乗ノルムの和 \(12+0.75+0.1875\) がちょうど \(\|\Omega\|^2=12.9375\) になる。
+      擬似逆による射影で \(\Omega\) から各成分が浮動小数点精度で復元される（解説作成時に numpy で再検算し、一致を確認）。
+      埋めた三角形は局所循環を、埋めていない三角形は残りの調和サイクルを担う。
+      <strong>これは代数的な区別を示す例であり、どちらのサイクルについても意味的な判定を下すものではない。</strong>
+    </p>
+  </section>
+
+  <!-- ── PROTOCOL ── -->
+  <section id="protocol">
+    <div class="section-label">10 // IMPLEMENTATION</div>
+    <h2>実装手順と実行時チェック</h2>
+
+    <div class="arch-flow reveal">
+      <div class="arch-step"><div class="arch-step-num">1</div><div class="arch-step-body"><div class="arch-step-title">入力をそろえる</div><div class="arch-step-desc">見えている隠れ状態・関係メタデータ・根拠・Wave／Quantum／Modular の特徴チャネル。デコーダでは最初にすべてをプレフィックスに制限する</div></div></div>
+      <div class="arch-step"><div class="arch-step-num">2</div><div class="arch-step-body"><div class="arch-step-title">複体を作る</div><div class="arch-step-desc">固定規則かベースの logit で頂点と上限付きの辺を選び、正準な向きを付け、合成規則が認める面だけを加える。\(B_1B_2=0\) を確認する</div></div></div>
+      <div class="arch-step"><div class="arch-step-num">3</div><div class="arch-step-body"><div class="arch-step-title">反対称な \(\Omega\) を作る</div><div class="arch-step-desc">各辺の両方向で関係エンコーダを評価し反対称化。ゲージを主張するなら「接続＋不変残差」の形を強制する</div></div></div>
+      <div class="arch-step"><div class="arch-step-num">4</div><div class="arch-step-body"><div class="arch-step-title">2つの疎な系を解く</div><div class="arch-step-desc">\(G,C,H\) を復元し、再構成・直交性・発散・面循環の残差を記録する。日常の推論で調和固有基底を全部求めることはしない</div></div></div>
+      <div class="arch-step"><div class="arch-step-num">5</div><div class="arch-step-body"><div class="arch-step-title">順序対のバイアスを計算</div><div class="arch-step-desc">符号付きの辺の値に \(s_{ij}\) を掛け、特徴から有限のスカラーバイアスを作る。複体外の対と自己対はゼロ。元のマスクと softmax をそのまま適用</div></div></div>
+      <div class="arch-step"><div class="arch-step-num">6</div><div class="arch-step-body"><div class="arch-step-title">学習と校正</div><div class="arch-step-desc">タスク目的・任意の関係／位相目的・資源ペナルティを計算。リスク校正器は、ベースモデルとスコアを決めた後に別の校正データで学習する</div></div></div>
+    </div>
+
+    <div class="split reveal">
+      <div class="split-cell hot">
+        <h4>RUNTIME CHECKS</h4>
+        <ul>
+          <li>辺と面の向きをランダムに反転し、3成分が同じ符号行列で変換され、エネルギー・logit・出力が変わらないこと</li>
+          <li>接続に \(B_1^{\top}\chi\) を足し \(\theta\) も同じチャートで変換して、\(C,H,D\)・バイアス・出力が変わらないこと</li>
+          <li>位置 \(i\) より後のトークンを編集しても、\(i\) までの logit と出力が変わらないこと</li>
+          <li>\(\gamma_h=0\) で元のマスク付き Attention に数値精度で一致すること</li>
+        </ul>
+      </div>
+      <div class="split-cell cool">
+        <h4>DEPLOYMENT VARIANTS</h4>
+        <ul>
+          <li>収束まで解く疎ソルバ（精度の基準）</li>
+          <li>反復回数を固定したソルバ（残差を報告）</li>
+          <li>蒸留した近似ヘッド（蒸留・再構成・調和の各損失）</li>
+          <li>近似による速さは<strong>実測すべきもの</strong>で、分解の数学からは導かれない</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PLAN ── -->
+  <section id="plan">
+    <div class="section-label">11 // EVALUATION PLAN</div>
+    <h2>評価計画（未実施）</h2>
+
+    <div class="caution reveal">
+      <div class="caution-title">⚠ 自然言語での実験は報告されていない</div>
+      <ul>
+        <li>本稿は<strong>数学とアーキテクチャの提案</strong>であり、自然言語での改善は報告していない。</li>
+        <li>QuantumPhaseNet の合成データでの検証結果は HodgePhaseNet の実験ではなく、<strong>本作の証拠として再利用されていない</strong>。</li>
+        <li>合成複体での成分の復元は実装の検査であって、自然言語での妥当性の証拠ではない、と明記されている。</li>
+      </ul>
+    </div>
+
+    <div class="table-scroll reveal">
+      <table class="energy-table">
+        <thead><tr><th>仕組み</th><th>主要な評価項目</th><th>欠かせない対照</th></tr></thead>
+        <tbody>
+          <tr><td>代数的な復元</td><td>成分誤差と直交性</td><td>既知の場とトポロジーの変更</td></tr>
+          <tr><td>階層</td><td>方向と段階的含意（WordNet, HyperLex）</td><td>同じ大きさの関係エンコーダ</td></tr>
+          <tr><td>局所サイクル</td><td>正当なサイクル vs 矛盾の AUPRC（FEVER, ANLI から構成）</td><td>生の面和と剰余ホロノミー</td></tr>
+          <tr><td>大域サイクル</td><td>正当な話題の回帰 vs 不整合</td><td>局所整合性とグラフの大きさ</td></tr>
+          <tr><td>事実性</td><td>根拠のある原子的事実と選択的リスク（TruthfulQA, FActScore）</td><td>同じ根拠と推論予算</td></tr>
+          <tr><td>校正</td><td>Brier スコアとリスク–カバレッジ</td><td>分離した校正集合</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="split reveal">
+      <div class="split-cell hot">
+        <h4>REQUIRED ABLATIONS</h4>
+        <ul>
+          <li>\(\Omega\) を \(B_1^{\top}X\) に置き換える（命題1の確認）</li>
+          <li>面を全部外す／認められる三角形を全部埋める</li>
+          <li>\(G,C,H\) を1つずつだけ使う</li>
+          <li>各 PhaseNet 特徴・根拠特徴・リスク校正器を外す</li>
+          <li>辺と面の予算を変える、関係ラベルを並べ替える、辺の向きをランダム反転</li>
+          <li>統制したチャートで位相ゲージを変換する</li>
+          <li>プレフィックス別の射影と、わざと系列全体を使った対照を比べて漏れを露出させる</li>
+        </ul>
+      </div>
+      <div class="split-cell cool">
+        <h4>MATCHED BASELINES</h4>
+        <ul>
+          <li>改変なしの Transformer</li>
+          <li>Wave／Quantum／Modular の各特徴ブランチ単独</li>
+          <li>パラメータを合わせた、Hodge 射影なしの対関係 MLP</li>
+          <li>頂点グラフ Laplacian による平滑化</li>
+          <li>代表的な単体メッセージパッシングモデル</li>
+          <li>厳密・反復固定・蒸留の3つの Hodge 版</li>
+          <li>より強い検索／verifier ベースライン</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="reveal">
+      複数の独立シードで平均・ばらつき・対応ありの信頼区間を出し、事前に宣言した主比較には多重比較補正をかける。
+      まれな矛盾には AUROC だけでなく AUPRC が必須。追加パラメータ・FLOPs・疎解法の反復回数・ピークメモリ・生成レイテンシも報告する。
+      面の張り方を変えるだけで、テキストを変えずにエネルギーが \(C\) と \(H\) のあいだを移るため、
+      <strong>意味的な主張は複体の作り方の妥当な変更に対して頑健でなければならない</strong>。
+    </p>
+  </section>
+
+  <!-- ── CLAIMS ── -->
+  <section id="claims">
+    <div class="section-label">12 // CLAIMS &amp; LIMITS</div>
+    <h2>証明済み・仮説・主張しないこと</h2>
+
+    <div class="table-scroll reveal">
+      <table class="energy-table">
+        <thead><tr><th>区分</th><th>内容</th><th>状態</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge thm">THM</span></td><td>固定した複体上の一意な3項直交分解（定理1）</td><td>証明済み</td></tr>
+          <tr><td><span class="badge thm">THM</span></td><td>大域ポテンシャル ⇔ \(C=H=0\)（定理2）</td><td>証明済み</td></tr>
+          <tr><td><span class="badge thm">THM</span></td><td>頂点の差だけの場は循環を持たない（命題1）</td><td>証明済み</td></tr>
+          <tr><td><span class="badge thm">THM</span></td><td>辺の向きに依存しないバイアス（命題2）、条件付きゲージ不変性（命題3）</td><td>証明済み</td></tr>
+          <tr><td><span class="badge thm">THM</span></td><td>射影の非拡大性、Attention 出力の有界性（定理3）</td><td>証明済み</td></tr>
+          <tr><td><span class="badge thm">THM</span></td><td>5頂点の例の全数値</td><td>厳密（検算済み）</td></tr>
+          <tr><td><span class="badge emp">EMP</span></td><td>\(C,H\) が正当なサイクルと問題のあるサイクルを見分ける</td><td>経験仮説・未検証</td></tr>
+          <tr><td><span class="badge emp">EMP</span></td><td>事実誤りの低減とリスク校正の改善</td><td>経験仮説・未検証</td></tr>
+          <tr><td><span class="badge open">NOT CLAIMED</span></td><td>学習した複体が言語の唯一正しいモデルである</td><td>主張しない</td></tr>
+          <tr><td><span class="badge open">NOT CLAIMED</span></td><td>代数的な循環が誤りのラベルである</td><td>主張しない</td></tr>
+          <tr><td><span class="badge open">NOT CLAIMED</span></td><td>調和成分が知識の欠落を意味する</td><td>主張しない</td></tr>
+          <tr><td><span class="badge open">NOT CLAIMED</span></td><td>密な Attention より速い</td><td>主張しない</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="reveal" style="margin-top:2.5rem;">提案を縮小・棄却する条件</h3>
+    <div class="caution reveal">
+      <div class="caution-title">CRITERIA THAT WOULD NARROW THE PROPOSAL</div>
+      <ul>
+        <li>\(C,H\) が、関係と三角形の和をそろえた対照を超えて、正当なサイクルと問題のあるサイクルを見分けられない</li>
+        <li>面の作り方を妥当な範囲で変えると結論が逆転する</li>
+        <li>同じコストの関係 MLP で同じ改善が得られる</li>
+        <li>向きやゲージのテストが、述べた仮定のもとで失敗する</li>
+        <li>根拠と計算量をそろえると事実性の改善が消える</li>
+        <li>リスクスコアがエントロピーや根拠の対照より Brier スコア・選択的リスクを改善しない</li>
+        <li>レイテンシあたりの品質で、より安い verifier に勝てない</li>
+      </ul>
+    </div>
+
+    <div class="ref-card reveal">
+      <div class="ref-tag warn">LIMIT</div>
+      <div>
+        <div class="ref-name">3成分の名前に意味は宿らない</div>
+        <div class="ref-desc">勾配成分は一貫した向きを表しうるが、完全に一貫した誤った説明も勾配になる。局所循環は推移律の破れにも正当な相互定義にもなる。調和成分は裏付けのない推論ループにも意図的な長距離の回帰にもなる。意味は型付きの辺・面の規則・根拠・教師付きの結果に宿る。</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <div class="ref-tag warn">LIMIT</div>
+      <div>
+        <div class="ref-name">分解は複体の作り方に依存する</div>
+        <div class="ref-desc">頂点の粒度・辺の選択・面の埋め方で結果が変わる。動的なしきい値はトポロジーを不連続に変えうる。一意性の定理は固定した複体の上の場について成り立つもので、複体の選び方や言語の解釈には及ばない。</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <div class="ref-tag warn">LIMIT</div>
+      <div>
+        <div class="ref-name">ゲージ・因果性・コスト</div>
+        <div class="ref-desc">折り返した位相リフトはチャートに依存する。\(C,H\) がゲージ不変でも、生の勾配を使う Attention ブランチは不変にならない。厳密な因果デコードは多数の解法を要し、差分更新や学習した近似は測定可能な誤差を持ち込む。</div>
+      </div>
+    </div>
+    <div class="ref-card reveal">
+      <div class="ref-tag warn">LIMIT</div>
+      <div>
+        <div class="ref-name">高リスク領域と偏り</div>
+        <div class="ref-desc">校正したリスクモデルは検証や回答保留の優先付けに役立ちうるが、出力には出典の確認と人の監督を残すべき。知識リンク・関係アノテーション・検索ソースの資源的・文化的な偏りは、言語と視点をまたいで測定すべきとされる。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CONCLUSION ── -->
+  <section id="conclusion">
+    <div class="conclusion-box reveal">
+      <div class="section-label" style="text-align:center;">13 // CONCLUSION</div>
+      <h2>結論</h2>
+      <p>
+        HodgePhaseNet は、PhaseNet 系列の考え方が出会う<strong>具体的な数学の場所</strong>を与える。
+        スペクトルの特徴と、共変な位相関係や有限群の位相関係が反対称な辺の場を形づくり、
+        その勾配・局所循環・調和の射影が3種類の組織化を分ける。
+      </p>
+      <p style="margin-top:1rem;">
+        この場を Transformer の Attention に戻すには、順序対の符号、因果デコードのための見えているプレフィックス、
+        ゲージを意識した勾配特徴の選択、そしてソルバとトポロジーの明示的な検査が要る。
+        <strong>代数と5頂点の例は厳密であり、意味的な利得とリスク校正は検証可能な仮説として残る。</strong>
+      </p>
+      <p style="margin-top:1rem;">
+        次の経験的な一歩は、監査可能な疎な参照実装による合成データでの復元、
+        自然言語でそろえたベースラインとの比較、そして独立にラベル付けした正当・不当なサイクルでの評価である。
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrapper" style="padding-top:0; padding-bottom:0;">
+    <a href="index_ja.html" style="color:inherit;">目次</a> &nbsp;|&nbsp; HodgePhaseNet 論文解説（詳細） &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp; <a href="hodgephasenet_intro_ja.html" style="color:inherit;">かんたん解説</a> &nbsp;|&nbsp; <a href="relation_ja.html" style="color:inherit;">論文どうしの関係</a> &nbsp;|&nbsp; <a href="modularphasenet_ja.html" style="color:inherit;">ModularPhaseNet</a> &nbsp;|&nbsp; <a href="quantumphasenet_ja.html" style="color:inherit;">QuantumPhaseNet</a> &nbsp;|&nbsp; <a href="wavephasenet_ja.html" style="color:inherit;">WavePhaseNet</a>
+  </div>
+</footer>
+
+<script>
+// ── Simplicial complex with a filled face and an open cycle ──
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, frame = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// two small complexes: a filled triangle (local circulation) next to an unfilled one (harmonic cycle)
+const GROUPS = [
+  { cx: 0.22, cy: 0.30, s: 0.13 },
+  { cx: 0.78, cy: 0.68, s: 0.17 }
+];
+const NODES = [[0, 0], [-0.9, -0.55], [-0.9, 0.55], [0.9, -0.55], [0.9, 0.55]];
+const EDGES = [[0, 1], [1, 2], [2, 0], [0, 3], [3, 4], [4, 0]];
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  const S = Math.min(W, H);
+
+  GROUPS.forEach((g, gi) => {
+    const pts = NODES.map(([x, y]) => [g.cx * W + x * g.s * S, g.cy * H + y * g.s * S]);
+
+    // filled face
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]); ctx.lineTo(pts[1][0], pts[1][1]); ctx.lineTo(pts[2][0], pts[2][1]);
+    ctx.closePath();
+    ctx.fillStyle = '#1d4ed8';
+    ctx.globalAlpha = 0.035;
+    ctx.fill();
+
+    EDGES.forEach(([a, b], k) => {
+      ctx.beginPath();
+      ctx.strokeStyle = k < 3 ? '#1d4ed8' : '#c2410c';
+      ctx.globalAlpha = 0.10;
+      ctx.lineWidth = 1;
+      ctx.moveTo(pts[a][0], pts[a][1]);
+      ctx.lineTo(pts[b][0], pts[b][1]);
+      ctx.stroke();
+
+      // a particle flowing along each oriented edge
+      const t = ((frame * 0.004 + k * 0.17 + gi * 0.5) % 1);
+      const x = pts[a][0] + (pts[b][0] - pts[a][0]) * t;
+      const y = pts[a][1] + (pts[b][1] - pts[a][1]) * t;
+      ctx.beginPath();
+      ctx.fillStyle = k < 3 ? '#1d4ed8' : '#c2410c';
+      ctx.globalAlpha = 0.28;
+      ctx.arc(x, y, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    pts.forEach(([x, y]) => {
+      ctx.beginPath();
+      ctx.fillStyle = '#5a4135';
+      ctx.globalAlpha = 0.16;
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  });
+
+  ctx.globalAlpha = 1;
+  frame++;
+  if (!reduceMotion && running) requestAnimationFrame(draw);
+}
+
+// 非表示タブ・画面外スクロール時は描画を止めて CPU を解放する
+let running = true;
+function setRunning(v) {
+  if (v === running) return;
+  running = v;
+  if (running && !reduceMotion) requestAnimationFrame(draw);
+}
+document.addEventListener('visibilitychange', () => setRunning(!document.hidden));
+window.addEventListener('scroll', () => setRunning(window.scrollY < window.innerHeight * 1.5), { passive: true });
+setRunning(window.scrollY < window.innerHeight * 1.5);
+if (running) draw();
+
+// ── Scroll reveal ──
+const reveals = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+reveals.forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

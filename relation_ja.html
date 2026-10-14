@@ -3,28 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="連続なフーリエ位相からゲージ共変な複素幾何へ、そして整数演算で閉じる有限巡回群へ。3本を貫く土台と、引き継がれた主張・形を変えた主張・意図的に捨てられた主張を整理します。">
+<meta name="description" content="連続なフーリエ位相からゲージ共変な複素幾何へ、整数演算で閉じる有限巡回群へ、そして3作の出力を辺の場として受け止める離散Hodge分解へ。4本を貫く土台と、引き継がれた主張・形を変えた主張・意図的に捨てられた主張を整理します。">
 <link rel="canonical" href="https://kasubuchi.github.io/wavephasenet/relation_ja.html">
 <link rel="alternate" hreflang="ja" href="https://kasubuchi.github.io/wavephasenet/relation_ja.html">
 <link rel="alternate" hreflang="en" href="https://kasubuchi.github.io/wavephasenet/relation_en.html">
 <link rel="alternate" hreflang="x-default" href="https://kasubuchi.github.io/wavephasenet/relation_en.html">
 <meta property="og:type" content="article">
-<meta property="og:site_name" content="WavePhaseNet / QuantumPhaseNet / ModularPhaseNet — 論文解説">
+<meta property="og:site_name" content="WavePhaseNet / QuantumPhaseNet / ModularPhaseNet / HodgePhaseNet — 論文解説">
 <meta property="og:locale" content="ja_JP">
 <meta property="og:locale:alternate" content="en_US">
 <meta property="og:url" content="https://kasubuchi.github.io/wavephasenet/relation_ja.html">
-<meta property="og:title" content="3つの論文の関係 — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet">
-<meta property="og:description" content="連続なフーリエ位相からゲージ共変な複素幾何へ、そして整数演算で閉じる有限巡回群へ。3本を貫く土台と、引き継がれた主張・形を変えた主張・意図的に捨てられた主張を整理します。">
+<meta property="og:title" content="4つの論文の関係 — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet / HodgePhaseNet">
+<meta property="og:description" content="連続なフーリエ位相からゲージ共変な複素幾何へ、整数演算で閉じる有限巡回群へ、そして3作の出力を辺の場として受け止める離散Hodge分解へ。4本を貫く土台と、引き継がれた主張・形を変えた主張・意図的に捨てられた主張を整理します。">
 <meta property="og:image" content="https://kasubuchi.github.io/wavephasenet/og/og-relation.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="3つの論文の関係 の解説ページ（Kasubuchi &amp; Fukiya）">
+<meta property="og:image:alt" content="4つの論文の関係 の解説ページ（Kasubuchi &amp; Fukiya）">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="3つの論文の関係 — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet">
-<meta name="twitter:description" content="連続なフーリエ位相からゲージ共変な複素幾何へ、そして整数演算で閉じる有限巡回群へ。3本を貫く土台と、引き継がれた主張・形を変えた主張・意図的に捨てられた主張を整理します。">
+<meta name="twitter:title" content="4つの論文の関係 — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet / HodgePhaseNet">
+<meta name="twitter:description" content="連続なフーリエ位相からゲージ共変な複素幾何へ、整数演算で閉じる有限巡回群へ、そして3作の出力を辺の場として受け止める離散Hodge分解へ。4本を貫く土台と、引き継がれた主張・形を変えた主張・意図的に捨てられた主張を整理します。">
 <meta name="twitter:image" content="https://kasubuchi.github.io/wavephasenet/og/og-relation.png">
-<title>3つの論文の関係 — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet</title>
+<title>4つの論文の関係 — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet / HodgePhaseNet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
@@ -366,6 +366,17 @@
     .tl-item { grid-template-columns: 1fr; gap: 0.3rem; }
     .tl-date { text-align: left; }
   }
+
+  /* ── HodgePhaseNet (4th paper) ── */
+  :root { --hodge: #c2410c; }
+  .nav-logo .h, .hero-title .h, .strip-cell.h .strip-name, .tl-item.h .tl-name,
+  .vs-cell.h .vs-label, table.cmp th.h { color: var(--hodge); }
+  .tl-item.h .tl-body::before { border-color: var(--hodge); }
+  .vs-cell.h { border-top: 3px solid var(--hodge); }
+  .guide-links a.h:hover { background: var(--hodge); border-color: var(--hodge); color: #fff; }
+  .strip { grid-template-columns: repeat(2,1fr); }
+  table.cmp { min-width: 900px; }
+  @media (max-width: 640px) { .strip { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -373,13 +384,14 @@
 <canvas id="bg-canvas"></canvas>
 
 <nav>
-  <div class="nav-logo"><span class="w">Wave</span> × <span class="q">Quantum</span> × <span class="m">Modular</span></div>
+  <div class="nav-logo"><span class="w">Wave</span> × <span class="q">Quantum</span> × <span class="m">Modular</span> × <span class="h">Hodge</span></div>
   <ul class="nav-links">
     <li><a href="#timeline">経緯</a></li>
     <li><a href="#shared">共通点</a></li>
     <li><a href="#changed">違い</a></li>
     <li><a href="#core">本質</a></li>
     <li><a href="#continuity">継承</a></li>
+    <li><a href="#hodge">4本目</a></li>
   </ul>
   <div class="nav-right">
     <a href="index_ja.html" class="nav-page-tab">← 目次</a>
@@ -394,15 +406,17 @@
 
   <!-- ── HERO ── -->
   <div class="hero">
-    <div class="hero-tag">2026.01 → 2026.08</div>
+    <div class="hero-tag">2026.01 → 2026.10</div>
     <h1 class="hero-title">
       <span class="w">WavePhaseNet</span> から
       <span class="q">QuantumPhaseNet</span>、<br>
-      そして <span class="m">ModularPhaseNet</span> <span class="keep">へ</span>
+      <span class="m">ModularPhaseNet</span>、<br>
+      そして <span class="h">HodgePhaseNet</span> <span class="keep">へ</span>
     </h1>
     <p class="hero-desc">
-      同じ著者による3本の論文です。着想は一貫していますが、数学の舞台が2度入れ替わりました。
+      同じ著者による4本の論文です。最初の3本は着想を保ったまま、数学の舞台を2度入れ替えました。
       <strong>連続なフーリエ位相 → ゲージ共変な複素幾何 → 整数演算で閉じる有限巡回群</strong>。
+      4本目は舞台を替えるのではなく、<strong>3本の出力を辺の上の流れとして受け止め、3つの成分に分解する</strong>場所を作りました。
       何が変わり、何が変わらず、そして<strong>何が引き継がれなかったのか</strong>を整理します。
     </p>
     <div class="scroll-hint">SCROLL</div>
@@ -411,7 +425,7 @@
   <!-- ── STRIP ── -->
   <section id="summary">
     <div class="section-label">00 // IN ONE LINE</div>
-    <h2>3本を1行ずつで</h2>
+    <h2>4本を1行ずつで</h2>
 
     <div class="strip reveal">
       <div class="strip-cell w">
@@ -429,10 +443,14 @@
         <div class="strip-line">その位相チャネルだけを<strong>有限巡回群へ量子化</strong>し、階層・方向・矛盾を整数演算で厳密に計算できるようにする。</div>
         <div class="strip-year"><a href="https://arxiv.org/abs/2609.06000" style="color:inherit;">arXiv:2609.06000</a> ／ 理論＋事前登録計画</div>
       </div>
+      <div class="strip-cell h">
+        <div class="strip-name">HodgePhaseNet</div>
+        <div class="strip-line">3作の特徴量から<strong>辺の上の「意味の流れ」</strong>を作り、一貫した向き・小さな回り込み・大きな一周の3成分に一意に分けて Attention に戻す。</div>
+        <div class="strip-year"><a href="https://arxiv.org/abs/2610.14971" style="color:inherit;">arXiv:2610.14971</a> ／ 理論＋評価計画</div>
+      </div>
     </div>
-
     <p class="reveal">
-      3本の関係を一言でいえば、<strong>1本目が問題を立て、2本目が舞台を作り直し、3本目がそれを走る形にした</strong>ということになります。
+      4本の関係を一言でいえば、<strong>1本目が問題を立て、2本目が舞台を作り直し、3本目がそれを走る形にし、4本目がそれらの出力を1つの場に集めて分解した</strong>ということになります。
       ただし3本目は2本目の全部を持ってきたわけではありません。その取捨選択が、この移り変わりで最も読みどころのある部分です。
     </p>
   </section>
@@ -440,7 +458,7 @@
   <!-- ── TIMELINE ── -->
   <section id="timeline">
     <div class="section-label">01 // TIMELINE</div>
-    <h2>7か月で起きたこと</h2>
+    <h2>9か月で起きたこと</h2>
 
     <div class="timeline reveal">
       <div class="tl-item w">
@@ -485,19 +503,30 @@
           </div>
         </div>
       </div>
+      <div class="tl-item h">
+        <div class="tl-date">2026.09<br><span style="font-size:0.9em;">(arXiv投稿 10.10)</span></div>
+        <div class="tl-body">
+          <div class="tl-name">HodgePhaseNet (<a href="https://arxiv.org/abs/2610.14971" style="color:inherit;">arXiv:2610.14971</a>)</div>
+          <div class="tl-desc">
+            前3作の特徴量を入力に、関係エンコーダが単体複体の辺の上に反対称な場 \(\Omega\) を作り、
+            離散 Hodge 分解で勾配・局所循環・調和成分の3つに一意かつ直交に分ける。分解結果は順序付き query–key バイアスとして Attention に戻す。
+            <strong>実験は未実施で、評価計画と棄却条件を先に示している。</strong>
+          </div>
+        </div>
+      </div>
     </div>
-
     <p class="reveal">
       2本目への移行は「同じ直観を、より壊れにくい数学の上に置き直す」作業でした。
       3本目への移行はそれとは動機が違い、<strong>「その数学を、いま手元にあるハードウェアで実行できる形に落とす」</strong>作業です。
       前者は<em>正しさ</em>のための移行、後者は<em>実行可能性</em>のための移行だと読むと、3本の並びが理解しやすくなります。
+      4本目はさらに別の動機で、新しい舞台を作るのではなく<strong>3つの舞台の出力を1か所で突き合わせる</strong>ための<em>統合</em>です。
     </p>
   </section>
 
   <!-- ── SHARED ── -->
   <section id="shared">
     <div class="section-label">02 // SHARED</div>
-    <h2>3本を貫いている土台</h2>
+    <h2>4本を貫いている土台</h2>
 
     <p class="lead reveal">
       舞台は2度変わりましたが、根っこの発想は一貫しています。
@@ -506,7 +535,7 @@
     <div class="shared reveal">
       <div class="shared-item">
         <h4>問題の立て方</h4>
-        <p>幻覚は学習不足ではなく、表現空間の構造から生じる。だからデータではなく空間を作り直す。この診断と処方は3本に共通します。</p>
+        <p>幻覚は学習不足ではなく、表現空間の構造から生じる。だからデータではなく空間を作り直す。この診断と処方は4本に共通します。</p>
       </div>
       <div class="shared-item">
         <h4>周波数・位相と意味の対応</h4>
@@ -518,11 +547,11 @@
       </div>
       <div class="shared-item">
         <h4>Transformer を置き換えない</h4>
-        <p>補正項と残差として差し込む設計。係数をゼロにすれば元のモデルに厳密に戻ります。3本目はさらに徹底しており、追加される量は<strong>すべて実数のスカラーバイアス</strong>なので、既存実装のカーネル改変が不要です。</p>
+        <p>補正項と残差として差し込む設計。係数をゼロにすれば元のモデルに厳密に戻ります。3本目はさらに徹底しており、追加される量は<strong>すべて実数のスカラーバイアス</strong>なので、既存実装のカーネル改変が不要です。4本目も Attention への加点・減点として入り、重みをゼロにすれば元のモデルに戻ります。</p>
       </div>
       <div class="shared-item">
         <h4>証明と仮説を混ぜない</h4>
-        <p>数学的に証明できることと、実データで反証されうることを分けて書く姿勢は2本目から明確になり、3本目では「証明済み5定理／経験仮説／避けた5主張／反証条件7項目」として、さらに整理されています。</p>
+        <p>数学的に証明できることと、実データで反証されうることを分けて書く姿勢は2本目から明確になり、3本目では「証明済み5定理／経験仮説／避けた5主張／反証条件7項目」として、さらに整理されています。4本目も「3定理・3命題」と「実験前の評価計画・棄却条件」を分けて書いています。</p>
       </div>
       <div class="shared-item">
         <h4>内在的構造の重視（外部根拠との役割分担）</h4>
@@ -544,6 +573,7 @@
           <th class="w">WavePhaseNet</th>
           <th class="q">QuantumPhaseNet</th>
           <th class="m">ModularPhaseNet</th>
+          <th class="h">HodgePhaseNet</th>
         </tr>
       </thead>
       <tbody>
@@ -552,66 +582,77 @@
           <td>平坦な埋め込み空間。線形代数</td>
           <td>Riemann 多様体 ＋ 複素ベクトル束 ＋ ユニタリ接続</td>
           <td>有限巡回群 \(C_q\) と Cayley グラフ。整数演算</td>
+          <td>有限の単体複体（頂点・辺・三角形）。疎な線形代数</td>
         </tr>
         <tr>
           <td>「位相」の正体</td>
           <td>DFT係数の位相角 \(\Phi_k\)。<strong>座標</strong></td>
           <td>共変位相速度 \(\Omega_\gamma\)。<strong>不変量</strong></td>
           <td>群要素 \(z=g^{a}\bmod p\)。<strong>離散化された不変量</strong></td>
+          <td>位相そのものは扱わない。前3作の位相・ホロノミーから作る<strong>辺の上の反対称な場</strong> \(\Omega\)</td>
         </tr>
         <tr>
           <td>階層の作り方</td>
           <td>周波数帯域がそのまま階層レベル</td>
           <td>意味波長 \(\lambda\) から商集合・分配束を構成</td>
           <td>商群のフィルトレーション \(q_0\mid q_1\mid\cdots\mid q_L\) と深さ変数</td>
+          <td>階層は作らない。勾配成分（一貫した向き）を上下関係の候補として読む</td>
         </tr>
         <tr>
           <td>階層の一貫性</td>
           <td>周波数帯域の順序に依存</td>
           <td>波長の順序と学習に依存</td>
           <td><strong>群構造から定理として保証</strong>（分割の入れ子性）</td>
+          <td>回り込みと一周の成分がゼロなら、一貫した順序付けが存在する</td>
         </tr>
         <tr>
           <td>低周波の取り方</td>
           <td>系列方向の DFT（等間隔の一列を仮定）</td>
           <td>グラフ Laplacian の低固有モード（任意の接続構造）</td>
           <td>低周波の意味論は仮定しない。方向は向き付き群要素で表す</td>
+          <td>仮定しない。辺の場を Hodge Laplacian \(L_1\) の像と核に分ける</td>
         </tr>
         <tr>
           <td>整合性の担保</td>
           <td>コホモロジー正則化 ＋ Hodge 調和射影</td>
           <td>曲率・根拠・不確実性を統合した幾何リスク</td>
           <td>サイクルホロノミー \(W_C\) が単位元に戻るかの厳密判定</td>
+          <td><strong>離散 Hodge 分解</strong>：勾配・局所循環・調和の直交3成分</td>
         </tr>
         <tr>
           <td>距離の測り方</td>
           <td>Euclid 距離</td>
           <td>学習可能な計量による測地距離</td>
           <td>Cayley グラフ上の語距離（円周上の最短ステップ数）</td>
+          <td>辺の重み付き内積による各成分の大きさ</td>
         </tr>
         <tr>
           <td>「量子」の扱い</td>
           <td>登場しない（DFT は古典）</td>
           <td>QFT・QPE・Oracle・振幅増幅。ただし優位性は主張しない</td>
           <td><strong>すべて除去</strong>。学習された離散選択器とリスクゲートに置換</td>
+          <td>登場しない</td>
         </tr>
         <tr>
           <td>推論時の計算</td>
           <td>実数の線形代数</td>
           <td>複素演算・疎グラフ・多項式フィルタ</td>
           <td>整数の冪剰余と \(O(1)\) の表引き</td>
+          <td>実数の疎な連立方程式を2回解く</td>
         </tr>
         <tr>
           <td>目玉の主張</td>
           <td>24,576 → 3,000 次元の削減が正当化される</td>
           <td>RQ1〜RQ4 支持、RQ5 は反証候補</td>
           <td>局所推論が大域に統合できるかを有限群上で検査できる</td>
+          <td>意味の流れの分け方が一通りで直交し、向きの付け方やゲージに依らない（条件付き）</td>
         </tr>
         <tr>
           <td>実験</td>
           <td><strong>なし</strong>（理論のみ）</td>
           <td>検証スタジオで実測（合成データ・5 seed）</td>
           <td><strong>なし</strong>（理論＋事前登録された評価計画）</td>
+          <td><strong>なし</strong>（理論＋評価計画と棄却条件）</td>
         </tr>
       </tbody>
     </table>
@@ -776,6 +817,7 @@
         コバウンダリは<strong>重なり合う窓どうしの解釈の不一致</strong>、
         ホロノミーは<strong>文脈を一周したときに位相が戻らない度合い</strong>。
         前者を後者が代替できているかは、依然として自明ではありません。
+        4本目では Hodge 分解そのものが主題として戻ってきます（<a href="#hodge" style="color:inherit;">06</a>）。
       </p>
     </div>
 
@@ -809,19 +851,74 @@
     <div class="note reveal">
       <div class="note-title">⚠ 読むときの注意</div>
       <p>
-        3本が並んで公開されている以上、読み手には「後続が前作を置き換えたのか、補完しているのか」が判別しづらい状態です。
+        4本が並んで公開されている以上、読み手には「後続が前作を置き換えたのか、補完しているのか」が判別しづらい状態です。
         現時点で正確な理解は、<strong>「後続はいずれも前作の一部を数学的に作り直したものであり、全部ではない」</strong>となります。
       </p>
       <p>
         コホモロジー正則化と次元削減の主張については1本目を、量子スペクトル選択と実測結果については2本目を、
-        直接参照する必要があります。3本目だけを読んで全体像が得られるわけではありません。
+        直接参照する必要があります。3本目だけを読んで全体像が得られるわけではありません。4本目も前3作の特徴量を入力として使うため、単独では全体像になりません。
+      </p>
+    </div>
+  </section>
+
+  <!-- ── HODGE ── -->
+  <section id="hodge">
+    <div class="section-label">06 // FOURTH PAPER</div>
+    <h2>4本目は舞台を替えず、3つの出力を1か所に集めた</h2>
+    <p class="lead reveal">
+      1本目から3本目までは、同じ直観を別の数学に置き直す流れでした。
+      HodgePhaseNet はその流れを続けるのではなく、<strong>3つの舞台が出す特徴量を、文や主張のあいだの「辺の場」として1か所で受け止める</strong>論文です。
+    </p>
+    <div class="table-scroll reveal">
+    <table class="cmp" style="min-width:560px;">
+      <thead>
+        <tr><th>前作</th><th class="h">HodgePhaseNet での使われ方</th></tr>
+      </thead>
+      <tbody>
+        <tr><td style="color:var(--wave);">WavePhaseNet</td><td>周波数帯域ごとのエネルギーと位相を、辺の特徴量のうち<strong>スケール</strong>の情報として使う</td></tr>
+        <tr><td style="color:var(--quantum);">QuantumPhaseNet</td><td>平行移動した位相差（接続）を、2点の<strong>比べ方</strong>の情報として使う</td></tr>
+        <tr><td style="color:var(--modular);">ModularPhaseNet</td><td>一周したときに位相が戻るかの検査（ホロノミー）を、<strong>整合性</strong>の情報として使う</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="math-box reveal">
+      <span class="math-label">離散 Hodge 分解（辺の場）</span>
+      \[ \Omega = \underbrace{B_1^{\top}\Phi}_{G\ \text{勾配}} + \underbrace{B_2\Psi}_{C\ \text{局所循環}} + \underbrace{H}_{\text{調和}},
+         \qquad B_1H=0,\quad B_2^{\top}H=0 \]
+    </div>
+    <p class="reveal">
+      関係エンコーダは辺の両方向を評価し、向きを反転させると符号が反転する場 \(\Omega\) を作ります。
+      勾配成分 \(G\) は「全体で一貫した向き」、局所循環 \(C\) は「埋められた三角形の中での回り込み」、
+      調和成分 \(H\) は「埋められていない大きな輪を回る循環」です。3つは互いに直交し、分け方は一通りに決まります。
+      ModularPhaseNet の「全サイクルでホロノミーが単位元なら大域的な割り当てが存在する」という定理は、
+      ここでは「回り込みと一周の成分がゼロなら、流れは頂点の値の差で書ける」という形で、同じ内容を実数の上で言い直したものになっています。
+    </p>
+    <div class="card reveal">
+      <h3>Hodge 分解は4本目で正面から戻ってきた。ただし「調和」の意味は逆向き</h3>
+      <p>
+        1本目の中核だった Hodge 調和射影は、2本目で姿を消し、3本目ではホロノミーとして部分的に戻りました。
+        4本目では Hodge 分解そのものが論文の主題になります。
+      </p>
+      <p style="margin-bottom:0;">
+        ただし、同じ「調和（harmonic）」という語が指すものは違います。
+        WavePhaseNet の調和成分は<strong>頂点（0-コチェイン）の上の、最も整合した貼り合わせ成分</strong>です。
+        HodgePhaseNet の調和成分は<strong>辺（1-コチェイン）の上の、埋められていない輪を回る循環</strong>で、
+        むしろ「局所の説明では解消できない食い違い」の候補として扱われます。名前が同じでも、読み替えずに比べないよう注意が必要です。
+      </p>
+    </div>
+    <div class="note reveal">
+      <div class="note-title">⚠ 4本目も実験はまだない</div>
+      <p>
+        示されているのは3つの定理と3つの命題、手で検算できる5頂点の数値例、評価計画と棄却条件です。
+        「回り込み＝矛盾」「一周＝知識の欠落」とは言えないことを論文自身が明記しており、
+        どの成分がどの種類の誤りに対応するかは、これからの検証で決まります。
       </p>
     </div>
   </section>
 
   <!-- ── GUIDE ── -->
   <section id="guide">
-    <div class="section-label">06 // WHERE TO START</div>
+    <div class="section-label">07 // WHERE TO START</div>
     <h2>どれから読むか</h2>
 
     <div class="guide reveal">
@@ -861,15 +958,16 @@
       </div>
       <div class="guide-card">
         <div class="who">数学を追いたい方</div>
-        <h4>3本の詳細解説を並べて</h4>
+        <h4>4本の詳細解説を並べて</h4>
         <p>
           1本目の測度論とコホモロジー、2本目のゲージ共変性と量子スペクトル選択、
-          3本目の有限群・商フィルトレーション・離散可積分性。重なりは少なく、互いに補完的です。
+          3本目の有限群・商フィルトレーション・離散可積分性、4本目の単体複体と離散 Hodge 分解。重なりは少なく、互いに補完的です。
         </p>
         <div class="guide-links">
           <a class="w" href="wavephasenet_ja.html">Wave →</a>
           <a class="q" href="quantumphasenet_ja.html">Quantum →</a>
           <a class="m" href="modularphasenet_ja.html">Modular →</a>
+          <a class="h" href="hodgephasenet_ja.html">Hodge →</a>
         </div>
       </div>
     </div>
@@ -879,10 +977,11 @@
 
 <footer>
   <div class="wrapper" style="padding-top:0; padding-bottom:0;">
-    <a href="index_ja.html">目次</a> &nbsp;|&nbsp; 3つの論文の関係 &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp;
+    <a href="index_ja.html">目次</a> &nbsp;|&nbsp; 4つの論文の関係 &nbsp;|&nbsp; Kasubuchi &amp; Fukiya, 2026 &nbsp;|&nbsp;
     <a href="wavephasenet_intro_ja.html">WavePhaseNet</a> &nbsp;|&nbsp;
     <a href="quantumphasenet_intro_ja.html">QuantumPhaseNet</a> &nbsp;|&nbsp;
-    <a href="modularphasenet_intro_ja.html">ModularPhaseNet</a>
+    <a href="modularphasenet_intro_ja.html">ModularPhaseNet</a> &nbsp;|&nbsp;
+    <a href="hodgephasenet_intro_ja.html">HodgePhaseNet</a>
   </div>
 </footer>
 
