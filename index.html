@@ -3,28 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Three papers treating hallucination in large language models through the frequency structure and geometry of meaning, with plain-language and detailed explainers in English and Japanese.">
+<meta name="description" content="Four papers treating hallucination in large language models through the frequency structure and geometry of meaning, with plain-language and detailed explainers in English and Japanese.">
 <link rel="canonical" href="https://kasubuchi.github.io/wavephasenet/index.html">
 <link rel="alternate" hreflang="ja" href="https://kasubuchi.github.io/wavephasenet/index_ja.html">
 <link rel="alternate" hreflang="en" href="https://kasubuchi.github.io/wavephasenet/index.html">
 <link rel="alternate" hreflang="x-default" href="https://kasubuchi.github.io/wavephasenet/index.html">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="WavePhaseNet / QuantumPhaseNet / ModularPhaseNet — Paper Explainers">
+<meta property="og:site_name" content="WavePhaseNet / QuantumPhaseNet / ModularPhaseNet / HodgePhaseNet — Paper Explainers">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="ja_JP">
 <meta property="og:url" content="https://kasubuchi.github.io/wavephasenet/index.html">
-<meta property="og:title" content="Paper Explainers — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet">
-<meta property="og:description" content="Three papers treating hallucination in large language models through the frequency structure and geometry of meaning, with plain-language and detailed explainers in English and Japanese.">
+<meta property="og:title" content="Paper Explainers — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet / HodgePhaseNet">
+<meta property="og:description" content="Four papers treating hallucination in large language models through the frequency structure and geometry of meaning, with plain-language and detailed explainers in English and Japanese.">
 <meta property="og:image" content="https://kasubuchi.github.io/wavephasenet/og/og-index.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Paper Explainers paper explainer (Kasubuchi &amp; Fukiya)">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Paper Explainers — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet">
-<meta name="twitter:description" content="Three papers treating hallucination in large language models through the frequency structure and geometry of meaning, with plain-language and detailed explainers in English and Japanese.">
+<meta name="twitter:title" content="Paper Explainers — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet / HodgePhaseNet">
+<meta name="twitter:description" content="Four papers treating hallucination in large language models through the frequency structure and geometry of meaning, with plain-language and detailed explainers in English and Japanese.">
 <meta name="twitter:image" content="https://kasubuchi.github.io/wavephasenet/og/og-index.png">
-<title>Paper Explainers — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet</title>
+<title>Paper Explainers — WavePhaseNet / QuantumPhaseNet / ModularPhaseNet / HodgePhaseNet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -217,6 +217,11 @@
     header { padding-top: 5.5rem; }
     .lang-bar { top: 1rem; right: 1rem; }
   }
+
+  :root { --hodge: #c2410c; }
+  h1 .h, .project.h .project-name, .project.h .card-kicker { color: var(--hodge); }
+  .project.h .card:hover { border-color: var(--hodge); transform: translateY(-2px); box-shadow: 0 8px 26px rgba(194,65,12,0.09); }
+  .project.h .card-links a:hover { background: var(--hodge); border-color: var(--hodge); color: #fff; }
 </style>
 </head><body>
 
@@ -233,16 +238,65 @@
     <div class="eyebrow">KASUBUCHI &amp; FUKIYA — PAPER EXPLAINERS</div>
     <h1>
       <span class="w">WavePhaseNet</span>, <span class="q">QuantumPhaseNet</span>,<br>
-      <span class="m">ModularPhaseNet</span> — Paper Explainers
+      <span class="m">ModularPhaseNet</span>, <span class="h">HodgePhaseNet</span><br>Paper Explainers
     </h1>
     <p class="lede">
       A line of work treating hallucination in large language models through the frequency structure
       and geometry of meaning — from a continuous Fourier phase, to a gauge-covariant complex geometry,
-      to a finite cyclic group that runs in integer arithmetic.
-      Each of the three papers has explainers written for two audiences, in English and Japanese.
+      to a finite cyclic group that runs in integer arithmetic. The fourth paper takes the outputs of all three
+      as a flow of meaning on edges and splits it into three parts with a discrete Hodge decomposition.
+      Each of the four papers has explainers written for two audiences, in English and Japanese.
     </p>
     <div class="byline">Kiyotaka Kasubuchi &amp; Kazuo Fukiya</div>
   </header>
+
+  <!-- ── HodgePhaseNet ── -->
+  <section class="project h">
+    <div class="project-head">
+      <div class="project-name">HodgePhaseNet</div>
+      <div class="project-date"><a href="https://arxiv.org/abs/2610.14971" style="color:inherit;">arXiv:2610.14971</a></div>
+    </div>
+    <div class="project-sub">
+      Discrete Hodge Decomposition of Semantic Flows in Transformer Attention
+    </div>
+    <p class="project-desc">
+      The newest paper. It represents the flow of meaning between sentences or claims as a field on the edges of a
+      simplicial complex and splits it uniquely and orthogonally into <strong>a consistent direction, small local loops
+      and large global loops</strong>. The features of the first three papers are the inputs that build this field, and the
+      decomposition returns to attention as an additive bias.
+      <strong>Theory and an evaluation plan only; no experimental results are reported.</strong>
+    </p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-kicker">FOR DECISION MAKERS</div>
+        <h3>Plain-language</h3>
+        <p>
+          No mathematics. What it means to split the flow of meaning inside an AI into three parts,
+          how it relates to the earlier papers, what is settled so far, and how to trial it, in three minutes.
+        </p>
+        <div class="card-links">
+          <a href="hodgephasenet_intro_en.html">English</a>
+          <a href="hodgephasenet_intro_ja.html">日本語</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-kicker">FOR ENGINEERS &amp; RESEARCHERS</div>
+        <h3>Detailed</h3>
+        <p>
+          Incidence matrices and the Hodge Laplacian, projectors and sparse solves, the ordered query–key bias,
+          causal prefixes and a verified five-vertex example. Three theorems, three propositions and the evaluation
+          plan across thirteen sections.
+        </p>
+        <div class="card-links">
+          <a href="hodgephasenet_en.html">English</a>
+          <a href="hodgephasenet_ja.html">日本語</a>
+        </div>
+      </div>
+    </div>
+    <div class="extras">
+      <a href="https://arxiv.org/abs/2610.14971">📄 arXiv:2610.14971</a>
+    </div>
+  </section>
 
   <!-- ── ModularPhaseNet ── -->
   <section class="project m">
@@ -255,7 +309,7 @@
       and Context Consistency in Standard Transformers
     </div>
     <p class="project-desc">
-      The newest paper. It quantizes the continuous complex phase of QuantumPhaseNet into a finite cyclic
+      The third paper. It quantizes the continuous complex phase of QuantumPhaseNet into a finite cyclic
       group so that everything runs in <strong>integer arithmetic on ordinary GPUs and CPUs</strong>.
       Concept hierarchy becomes a nested partition of quotient groups, semantic direction an oriented group
       element, contextual consistency a cycle holonomy — all computed exactly by modular exponentiation.
@@ -351,10 +405,10 @@
            onmouseout="this.style.borderLeftColor='var(--text-dim)';this.style.transform='none';">
         <div class="card-kicker" style="color:var(--text-dim);">HOW THEY RELATE</div>
         <h3 style="font-family:var(--font-serif); font-size:1.05rem; font-weight:600; margin-bottom:0.5rem;">
-          From WavePhaseNet to QuantumPhaseNet, then ModularPhaseNet
+          From WavePhaseNet to QuantumPhaseNet and ModularPhaseNet, then HodgePhaseNet
         </h3>
         <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.8rem;">
-          What runs through all three papers, what was swapped out twice, and — just as importantly —
+          What runs through all four papers, what was swapped out twice, how the fourth gathers it in one place, and — just as importantly —
           which claims carried over, which returned in another form, and which were deliberately dropped.
         </p>
         <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted);
@@ -419,7 +473,8 @@
     These pages were created to explain the papers. For exact definitions and proofs, consult the papers themselves.
     The QuantumPhaseNet results come from synthetic data in the Validation Studio; external validity on public
     benchmarks has not been established. ModularPhaseNet reports theory and a pre-registered evaluation plan
-    only — its experiments have not yet been carried out.
+    only — its experiments have not yet been carried out. HodgePhaseNet likewise reports theory and an evaluation
+    plan only.
   </div>
 
 </div>

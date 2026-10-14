@@ -1,13 +1,15 @@
 """OGP カード画像（1200x630）を生成する。
 
 出力先: ../og/*.png
-実行:   python tools/make_og_images.py
+実行:   python tools/make_og_images.py [index hodge ...]（名前を省略すると全カード）
 
-サイトの配色（wave=#0088aa / quantum=#6d28d9 / modular=#15803d）に合わせ、
+サイトの配色（wave=#0088aa / quantum=#6d28d9 / modular=#15803d / hodge=#c2410c）に合わせ、
 論文名・英語サブタイトル・arXiv ID を載せた言語非依存のカードを作る。
 日本語フォントは Meiryo、英数字は Consolas を使う。
+Windows フォントがない環境（Linux）では Noto Sans CJK と DejaVu Sans Mono で代用する。
 """
 
+import sys
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -24,9 +26,19 @@ RULE = (211, 216, 234)
 WAVE = (0, 136, 170)
 QUANTUM = (109, 40, 217)
 MODULAR = (21, 128, 61)
+HODGE = (194, 65, 12)
 
-SERIF = "C:/Windows/Fonts/meiryo.ttc"
-MONO = "C:/Windows/Fonts/consola.ttf"
+def first_existing(*paths: str) -> str:
+    for p in paths:
+        if Path(p).exists():
+            return p
+    raise FileNotFoundError(paths[0])
+
+
+SERIF = first_existing("C:/Windows/Fonts/meiryo.ttc",
+                       "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc")
+MONO = first_existing("C:/Windows/Fonts/consola.ttf",
+                      "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf")
 
 
 def font(path: str, size: int) -> ImageFont.FreeTypeFont:
@@ -67,15 +79,49 @@ def card(name: str, accent, kicker: str, title: str, subtitle: list[str],
     print(f"wrote {path.name}")
 
 
+CARDS = {}
+
+
+def register(name):
+    def deco(fn):
+        CARDS[name] = fn
+        return fn
+    return deco
+
+
 def main() -> None:
+    want = sys.argv[1:] or list(CARDS)
+    for name in want:
+        CARDS[name]()
+
+
+@register("index")
+def _index() -> None:
     card(
         "index", INK,
         "KASUBUCHI & FUKIYA — PAPER EXPLAINERS",
         "論文解説ページ",
-        ["WavePhaseNet ／ QuantumPhaseNet ／ ModularPhaseNet",
-         "大規模言語モデルの幻覚を、意味の周波数構造と幾何学から扱う3本の論文。"],
+        ["WavePhaseNet ／ QuantumPhaseNet ／",
+         "ModularPhaseNet ／ HodgePhaseNet",
+         "大規模言語モデルの幻覚を、意味の周波数構造と幾何学から扱う4本の論文。"],
         "kasubuchi.github.io/wavephasenet",
     )
+
+
+@register("hodge")
+def _hodge() -> None:
+    card(
+        "hodge", HODGE,
+        "ARXIV:2610.14971 — PAPER EXPLAINER",
+        "HodgePhaseNet",
+        ["Discrete Hodge Decomposition of Semantic Flows",
+         "in Transformer Attention"],
+        "arXiv:2610.14971 · kasubuchi.github.io/wavephasenet",
+    )
+
+
+@register("modular")
+def _modular() -> None:
 
     card(
         "modular", MODULAR,
@@ -86,6 +132,9 @@ def main() -> None:
         "arXiv:2609.06000 · kasubuchi.github.io/wavephasenet",
     )
 
+
+@register("quantum")
+def _quantum() -> None:
     card(
         "quantum", QUANTUM,
         "ARXIV:2608.15820 — PAPER EXPLAINER",
@@ -95,6 +144,9 @@ def main() -> None:
         "arXiv:2608.15820 · kasubuchi.github.io/wavephasenet",
     )
 
+
+@register("wave")
+def _wave() -> None:
     card(
         "wave", WAVE,
         "ARXIV:2602.14419 — PAPER EXPLAINER",
@@ -104,11 +156,14 @@ def main() -> None:
         "arXiv:2602.14419 · kasubuchi.github.io/wavephasenet",
     )
 
+
+@register("relation")
+def _relation() -> None:
     card(
         "relation", INK,
-        "HOW THE THREE PAPERS RELATE",
-        "3つの論文の関係",
-        ["連続なフーリエ位相 → ゲージ共変な複素幾何 → 有限巡回群。",
+        "HOW THE FOUR PAPERS RELATE",
+        "4つの論文の関係",
+        ["フーリエ位相 → 複素幾何 → 有限巡回群 → 辺の場の Hodge 分解。",
          "何が変わり、何が引き継がれなかったのかを整理しています。"],
         "kasubuchi.github.io/wavephasenet",
         title_size=72,
