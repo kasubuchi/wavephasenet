@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>メモリ3社比較 音声版</title>
+<style>
+:root{--bg:#fafaf7;--fg:#1d1d1b;--muted:#6b6b66;--accent:#2f5d8a;--card:#ffffff;--line:#e3e2dc}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161615;--fg:#ecebe6;--muted:#a3a29c;--accent:#7fb0e0;--card:#21211f;--line:#34332f}}
+:root[data-theme="dark"]{--bg:#161615;--fg:#ecebe6;--muted:#a3a29c;--accent:#7fb0e0;--card:#21211f;--line:#34332f}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,"Hiragino Sans","Noto Sans JP",sans-serif;margin:0;padding:24px 16px;line-height:1.8}
+main{max-width:680px;margin:0 auto}
+h1{font-size:1.3rem;margin:0 0 4px}
+.sub{color:var(--muted);font-size:.85rem;margin-bottom:20px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+button{font:inherit;padding:10px 18px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+#script{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+#script p{margin:0 0 12px}
+#script p.now{color:var(--accent);font-weight:600}
+.note{color:var(--muted);font-size:.8rem;margin-top:16px}
+</style>
+</head>
+<body>
+<main>
+<h1>キオクシア・SanDisk・SKハイニックス比較</h1>
+<div class="sub">2026年10月31日時点の公開情報まとめ（音声読み上げ版）</div>
+<div class="controls">
+<button class="primary" id="play">▶ 再生</button>
+<button id="pause">一時停止</button>
+<button id="stop">停止</button>
+</div>
+<div id="script">
+<p>キオクシア、サンディスク、エスケーハイニックスの比較です。2026年10月31日時点の公開情報をもとにしています。</p>
+<p>まず結論です。3社とも業績は過去最高ですが、株式市場の評価ははっきり分かれました。エイチビーエムを主力とするエスケーハイニックスは決算後に株価が上がりました。一方で、ナンド型フラッシュメモリが主力のキオクシアとサンディスクは、決算後に株価が下がりました。</p>
+<p>エスケーハイニックスです。7月から9月期の売上高は104兆6千億ウォン、営業利益は83兆3千億ウォンで、利益率はおよそ80パーセントでした。経営陣は、エイチビーエムの需要が供給の2倍以上あり、品不足は2030年まで続くと説明しています。決算後、株価は一時12パーセントほど上がりました。ただし、1株当たり利益は市場予想を下回ったという報道もあります。</p>
+<p>サンディスクです。7月から9月期の売上高は約110億ドルで、市場予想を上回りました。10月から12月期についても、売上高は122億から126億ドル、粗利益率は85パーセント前後と強気の見通しを出しました。それでも10月31日の株価は13パーセントほど下がりました。メモリ価格がピークを迎えたという警戒感や、パソコンとスマートフォン向けの需要が弱いことが理由です。11月30日からは1株を8株にする株式分割が実施されます。</p>
+<p>キオクシアです。7月から9月期の営業利益は約2兆円で、利益率は80パーセントを超えました。ただし、10月から12月期の営業利益見通しは前の四半期並みの約2兆円で、市場予想の2兆3500億円に届きませんでした。決算後の夜間取引では、株価が一時7パーセント下がりました。株価は6月の最高値から6割以上下がっています。</p>
+<p>3社の違いをまとめます。エスケーハイニックスは、エヌビディアなど大口顧客との長期契約に支えられたエイチビーエムが中心なので、価格が崩れにくい構造です。サンディスクはデータセンター向けの比率が上がり、強気のガイダンスを出せています。キオクシアは、ナンドの値上がりが鈍ったことがそのまま利益見通しに表れており、3社の中で最も景気の波の影響を受けやすいと見られています。</p>
+<p>注目点は3つです。1つ目は、ナンドの契約価格が今後も上がり続けるかどうか。2つ目は、キオクシア、サンディスク、中国メーカーによる設備の増強で、供給が増えすぎないかどうか。3つ目は、エヌビディアの次世代製品ルービンの立ち上げが遅れて、エイチビーエムフォーの出荷に影響しないかどうかです。</p>
+<p>これは公開情報をまとめたもので、投資の助言ではありません。最終的な判断は、各社の決算資料などの一次情報で確認してください。</p>
+</div>
+<div class="note">ブラウザ（端末）の日本語読み上げ機能を使って再生します。音声が出ない場合は、端末の読み上げ音声の設定を確認してください。</div>
+</main>
+<script>
+const ps=[...document.querySelectorAll('#script p')];let i=0,stopped=true;
+function speak(){if(stopped||i>=ps.length){ps.forEach(p=>p.classList.remove('now'));stopped=true;return}
+ps.forEach(p=>p.classList.remove('now'));ps[i].classList.add('now');
+const u=new SpeechSynthesisUtterance(ps[i].textContent);u.lang='ja-JP';u.rate=1.0;
+const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.startsWith('ja'));if(v)u.voice=v;
+u.onend=()=>{i++;speak()};speechSynthesis.speak(u)}
+document.getElementById('play').onclick=()=>{if(speechSynthesis.paused){speechSynthesis.resume();return}
+speechSynthesis.cancel();stopped=false;i=0;speak()};
+document.getElementById('pause').onclick=()=>speechSynthesis.pause();
+document.getElementById('stop').onclick=()=>{stopped=true;speechSynthesis.cancel();ps.forEach(p=>p.classList.remove('now'))};
+if('speechSynthesis' in window)speechSynthesis.getVoices();
+</script>
+</body>
+</html>
